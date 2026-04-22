@@ -250,7 +250,7 @@ export default function NewProject() {
           <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: '1fr 1fr' }}>
             <label className="form-group">
               <span>Название продукта / курса</span>
-              <input type="text" value={productName} onChange={e => setProductName(e.target.value)} required placeholder="Например: Курс 'Финансовый менеджмент'" />
+              <input type="text" value={productName} onChange={e => setProductName(e.target.value)} required={!briefDocUrl} placeholder="Например: Курс 'Финансовый менеджмент'" />
             </label>
             <label className="form-group">
               <span>Категория</span>
@@ -261,7 +261,7 @@ export default function NewProject() {
             
             <label className="form-group col-span-2">
               <span>Описание (что это, для кого, главный результат)</span>
-              <textarea rows={3} value={description} onChange={e => setDescription(e.target.value)} required placeholder="Курс для собственников бизнеса, который учит читать отчеты..."></textarea>
+              <textarea rows={3} value={description} onChange={e => setDescription(e.target.value)} required={!briefDocUrl} placeholder="Курс для собственников бизнеса, который учит читать отчеты..."></textarea>
             </label>
 
             <div className="form-group col-span-2">
@@ -272,7 +272,9 @@ export default function NewProject() {
             <div className="form-group col-span-2">
               <span>Ссылка на заполненный Google Документ с брифом (Опционально)</span>
               <input type="url" value={briefDocUrl} onChange={(e) => setBriefDocUrl(e.target.value)} placeholder="https://docs.google.com/document/d/..." />
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>*AI прочитает ваш Google Doc и объединит данные с общей информацией.</p>
+              <p style={{ fontSize: '0.85rem', color: 'var(--primary)', marginTop: '0.2rem' }}>
+                💡 Если вы укажете ссылку на Google Doc со всем брифом, заполнять остальные поля ниже <b>не обязательно</b> (кроме ГЕО аудитории). AI сам все проанализирует.
+              </p>
             </div>
 
             <div className="col-span-2">
