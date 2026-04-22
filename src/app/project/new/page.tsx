@@ -21,6 +21,7 @@ export default function NewProject() {
   const [description, setDescription] = useState('');
   const [advantages, setAdvantages] = useState<string[]>(['']);
   const [landingUrl, setLandingUrl] = useState('');
+  const [briefDocUrl, setBriefDocUrl] = useState('');
   const [price, setPrice] = useState('');
 
   // B - Аудитория
@@ -94,9 +95,24 @@ export default function NewProject() {
           });
           if (parseRes.ok) {
             const parsed = await parseRes.json();
-            briefData.description += '\n\nРасширенный контекст с сайта: ' + parsed.content.substring(0, 500);
+            briefData.description += '\n\nРасширенный контекст с сайта: ' + parsed.content.substring(0, 5000);
           }
-        } catch(e) { console.error(e); }
+        } catch(e) { console.error('Landing parse error:', e); }
+      }
+
+      if (briefDocUrl) {
+        setLoadingStageIdx(1);
+        try {
+          const parseRes = await fetch('/api/parse-landing', {
+            method: 'POST', body: JSON.stringify({ url: briefDocUrl })
+          });
+          if (parseRes.ok) {
+            const parsed = await parseRes.json();
+            briefData.description += '\n\nРасширенный контекст из предоставленного заполненного Google-брифа:\n' + parsed.content.substring(0, 10000);
+          } else {
+            console.warn('Не удалось распарсить Google бриф');
+          }
+        } catch(e) { console.error('Google doc parse error:', e); }
       }
       
       setLoadingStageIdx(2);
@@ -248,10 +264,16 @@ export default function NewProject() {
               <textarea rows={3} value={description} onChange={e => setDescription(e.target.value)} required placeholder="Курс для собственников бизнеса, который учит читать отчеты..."></textarea>
             </label>
 
-            <label className="form-group col-span-2">
-              <span>Ссылка на лендинг (Опционально) — мы спарсим смыслы</span>
-              <input type="url" value={landingUrl} onChange={e => setLandingUrl(e.target.value)} placeholder="https://example.com" />
-            </label>
+            <div className="form-group col-span-2">
+              <span>Ссылка на сайт / лендинг (Опционально)</span>
+              <input type="url" value={landingUrl} onChange={(e) => setLandingUrl(e.target.value)} placeholder="https://..." />
+            </div>
+
+            <div className="form-group col-span-2">
+              <span>Ссылка на заполненный Google Документ с брифом (Опционально)</span>
+              <input type="url" value={briefDocUrl} onChange={(e) => setBriefDocUrl(e.target.value)} placeholder="https://docs.google.com/document/d/..." />
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>*AI прочитает ваш Google Doc и объединит данные с общей информацией.</p>
+            </div>
 
             <div className="col-span-2">
               <span style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Ключевые преимущества (макс. 5)</span>

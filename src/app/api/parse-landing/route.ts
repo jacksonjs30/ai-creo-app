@@ -9,6 +9,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 });
     }
 
+    // Обработка Google Документов
+    const googleDocMatch = url.match(/docs\.google\.com\/document\/d\/([a-zA-Z0-9-_]+)/);
+    if (googleDocMatch) {
+      const docId = googleDocMatch[1];
+      const exportUrl = `https://docs.google.com/document/export?format=txt&id=${docId}`;
+      const response = await fetch(exportUrl);
+      
+      if (!response.ok) {
+        return NextResponse.json({ error: `Не удалось скачать Google Doc. Убедитесь, что доступ к документу открыт для всех по ссылке.` }, { status: 400 });
+      }
+      
+      const text = await response.text();
+      return NextResponse.json({ content: text.substring(0, 15000) });
+    }
+
+    // Обработка обычных сайтов
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 AvatarToAdsBot/1.0',
