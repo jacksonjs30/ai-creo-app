@@ -227,14 +227,6 @@ function Section({
 
         </div>
       )}
-      <style jsx>{`
-        .item-actions { opacity: 0; transition: opacity 0.2s; }
-        .item-row:hover .item-actions { opacity: 1; }
-        .btn-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--background); cursor: pointer; color: var(--text-muted); transition: all 0.2s; }
-        .btn-icon:hover { background: var(--secondary-hover); color: var(--foreground); }
-        .btn-icon.hover-red:hover { border-color: #fca5a5; background: #fee2e2; color: #ef4444; }
-        .btn-icon:disabled { opacity: 0.5; cursor: not-allowed; }
-      `}</style>
     </div>
   );
 }

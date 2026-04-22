@@ -63,22 +63,23 @@ const TYPE_LABELS: Record<string, string> = {
   meme: 'Мем-крео'
 };
 
+const PLACEMENTS = [
+  'Instagram Stories/Reels 9:16',
+  'Instagram/Facebook Feed 1:1',
+  'Instagram/Facebook Feed 4:5',
+  'TikTok Vertical 9:16',
+  'YouTube Shorts 9:16',
+  'Telegram Square 1:1',
+  'Google Ads Responsive'
+];
+
 export default function CreativeResults({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [expanded, setExpanded] = useState<number | null>(null);
+  const [filter, setFilter] = useState<string>('all');
   const [creatives, setCreatives] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPlacements, setSelectedPlacements] = useState<Record<number, string>>({});
-
-  const PLACEMENTS = [
-    "Instagram Stories/Reels 9:16",
-    "Instagram/Facebook Feed 1:1",
-    "Instagram/Facebook Feed 4:5",
-    "TikTok Vertical 9:16",
-    "YouTube Shorts 9:16",
-    "Telegram Square 1:1",
-    "Google Ads Responsive"
-  ];
 
   useEffect(() => {
     try {
@@ -98,7 +99,6 @@ export default function CreativeResults({ params }: { params: Promise<{ id: stri
   const filtered = filter === 'all' ? creatives : creatives.filter(c => c.type === filter);
 
   if (isLoading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Загрузка результатов...</div>;
-
 
   return (
     <div>
@@ -195,55 +195,55 @@ export default function CreativeResults({ params }: { params: Promise<{ id: stri
                     </div>
                   </div>
 
-                    {/* ТЗ для дизайнера */}
-                    <div>
-                      <h4 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>
-                        🎨 ТЗ для Дизайнера / Монтажёра
-                      </h4>
-                      <div className="card" style={{ background: 'var(--secondary)', padding: '1.25rem' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontSize: '0.875rem' }}>
-                          <div style={{ gridColumn: 'span 2' }}>
-                            <span style={{ fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>🎯 Канал и Формат показов:</span>
-                            <select 
-                              style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}
-                              value={selectedPlacements[creative.id] || ''}
-                              onChange={e => setSelectedPlacements({...selectedPlacements, [creative.id]: e.target.value})}
-                            >
-                              <option value="">Выберите канал и формат...</option>
-                              {PLACEMENTS.map(p => <option key={p} value={p}>{p}</option>)}
-                            </select>
-                          </div>
-                          <div>
-                            <span style={{ fontWeight: 600 }}>Тип крео:</span>
-                            <span style={{ marginLeft: '0.5rem' }}>{TYPE_LABELS[creative.type]}</span>
-                          </div>
-                          <div>
-                            <span style={{ fontWeight: 600 }}>Фон:</span>
-                            <span style={{ marginLeft: '0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                              <span style={{ display: 'inline-block', width: '14px', height: '14px', borderRadius: '3px', background: creative.colorScheme.bg, border: '1px solid #ddd' }}></span>
-                              {creative.colorScheme.bg}
-                            </span>
-                          </div>
-                          <div>
-                            <span style={{ fontWeight: 600 }}>Акцент:</span>
-                            <span style={{ marginLeft: '0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                              <span style={{ display: 'inline-block', width: '14px', height: '14px', borderRadius: '3px', background: creative.colorScheme.accent }}></span>
-                              {creative.colorScheme.accent}
-                            </span>
-                          </div>
+                  {/* ТЗ для дизайнера */}
+                  <div>
+                    <h4 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>
+                      🎨 ТЗ для Дизайнера / Монтажёра
+                    </h4>
+                    <div className="card" style={{ background: 'var(--secondary)', padding: '1.25rem' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontSize: '0.875rem' }}>
+                        <div style={{ gridColumn: 'span 2' }}>
+                          <span style={{ fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>🎯 Канал и Формат показов:</span>
+                          <select
+                            style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}
+                            value={selectedPlacements[creative.id] || ''}
+                            onChange={e => setSelectedPlacements({ ...selectedPlacements, [creative.id]: e.target.value })}
+                          >
+                            <option value="">Выберите канал и формат...</option>
+                            {PLACEMENTS.map(p => <option key={p} value={p}>{p}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <span style={{ fontWeight: 600 }}>Тип крео:</span>
+                          <span style={{ marginLeft: '0.5rem' }}>{TYPE_LABELS[creative.type]}</span>
+                        </div>
+                        <div>
+                          <span style={{ fontWeight: 600 }}>Фон:</span>
+                          <span style={{ marginLeft: '0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                            <span style={{ display: 'inline-block', width: '14px', height: '14px', borderRadius: '3px', background: creative.colorScheme.bg, border: '1px solid #ddd' }}></span>
+                            {creative.colorScheme.bg}
+                          </span>
+                        </div>
+                        <div>
+                          <span style={{ fontWeight: 600 }}>Акцент:</span>
+                          <span style={{ marginLeft: '0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                            <span style={{ display: 'inline-block', width: '14px', height: '14px', borderRadius: '3px', background: creative.colorScheme.accent }}></span>
+                            {creative.colorScheme.accent}
+                          </span>
                         </div>
                       </div>
                     </div>
-
-                    {/* Действия */}
-                    <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-                      <button className="btn btn-secondary"><Eye size={16}/> Превью</button>
-                      <button className="btn btn-secondary"><Share2 size={16}/> Поделиться</button>
-                      <button className="btn btn-primary"><Download size={16}/> Скачать ТЗ</button>
-                    </div>
                   </div>
-                )}
 
+                  {/* Действия */}
+                  <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                    <button className="btn btn-secondary"><Eye size={16} /> Превью</button>
+                    <button className="btn btn-secondary"><Share2 size={16} /> Поделиться</button>
+                    <button className="btn btn-primary"><Download size={16} /> Скачать ТЗ</button>
+                  </div>
+
+                </div>
+              )}
             </div>
           );
         })}

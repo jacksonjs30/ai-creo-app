@@ -364,27 +364,6 @@ export default function NewProject() {
 
       </form>
 
-      <style jsx>{`
-        .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
-        .form-group span { font-size: 0.875rem; font-weight: 500; }
-        .col-span-2 { grid-column: span 2; }
-        input, select, textarea {
-          width: 100%; padding: 0.75rem; border: 1px solid var(--border);
-          border-radius: var(--radius-md); font-family: inherit; font-size: 0.875rem;
-          background: var(--background); transition: border-color 0.2s;
-        }
-        input:focus, select:focus, textarea:focus {
-          outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px var(--accent-light);
-        }
-        .pill-group { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-        .pill {
-          padding: 0.4rem 1rem; border-radius: 9999px; font-size: 0.875rem;
-          background: var(--secondary); border: 1px solid var(--border);
-          cursor: pointer; transition: all 0.2s ease;
-        }
-        .pill:hover { background: var(--secondary-hover); }
-        .pill.active { background: var(--primary); color: white; border-color: var(--primary); }
-      `}</style>
     </div>
   );
 }
