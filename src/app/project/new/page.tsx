@@ -22,6 +22,7 @@ export default function NewProject() {
   const [advantages, setAdvantages] = useState<string[]>(['']);
   const [landingUrl, setLandingUrl] = useState('');
   const [briefDocUrl, setBriefDocUrl] = useState('');
+  const [useBriefOnly, setUseBriefOnly] = useState(false);
   const [price, setPrice] = useState('');
 
   // B - Аудитория
@@ -76,12 +77,27 @@ export default function NewProject() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
+
+    if (geo.length === 0) {
+      setErrorMsg('Обязательно выберите хотя бы одну страну (ГЕО) для анализа.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    if (useBriefOnly && !briefDocUrl) {
+      setErrorMsg('Укажите ссылку на Google Документ, так как выбрана опция "Использовать только информацию из брифа".');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     setIsGenerating(true);
     setLoadingStageIdx(0);
 
     try {
       const briefData = {
-        productName, category, description, advantages, landingUrl, price,
+        productName: productName || 'Продукт из брифа',
+        category, description: description || 'Смотреть в Google Doc',
+        advantages, landingUrl, price, briefDocUrl, useBriefOnly,
         audienceDesc, ageRange, gender, profession, income, priorProducts,
         geo, adLang,
         existingAds, objections
@@ -240,7 +256,32 @@ export default function NewProject() {
       
       <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '2rem' }}>
         
-        {/* БЛОК A */}
+        {/* ТОГГЛ "ТОЛЬКО БРИФ" */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: useBriefOnly ? 'rgba(59, 130, 246, 0.05)' : 'var(--background)', padding: '1.25rem', border: `2px solid ${useBriefOnly ? 'var(--primary)' : 'var(--border)'}`, borderRadius: 'var(--radius-md)', transition: 'all 0.2s' }}>
+          <input 
+            type="checkbox" 
+            id="useBriefOnly" 
+            checked={useBriefOnly} 
+            onChange={e => setUseBriefOnly(e.target.checked)} 
+            style={{ width: '24px', height: '24px', cursor: 'pointer', accentColor: 'var(--primary)' }}
+          />
+          <label htmlFor="useBriefOnly" style={{ cursor: 'pointer', fontWeight: 600, fontSize: '1.05rem', color: useBriefOnly ? 'var(--primary)' : 'inherit' }}>
+            Всю информацию брать ИСКЛЮЧИТЕЛЬНО из моего заполненного Google-брифа
+          </label>
+        </div>
+
+        {useBriefOnly && (
+          <div className="card">
+            <label className="form-group">
+              <span style={{ color: 'var(--primary)', fontWeight: 600 }}>ОБЯЗАТЕЛЬНО: Вставьте ссылку на ваш Google Документ</span>
+              <input type="url" value={briefDocUrl} onChange={(e) => setBriefDocUrl(e.target.value)} required={useBriefOnly} placeholder="https://docs.google.com/document/d/..." style={{ border: '2px solid var(--primary)' }} />
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>*Документ должен быть открыт по ссылке ("Читатель"). Мы прочитаем его и сразу перейдем к выбору ГЕО в Блоке C.</p>
+            </label>
+          </div>
+        )}
+
+        {/* БЛОК A (Скрывается если выбран "только бриф") */}
+        {!useBriefOnly && (
         <section className="card">
           <div className="flex-between" style={{ marginBottom: '1.5rem' }}>
             <h3 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -250,7 +291,7 @@ export default function NewProject() {
           <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: '1fr 1fr' }}>
             <label className="form-group">
               <span>Название продукта / курса</span>
-              <input type="text" value={productName} onChange={e => setProductName(e.target.value)} required={!briefDocUrl} placeholder="Например: Курс 'Финансовый менеджмент'" />
+              <input type="text" value={productName} onChange={e => setProductName(e.target.value)} required={!useBriefOnly} placeholder="Например: Курс 'Финансовый менеджмент'" />
             </label>
             <label className="form-group">
               <span>Категория</span>
@@ -261,20 +302,12 @@ export default function NewProject() {
             
             <label className="form-group col-span-2">
               <span>Описание (что это, для кого, главный результат)</span>
-              <textarea rows={3} value={description} onChange={e => setDescription(e.target.value)} required={!briefDocUrl} placeholder="Курс для собственников бизнеса, который учит читать отчеты..."></textarea>
+              <textarea rows={3} value={description} onChange={e => setDescription(e.target.value)} required={!useBriefOnly} placeholder="Курс для собственников бизнеса, который учит читать отчеты..."></textarea>
             </label>
 
             <div className="form-group col-span-2">
               <span>Ссылка на сайт / лендинг (Опционально)</span>
               <input type="url" value={landingUrl} onChange={(e) => setLandingUrl(e.target.value)} placeholder="https://..." />
-            </div>
-
-            <div className="form-group col-span-2">
-              <span>Ссылка на заполненный Google Документ с брифом (Опционально)</span>
-              <input type="url" value={briefDocUrl} onChange={(e) => setBriefDocUrl(e.target.value)} placeholder="https://docs.google.com/document/d/..." />
-              <p style={{ fontSize: '0.85rem', color: 'var(--primary)', marginTop: '0.2rem' }}>
-                💡 Если вы укажете ссылку на Google Doc со всем брифом, заполнять остальные поля ниже <b>не обязательно</b> (кроме ГЕО аудитории). AI сам все проанализирует.
-              </p>
             </div>
 
             <div className="col-span-2">
@@ -300,6 +333,7 @@ export default function NewProject() {
         </section>
 
         {/* БЛОК B */}
+        {!useBriefOnly && (
         <section className="card">
           <h3 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
             <Users size={20} className="text-gradient" /> Блок B: Аудитория
@@ -344,6 +378,7 @@ export default function NewProject() {
             </label>
           </div>
         </section>
+        )}
 
         {/* БЛОК C */}
         <section className="card">
@@ -365,6 +400,7 @@ export default function NewProject() {
         </section>
 
         {/* БЛОК D */}
+        {!useBriefOnly && (
         <section className="card">
           <h3 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
             <FileText size={20} className="text-gradient" /> Блок D: Дополнительный контекст
@@ -381,6 +417,7 @@ export default function NewProject() {
             </label>
           </div>
         </section>
+        )}
 
         <button type="submit" className="btn btn-primary" style={{ padding: '1rem', fontSize: '1rem' }}>
            Сгенерировать Аватары
