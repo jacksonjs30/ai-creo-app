@@ -1,0 +1,127 @@
+'use client';
+
+import { use, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import BackButton from '@/components/BackButton';
+import { Settings, Users, BrainCircuit, Activity, ShieldAlert, ChevronRight, RefreshCw } from 'lucide-react';
+
+// Мок данные аватаров для MVP
+const mockAvatars = [
+  {
+    id: 1,
+    segmentName: "Маркетологи / Офисные работники / Молодожены и т.д",
+    summary: "Устали копировать данные вручную. Хотят уйти вовремя. Много задач и т.д.",
+    stats: { pains: 5, fears: 3, objections: 2 },
+    portrait: "Аналитик, 25-35 лет. Глаза красные от таблиц. Боится потерять клиента из-за 'разъехавшихся' данных. Готов платить за сервис, если он реально автоматом соберет всё воедино и покажет красивый график для босса."
+  },
+  {
+    id: 2,
+    segmentName: "Владельцы малого бизнеса (SMB)",
+    summary: "Нуждаются в контроле цифр без звонков бухгалтеру.",
+    stats: { pains: 4, fears: 4, objections: 3 },
+    portrait: "Собственник, 35-50 лет. Нет времени на учебу. Много делегирует, но теряет контроль финансов. Ищет 'волшебную кнопку' для ясности."
+  }
+];
+
+export default function ProjectDashboard({ params }: { params: Promise<{ id: string }> }) {
+  // Использование нового React API для params в серверных/клиентских компонентах
+  const { id } = use(params);
+  const router = useRouter();
+
+  const [avatars, setAvatars] = useState<any[]>(mockAvatars);
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  useEffect(() => {
+    // В MVP мы читаем результат из localStorage, так как БД пока не подключена
+    try {
+      const stored = localStorage.getItem('tempGeneratedAvatars');
+      if (stored) {
+        setAvatars(JSON.parse(stored));
+      }
+    } catch (e) { }
+  }, []);
+
+  const handleProceedToGenerate = () => {
+    setIsNavigating(true);
+    router.push(`/project/${id}/generate`);
+  };
+
+  return (
+    <div>
+      <BackButton fallbackUrl="/" />
+
+      <div className="flex-between mb-8" style={{ alignItems: 'flex-start' }}>
+        <div>
+          <h1 className="page-title">Аватары проекта</h1>
+          <p className="page-subtitle">Мы провели исследование и выделили {avatars.length} сегмента аудитории</p>
+        </div>
+
+        <button
+          onClick={handleProceedToGenerate}
+          disabled={isNavigating}
+          className="btn btn-primary"
+          style={{ padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+        >
+          {isNavigating ? <RefreshCw size={18} className="animate-spin" /> : <Settings size={18} />}
+          {isNavigating ? 'Загрузка...' : 'Перейти к генерации креативов'}
+        </button>
+      </div>
+
+      <div style={{ display: 'grid', gap: '1.5rem' }}>
+        {avatars.map((avatar, idx) => (
+          <div key={avatar.id || idx} className="card" style={{ padding: '2rem' }}>
+            <div className="flex-between" style={{ borderBottom: '1px solid var(--border)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
+              <div>
+                <span className="badge badge-success" style={{ marginBottom: '0.5rem' }}>Сегмент #{idx + 1}</span>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>{avatar.segmentName}</h2>
+                <p style={{ color: 'var(--text-muted)', marginTop: '0.25rem' }}>{avatar.summary || (avatar.jtbd && avatar.jtbd[0]?.job) || ''}</p>
+              </div>
+              <div style={{ background: 'var(--secondary)', padding: '1rem', borderRadius: 'var(--radius-lg)', minWidth: 220 }}>
+                <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Статистика аватара</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
+                  {[
+                    { label: 'JTBD', key: 'jtbd', color: '#3b82f6' },
+                    { label: 'Боли', key: 'pains', color: '#f59e0b' },
+                    { label: 'Страхи', key: 'fears', color: '#ef4444' },
+                    { label: 'Возражения', key: 'objections', color: '#8b5cf6' },
+                    { label: 'Маркеры', key: 'behaviorMarkers', color: '#06b6d4' },
+                    { label: 'CJM', key: 'cjm', color: '#10b981' },
+                    { label: 'Мотивации', key: 'motivations', color: '#f97316' },
+                  ].map(({ label, key, color }) => {
+                    const count = avatar[key]?.length || avatar.stats?.[key] || 0;
+                    return (
+                      <div key={key} className="tooltip-container" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem' }}>
+                        <span style={{ fontWeight: 700, color, fontSize: '1rem', minWidth: 20 }}>{count}</span>
+                        <span style={{ color: 'var(--text-muted)' }}>{label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem' }}>
+                <Users size={18} className="text-gradient" /> Психологический портрет
+              </h4>
+              <p style={{ lineHeight: 1.6, color: 'var(--foreground)' }}>
+                {avatar.portrait}
+              </p>
+              <div style={{ marginTop: '1rem' }}>
+                <Link
+                  href={`/project/${id}/avatar/${idx}`}
+                  className="btn btn-secondary"
+                  style={{ fontSize: '0.875rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                >
+                  Показать полный JTBD и сценарии CJM <ChevronRight size={15} />
+                </Link>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+    </div>
+  );
+}
