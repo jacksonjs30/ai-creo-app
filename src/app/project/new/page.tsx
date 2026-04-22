@@ -310,6 +310,12 @@ export default function NewProject() {
               <input type="url" value={landingUrl} onChange={(e) => setLandingUrl(e.target.value)} placeholder="https://..." />
             </div>
 
+            <div className="form-group col-span-2">
+              <span>Ссылка на Google Документ с брифом (Опционально)</span>
+              <input type="url" value={briefDocUrl} onChange={(e) => setBriefDocUrl(e.target.value)} placeholder="https://docs.google.com/document/d/..." />
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>AI прочитает документ и дополнит бриф этими данными.</p>
+            </div>
+
             <div className="col-span-2">
               <span style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Ключевые преимущества (макс. 5)</span>
               {advantages.map((adv, i) => (
