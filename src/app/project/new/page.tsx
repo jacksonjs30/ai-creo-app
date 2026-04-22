@@ -331,6 +331,7 @@ export default function NewProject() {
             </label>
           </div>
         </section>
+        )}
 
         {/* БЛОК B */}
         {!useBriefOnly && (
