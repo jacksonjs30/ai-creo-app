@@ -4,18 +4,19 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY || '');
 
 export async function POST(req: NextRequest) {
+  let type = "image";
   try {
+    const body = await req.json();
+    type = body.type || type;
     const { 
-      type, 
       count, 
       styleDesc, 
       voiceStyle, 
       colorScheme, 
       briefContext, 
-      avatars,
-      platforms,
-      placements
-    } = await req.json();
+      avatars
+    } = body;
+
 
     if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
       return NextResponse.json({ error: 'Gemini API Key is missing' }, { status: 500 });
