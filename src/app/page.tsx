@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, Folder, Clock, CheckCircle, Play, Loader2, RefreshCw } from 'lucide-react';
+import { Plus, Folder, Clock, CheckCircle, Play, Loader2, RefreshCw, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
@@ -74,6 +74,35 @@ export default function Dashboard() {
     return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
   };
 
+  const handleDelete = async (e: React.MouseEvent, id: string, name: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!window.confirm(`Вы уверены, что хотите удалить проект "${name}"?\nЭто действие нельзя отменить.`)) {
+      return;
+    }
+
+    if (id === 'temp-id') {
+      localStorage.removeItem('tempGeneratedAvatars');
+      localStorage.removeItem('tempBrief');
+      localStorage.removeItem('tempGeneratedCreatives');
+      setHasLocal(false);
+      loadProjects();
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/projects?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        throw new Error('Не удалось удалить проект');
+      }
+      loadProjects();
+    } catch (err) {
+      alert('Ошибка при удалении проекта');
+      console.error(err);
+    }
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
@@ -133,20 +162,31 @@ export default function Dashboard() {
         <div className="projects-grid">
           {projects.map((project) => (
             <div key={project.id} className="card">
-              <div className="card-header">
-                <div>
+              <div className="card-header" style={{ position: 'relative' }}>
+                <div style={{ paddingRight: '2rem' }}>
                   <h3 className="card-title">{project.name}</h3>
                   <p className="card-subtitle">{formatDate(project.created_at)}</p>
                 </div>
-                {project.status === 'done' ? (
-                  <span className="badge badge-success">
-                    <CheckCircle size={12} style={{ display: 'inline', marginRight: 4 }} /> Готово
-                  </span>
-                ) : (
-                  <span className="badge badge-warning">
-                    <Clock size={12} style={{ display: 'inline', marginRight: 4 }} /> В работе
-                  </span>
-                )}
+                
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', position: 'absolute', top: 0, right: 0 }}>
+                  {project.status === 'done' ? (
+                    <span className="badge badge-success">
+                      <CheckCircle size={12} style={{ display: 'inline', marginRight: 4 }} /> Готово
+                    </span>
+                  ) : (
+                    <span className="badge badge-warning">
+                      <Clock size={12} style={{ display: 'inline', marginRight: 4 }} /> В работе
+                    </span>
+                  )}
+                  
+                  <button 
+                    onClick={(e) => handleDelete(e, project.id, project.name)}
+                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '4px' }}
+                    title="Удалить проект"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
 
               <div className="preview-box">
