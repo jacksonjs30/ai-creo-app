@@ -3,7 +3,7 @@
 import { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import BackButton from '@/components/BackButton';
-import { Image as ImageIcon, Video, Smile, LayoutTemplate, Palette, Mic, CheckCircle2, Lock } from 'lucide-react';
+import { Image as ImageIcon, Video, Smile, LayoutTemplate, Palette, Mic, CheckCircle2, Lock, Loader2 } from 'lucide-react';
 
 const CREATIVE_TYPES = [
   { id: 'image', name: 'Картинка + текст', icon: ImageIcon },
