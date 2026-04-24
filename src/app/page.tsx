@@ -120,23 +120,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Баннер: несохранённая сессия */}
-      {hasLocal && (
-        <div style={{
-          background: 'linear-gradient(135deg, #f0f9ff, #e0f2fe)',
-          border: '1px solid #bae6fd', borderRadius: 'var(--radius-lg)',
-          padding: '1rem 1.5rem', marginBottom: '1.5rem',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem'
-        }}>
-          <div>
-            <p style={{ fontWeight: 600, color: '#0369a1' }}>📋 Есть незавершённая сессия</p>
-            <p style={{ fontSize: '0.875rem', color: '#0284c7' }}>Вы генерировали аватары — результаты сохранены локально</p>
-          </div>
-          <Link href="/project/temp-id" className="btn btn-primary" style={{ flexShrink: 0 }}>
-            Продолжить →
-          </Link>
-        </div>
-      )}
+
 
       {loading ? (
         <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>

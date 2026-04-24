@@ -3,7 +3,7 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Avatar-to-ADS | AI Генератор Креативов",
+  title: "P.A.C.A | AI Генератор Креативов",
   description: "Автоматическая генерация рекламных креативов на основе JTBD и психологии аудитории",
 };
 
@@ -21,7 +21,7 @@ export default function RootLayout({
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
               </svg>
-              Avatar-to-ADS
+              P.A.C.A
             </Link>
             <nav style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
               <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>mika@example.com</span>
