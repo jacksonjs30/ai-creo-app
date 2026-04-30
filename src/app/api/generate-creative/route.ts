@@ -1,89 +1,84 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { PROMPTS } from '@/lib/prompts';
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY || '');
+export const maxDuration = 60; // 60 seconds
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
-  let type = "image";
   try {
     const body = await req.json();
-    type = body.type || type;
-    const { 
-      count, 
-      styleDesc, 
-      voiceStyle, 
-      colorScheme, 
-      briefContext, 
-      avatars
-    } = body;
+    const { projectId, productName, avatarData, format, toneOfVoice, language, count, colors } = body;
+    
+    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
-
-    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+    if (!apiKey) {
       return NextResponse.json({ error: 'Gemini API Key is missing' }, { status: 500 });
     }
 
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
-      generationConfig: { responseMimeType: "application/json" }
+    const prompt = PROMPTS.GENERATE_CREATIVES_PROMPT({
+      productName,
+      avatarData,
+      format,
+      toneOfVoice,
+      language,
+      count,
+      colors
     });
 
-    const prompt = `Ты старший performance-маркетолог и креативный директор. Твоя задача — разработать ${count} ТЗ для рекламных креативов формата "${type}".
-    
-Данные продукта:
-${JSON.stringify(briefContext, null, 2)}
+    console.log('Generating creative script for format:', format, 'Avatar:', avatarData?.segmentName);
 
-Доступные сегменты аудитории (Используй их боли и JTBD для хуков):
-${JSON.stringify(avatars, null, 2)}
+    // Вызываем Gemini напрямую через fetch, как мы делали для аватаров,
+    // чтобы гарантированно отключить Thinking mode и избежать таймаутов
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1alpha/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          role: 'user',
+          parts: [{ text: prompt }]
+        }],
+        generationConfig: {
+          temperature: 0.6,
+          thinkingConfig: {
+            thinkingBudget: 0 // ОТКЛЮЧАЕМ THINKING MODE
+          }
+        }
+      })
+    });
 
-Настройки форматирования:
-${styleDesc ? ` - Стиль/Брендбук: ${styleDesc}` : ''}
-${voiceStyle ? ` - Стиль голоса: ${voiceStyle}` : ''}
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Gemini API Error: ${response.status} ${errorText}`);
+    }
 
-Создай ${count} уникальных креативов. Сделай их максимально конверсионными (Angle: Боль->Решение, Социальное доказательство, Трансформация).
-Если тип "video", в поле "body" распиши раскадровку по секундам (0:00-0:02 хук и т.д.).
-Если тип "image" или "meme", в поле "body" напиши точный текст для визуала и подпись.
+    const resultData = await response.json();
+    const text = resultData.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-Верни ответ в виде массиве JSON следующей структуры:
-[
-  {
-    "id": 1, // уникальный id от 1 до ${count}
-    "type": "${type}",
-    "segment": "Название сегмента аудитории к которому обращаемся",
-    "angle": "Какой подход используем (например, Боль -> Решение)",
-    "hook": "Текст Хука (первые строки)",
-    "body": "Сам сценарий или основной текст на баннере",
-    "cta": "Призыв к действию",
-    "colorScheme": { "bg": "${colorScheme.bg || '#1e293b'}", "text": "#ffffff", "accent": "${colorScheme.accent || '#3b82f6'}" }
-  }
-]
-`;
+    // Генерируем уникальный ID для этого пака сценариев
+    const scriptId = `script_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
-    const result = await model.generateContent(prompt);
-    let text = result.response.text();
-    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    
-    let creatives = JSON.parse(text);
+    const scriptResult = {
+      id: scriptId,
+      projectId,
+      productName,
+      avatarName: avatarData?.segmentName || 'Неизвестный сегмент',
+      format,
+      toneOfVoice,
+      language,
+      colors,
+      content: text,
+      createdAt: new Date().toISOString()
+    };
 
-    return NextResponse.json({ creatives });
+    return NextResponse.json({ success: true, script: scriptResult });
+
   } catch (error: any) {
     console.error('Error generating creatives:', error);
     
-    // Временный mock-ответ на случай проблем с биллингом
-    const mockCreatives = Array.from({length: 3}).map((_, i) => ({
-      id: Date.now() + i,
-      type: type || "image",
-      segment: "Сегмент (Mock)",
-      angle: "Тестовый угол",
-      hook: "Это мок-данные из-за ошибки (скорее всего биллинг)",
-      body: "Здесь будет настоящий текст, когда заработает API ключ. Ошибка: " + error.message,
-      cta: "Попробовать",
-      colorScheme: { bg: '#1e293b', text: '#ffffff', accent: '#3b82f6' }
-    }));
-    
     return NextResponse.json({ 
       error: error.message, 
-      creatives: mockCreatives,
-      isMock: true
-    }, { status: 200 }); 
+    }, { status: 500 }); 
   }
 }
