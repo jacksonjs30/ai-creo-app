@@ -79,8 +79,10 @@ export default function NewProjectPage() {
 
       // Если сегменты указаны вручную — идем сразу в исследование
       if (briefData.targetSegments.length > 0) {
-        setFoundSegments(briefData.targetSegments.map((s: string) => ({ segmentName: s })));
-        handleStartResearch(briefData.targetSegments.map((s: string) => ({ segmentName: s })), briefData);
+        const manualSegments = briefData.targetSegments.map((s: string) => ({ segmentName: s }));
+        setFoundSegments(manualSegments);
+        setSelectedSegments(briefData.targetSegments); // ВАЖНО: обновить список выбранных
+        handleStartResearch(manualSegments, briefData);
         return;
       }
 
@@ -300,7 +302,7 @@ export default function NewProjectPage() {
   }
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 1rem 5rem' }}>
+    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 1rem 5rem' }} suppressHydrationWarning>
       <button onClick={() => router.push('/')} style={{ background: 'none', border: 'none', padding: '1rem 0', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#64748b', fontWeight: 600 }}>
         <ArrowLeft size={20} /> Назад
       </button>

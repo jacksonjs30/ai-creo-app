@@ -29,18 +29,36 @@ export default function ProjectDashboard({ params }: { params: Promise<{ id: str
   const { id } = use(params);
   const router = useRouter();
 
-  const [avatars, setAvatars] = useState<any[]>(mockAvatars);
+  const [avatars, setAvatars] = useState<any[]>([]);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // В MVP мы читаем результат из localStorage, так как БД пока не подключена
-    try {
-      const stored = localStorage.getItem('tempGeneratedAvatars');
-      if (stored) {
-        setAvatars(JSON.parse(stored));
+    async function fetchProject() {
+      if (!id || id === 'temp-id') {
+        const stored = localStorage.getItem('tempGeneratedAvatars');
+        if (stored) setAvatars(JSON.parse(stored));
+        setIsLoading(false);
+        return;
       }
-    } catch (e) { }
-  }, []);
+
+      try {
+        const res = await fetch(`/api/projects?id=${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          const proj = data.project || data.product || data;
+          if (proj && proj.avatars) {
+            setAvatars(proj.avatars);
+          }
+        }
+      } catch (e) {
+        console.error('Fetch error:', e);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchProject();
+  }, [id]);
 
   const handleProceedToGenerate = () => {
     setIsNavigating(true);
