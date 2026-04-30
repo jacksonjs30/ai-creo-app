@@ -4,7 +4,7 @@ import { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import BackButton from '@/components/BackButton';
-import { Settings, Users, BrainCircuit, Activity, ShieldAlert, ChevronRight, RefreshCw } from 'lucide-react';
+import { Settings, Users, BrainCircuit, Activity, ShieldAlert, ChevronRight, RefreshCw, Copy, CheckCircle2 } from 'lucide-react';
 
 // Мок данные аватаров для MVP
 const mockAvatars = [
@@ -65,8 +65,69 @@ export default function ProjectDashboard({ params }: { params: Promise<{ id: str
     router.push(`/project/${id}/generate`);
   };
 
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleCopyAllToExcel = () => {
+    if (avatars.length === 0) return;
+
+    // Заголовки таблицы
+    const headers = [
+      "Название сегмента",
+      "Краткое резюме",
+      "Психологический портрет",
+      "JTBD (Задачи)",
+      "Боли",
+      "Страхи",
+      "Возражения",
+      "Симптомы",
+      "Мотивации",
+      "CJM (Сценарий)"
+    ];
+
+    // Форматируем данные каждого аватара
+    const rows = avatars.map(a => {
+      const formatList = (list: any[], key: string, labelKey: string) => {
+        if (!list || !Array.isArray(list)) return "";
+        return list.map((item, i) => `${i + 1}. ${item[labelKey]}${item.context ? ` (${item.context})` : ''}`).join('\n');
+      };
+
+      return [
+        a.segmentName || "",
+        a.summary || "",
+        a.portrait || "",
+        formatList(a.jtbd, 'jtbd', 'job'),
+        formatList(a.pains, 'pains', 'pain'),
+        formatList(a.fears, 'fears', 'fear'),
+        formatList(a.objections, 'objections', 'objection'),
+        formatList(a.symptoms, 'symptoms', 'symptom'),
+        formatList(a.motivations, 'motivations', 'motivation'),
+        formatList(a.cjm, 'cjm', 'scenario')
+      ].map(cell => `"${cell.replace(/"/g, '""')}"`); // Экранируем кавычки для корректной вставки
+    });
+
+    // Собираем в одну строку с разделителем TAB (\t)
+    const tsvContent = [
+      headers.join('\t'),
+      ...rows.map(row => row.join('\t'))
+    ].join('\n');
+
+    // Копируем в буфер обмена
+    navigator.clipboard.writeText(tsvContent).then(() => {
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+        <RefreshCw className="animate-spin" size={48} color="var(--primary)" />
+      </div>
+    );
+  }
+
   return (
-    <div>
+    <div suppressHydrationWarning>
       <BackButton fallbackUrl="/" />
 
       <div className="flex-between mb-8" style={{ alignItems: 'flex-start' }}>
@@ -75,15 +136,26 @@ export default function ProjectDashboard({ params }: { params: Promise<{ id: str
           <p className="page-subtitle">Мы провели исследование и выделили {avatars.length} сегмента аудитории</p>
         </div>
 
-        <button
-          onClick={handleProceedToGenerate}
-          disabled={isNavigating}
-          className="btn btn-primary"
-          style={{ padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-        >
-          {isNavigating ? <RefreshCw size={18} className="animate-spin" /> : <Settings size={18} />}
-          {isNavigating ? 'Загрузка...' : 'Перейти к генерации креативов'}
-        </button>
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <button
+            onClick={handleCopyAllToExcel}
+            className={`btn ${isCopied ? 'btn-success' : 'btn-secondary'}`}
+            style={{ padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          >
+            {isCopied ? <CheckCircle2 size={18} /> : <Copy size={18} />}
+            {isCopied ? 'Скопировано!' : 'Для таблиц (Excel/Sheets)'}
+          </button>
+
+          <button
+            onClick={handleProceedToGenerate}
+            disabled={isNavigating}
+            className="btn btn-primary"
+            style={{ padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          >
+            {isNavigating ? <RefreshCw size={18} className="animate-spin" /> : <Settings size={18} />}
+            {isNavigating ? 'Загрузка...' : 'Перейти к генерации креативов'}
+          </button>
+        </div>
       </div>
 
       <div style={{ display: 'grid', gap: '1.5rem' }}>
