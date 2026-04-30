@@ -96,8 +96,10 @@ export default function ProjectDashboard({ params }: { params: Promise<{ id: str
     const formatList = (list: any[], labelKey: string) => {
       if (!list || !Array.isArray(list)) return "";
       return list.map((item, i) => {
-        const rating = item.frequency_rating ? ` [${item.frequency_rating}/10]` : "";
-        return `${i + 1}. ${item[labelKey]}${rating}\n${item.context ? `(${item.context})` : ""}`;
+        const ratingNum = item.frequency_rating || 0;
+        const stars = "⭐".repeat(Math.min(5, Math.max(0, Math.round(ratingNum))));
+        const ratingStr = stars ? ` ${stars}` : "";
+        return `${i + 1}. ${item[labelKey]}${ratingStr}\n${item.context ? `(${item.context})` : ""}`;
       }).join('\n\n');
     };
 
