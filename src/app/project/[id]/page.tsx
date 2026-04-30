@@ -70,48 +70,70 @@ export default function ProjectDashboard({ params }: { params: Promise<{ id: str
   const handleCopyAllToExcel = () => {
     if (avatars.length === 0) return;
 
-    // Заголовки таблицы
-    const headers = [
-      "Название сегмента",
-      "Краткое резюме",
-      "Психологический портрет",
+    // Определяем максимальное количество CJM среди всех аватаров
+    const maxCJMs = Math.max(...avatars.map(a => (a.cjm || []).length));
+
+    // Определяем строки (параметры)
+    const rowLabels = [
+      "СЕГМЕНТ",
+      "Название",
+      "Резюме",
+      "Портрет",
       "JTBD (Задачи)",
       "Боли",
       "Страхи",
-      "Возражения",
       "Симптомы",
+      "Маркеры поведения",
       "Мотивации",
-      "CJM (Сценарий)"
+      "Возражения",
     ];
 
-    // Форматируем данные каждого аватара
-    const rows = avatars.map(a => {
-      const formatList = (list: any[], key: string, labelKey: string) => {
-        if (!list || !Array.isArray(list)) return "";
-        return list.map((item, i) => `${i + 1}. ${item[labelKey]}${item.context ? ` (${item.context})` : ''}`).join('\n');
-      };
+    // Добавляем строки для CJM
+    for (let i = 0; i < maxCJMs; i++) {
+      rowLabels.push(`CJM Сценарий ${i + 1}`);
+    }
 
-      return [
-        a.segmentName || "",
-        a.summary || "",
-        a.portrait || "",
-        formatList(a.jtbd, 'jtbd', 'job'),
-        formatList(a.pains, 'pains', 'pain'),
-        formatList(a.fears, 'fears', 'fear'),
-        formatList(a.objections, 'objections', 'objection'),
-        formatList(a.symptoms, 'symptoms', 'symptom'),
-        formatList(a.motivations, 'motivations', 'motivation'),
-        formatList(a.cjm, 'cjm', 'scenario')
-      ].map(cell => `"${cell.replace(/"/g, '""')}"`); // Экранируем кавычки для корректной вставки
+    const formatList = (list: any[], labelKey: string) => {
+      if (!list || !Array.isArray(list)) return "";
+      return list.map((item, i) => {
+        const rating = item.frequency_rating ? ` [${item.frequency_rating}/10]` : "";
+        return `${i + 1}. ${item[labelKey]}${rating}\n${item.context ? `(${item.context})` : ""}`;
+      }).join('\n\n');
+    };
+
+    // Генерируем данные для каждого ряда
+    const finalRows = rowLabels.map((label, rowIndex) => {
+      const rowData = [label]; // Первый столбец - название параметра
+
+      avatars.forEach(a => {
+        let value = "";
+        if (rowIndex === 0) value = `Сегмент #${avatars.indexOf(a) + 1}`;
+        else if (rowIndex === 1) value = a.segmentName || "";
+        else if (rowIndex === 2) value = a.summary || "";
+        else if (rowIndex === 3) value = a.portrait || "";
+        else if (rowIndex === 4) value = formatList(a.jtbd, 'job');
+        else if (rowIndex === 5) value = formatList(a.pains, 'pain');
+        else if (rowIndex === 6) value = formatList(a.fears, 'fear');
+        else if (rowIndex === 7) value = formatList(a.symptoms, 'symptom');
+        else if (rowIndex === 8) value = formatList(a.behaviorMarkers, 'marker');
+        else if (rowIndex === 9) value = formatList(a.motivations, 'motivation');
+        else if (rowIndex === 10) value = formatList(a.objections, 'objection');
+        else {
+          // Это строки CJM
+          const cjmIndex = rowIndex - 11;
+          const cjm = a.cjm && a.cjm[cjmIndex];
+          if (cjm) {
+            value = `${cjm.title ? `**${cjm.title}**\n` : ""}${cjm.scenario}`;
+          }
+        }
+        rowData.push(value);
+      });
+
+      return rowData.map(cell => `"${cell.replace(/"/g, '""')}"`).join('\t');
     });
 
-    // Собираем в одну строку с разделителем TAB (\t)
-    const tsvContent = [
-      headers.join('\t'),
-      ...rows.map(row => row.join('\t'))
-    ].join('\n');
+    const tsvContent = finalRows.join('\n');
 
-    // Копируем в буфер обмена
     navigator.clipboard.writeText(tsvContent).then(() => {
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
