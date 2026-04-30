@@ -65,8 +65,15 @@ export default function Dashboard() {
     allProjects = allProjects.map(p => {
       let scriptsCount = 0;
       try {
-        const scripts = JSON.parse(localStorage.getItem(`projectScripts_${p.id}`) || '[]');
-        scriptsCount = scripts.length;
+        const localScripts = JSON.parse(localStorage.getItem(`projectScripts_${p.id}`) || '[]');
+        const dbScripts = p.brief?.scripts || [];
+        
+        // Объединяем по ID, чтобы не дублировать
+        const allScriptsMap = new Map();
+        [...dbScripts, ...localScripts].forEach(s => {
+          if (s && s.id) allScriptsMap.set(s.id, s);
+        });
+        scriptsCount = allScriptsMap.size;
       } catch (e) {}
       return { ...p, scriptsCount };
     });
