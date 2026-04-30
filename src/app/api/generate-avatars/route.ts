@@ -1,188 +1,201 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { PROMPTS } from '@/lib/prompts';
+
+export const maxDuration = 300;
+
+// Прямой вызов Gemini REST API.
+// ВАЖНО: responseSchema намеренно НЕ используется — со сложной вложенной схемой
+// gemini-2.5-flash уходит в думающий режим на 4+ минуты. Без схемы: 20-40 сек.
+// Промпты уже задают точный формат JSON — модель его соблюдает без принуждения.
+async function callGemini(apiKey: string, prompt: string): Promise<any> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  
+  const body = {
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    generationConfig: {
+      responseMimeType: 'application/json'
+      // Без responseSchema — быстрая генерация свободного JSON
+    }
+  };
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(`Gemini API error ${res.status}: ${err?.error?.message || res.statusText}`);
+  }
+
+  const data = await res.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error('Empty response from Gemini');
+  
+  // Извлекаем JSON из ответа (модель иногда добавляет ```json ... ```)
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON object found in response');
+  return JSON.parse(jsonMatch[0]);
+}
 
 export async function POST(request: Request) {
   try {
-    const brief = await request.json();
+    const body = await request.json();
+    const { regenerateOne, avatars: existingAvatars, brief: nestedBrief, ...topLevelBrief } = body;
+    const brief = nestedBrief || topLevelBrief;
+    
+    const apiKey = (process.env.GOOGLE_GENERATIVE_AI_API_KEY || '').trim();
+    if (!apiKey) return NextResponse.json({ error: 'API Key missing' }, { status: 500 });
 
-    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-    
-    // MOCK MODE — включён пока не активирован биллинг Google Cloud
-    // Чтобы включить реальный Gemini: удалите строку ниже (const FORCE_MOCK...)
-    const FORCE_MOCK = true; // поменять на false когда биллинг активирован
-    
-    if (FORCE_MOCK || !apiKey || apiKey === 'your-gemini-api-key-here') {
-      console.warn("GOOGLE_GENERATIVE_AI_API_KEY is not set. Returning mock avatars.");
-      
-      // Искусственная задержка для имитации генерации
-      await new Promise(r => setTimeout(r, 3000));
-      
-      return NextResponse.json({
-        segments: [
-          {
-            segmentName: "Маркетологи / Digital-агентства",
-            jtbd: [
-              { job: "Показать бизнесу окупаемость рекламы без ручного сведения таблиц", context: "Каждый понедельник я свожу данные из 5-ти кабинетов. Если ошибусь — я виноват в сливе" },
-              { job: "Сдать отчёт клиенту за 30 минут, а не за полдня", context: "Клиент требует отчёт сегодня к 15:00, а я только начинаю тянуть данные из FB Ads" },
-              { job: "Доказать руководству что реклама работает конкретными цифрами", context: "CEO смотрит на меня и говорит: 'ну и где наши деньги?' — а у меня 20 вкладок открыто" },
-              { job: "Автоматически отслеживать аномалии и падения CTR без ручной проверки", context: "Я узнал о просадке в кампании спустя 3 дня — за это время слили 40 000 рублей" },
-              { job: "Видеть все в одном дашборде без переключений между платформами", context: "Google, FB, TikTok, myTarget, ещё и CRM — это 5 разных интерфейсов каждый день" }
-            ],
-            pains: [
-              { pain: "Ручное копирование из разных CRM и рекламных кабинетов убивает 3-4 часа в день", frequency_rating: 5 },
-              { pain: "Данные из разных источников расходятся и непонятно кому верить", frequency_rating: 5 },
-              { pain: "Нет единого взгляда на воронку — каждый отдел видит свой кусок", frequency_rating: 4 },
-              { pain: "Невозможно быстро ответить на вопрос 'какой канал работает лучше?'", frequency_rating: 5 },
-              { pain: "Отчёты устаревают к моменту презентации — данные вчерашние", frequency_rating: 4 },
-              { pain: "Когда падает кампания — узнаём постфактум, деньги уже слиты", frequency_rating: 5 }
-            ],
-            fears: [
-              { fear: "Потерять клиента из-за опечатки или ошибки в отчёте", frequency_rating: 5 },
-              { fear: "Выглядеть некомпетентно перед руководством когда задают вопрос на который нет ответа", frequency_rating: 5 },
-              { fear: "Что найдут более дешёвого подрядчика который делает то же самое", frequency_rating: 4 },
-              { fear: "Пропустить просадку в кампании и слить бюджет клиента", frequency_rating: 5 },
-              { fear: "Что система не подойдёт и потраченное время на внедрение будет потеряно", frequency_rating: 3 }
-            ],
-            objections: [
-              { objection: "Это слишком сложно, мы не сможем внедрить. Мы привыкли к Excel.", howToRemove: "Первый дашборд готов за 15 минут без IT-отдела. Реальный онбординг за один созвон." },
-              { objection: "У нас специфические данные и системы, стандартные интеграции не подойдут", howToRemove: "Мы поддерживаем 50+ источников включая самописные CRM через API и Webhook." },
-              { objection: "Зачем платить если можно настроить Google Data Studio бесплатно?", howToRemove: "GDS требует 40+ часов на настройку и постоянной поддержки. Мы дёшево автоматизируем разработку." },
-              { objection: "Нашему клиенту не нужны красивые графики — ему нужны лиды", howToRemove: "Дашборд показывает какие кампании дают лиды быстрее — это инструмент для роста, не для красоты." },
-              { objection: "Мы уже пробовали похожие сервисы — ничего не прижилось", howToRemove: "Покажем кейс агентства такого же размера. 30-дневная гарантия: если не прижилось — деньги вернём." }
-            ],
-            behaviorMarkers: [
-              { marker: "У меня параллельно открыто 15-20 вкладок с кабинетами и таблицами" },
-              { marker: "По понедельникам я прихожу в офис в 8 утра чтобы успеть сделать отчёты" },
-              { marker: "Я трачу 2 часа на Loom-видео чтобы объяснить клиенту что означают цифры" },
-              { marker: "Я отвечаю на вопросы клиента ночью потому что не успеваю в рабочее время" },
-              { marker: "Я ищу фрилансера для сведения таблиц чтобы освободить время для стратегии" },
-              { marker: "Я сохраняю артикли про автоматизацию но не успеваю их прочитать" }
-            ],
-            cjm: [
-              { scenario: "Этап 1 — Боль: Открываю FB Ads → скачиваю CSV → захожу в Google Ads → скачиваю CSV → открываю myTarget → скачиваю отдельно. Это 5 платформ, 5 форматов, 2 часа работы." },
-              { scenario: "Этап 2 — Поиск: Ввожу в Google 'как автоматизировать маркетинговые отчёты'. Смотрю статьи, сравниваю Supermetrics, Improvado, DataFan. Цены пугают." },
-              { scenario: "Этап 3 — Оценка: Регистрируюсь на бесплатный триал. Пытаюсь подключить первый источник. Застреваю на OAuth. Спрашиваю в чат-поддержке — жду ответа 4 часа." },
-              { scenario: "Этап 4 — Решение: Нахожу видео на YouTube где за 15 минут показывают реальный онбординг. Это выглядит реально. Иду читать отзывы на G2 и Trustpilot." },
-              { scenario: "Этап 5 — Покупка: Считаю ROI: я трачу 3 часа/день на отчёты × 22 рабочих дня × моя ставка. Выходит дороже подписки. Показываю руководству расчёт — одобряют." }
-            ],
-            motivations: [
-              { motivation: "Хочу заниматься стратегией и гипотезами, а не копипастом данных" },
-              { motivation: "Хочу наконец уйти домой в 18:00, а не сидеть с таблицами до 22:00" },
-              { motivation: "Хочу показывать клиенту данные в реальном времени — это выгодно отличает нас от конкурентов" },
-              { motivation: "Хочу иметь под рукой ответ на любой вопрос CEO за 30 секунд" },
-              { motivation: "Хочу превратить аналитику в конкурентное преимущество агентства" }
-            ],
-            portrait: "Аналитик или Head of Performance, 25-35 лет. Глаза красные от таблиц. Боится потерять клиента из-за 'разъехавшихся' данных. Готов платить за сервис, если он реально автоматом соберет всё воедино и покажет красивый понятный дашборд для клиента и для босса."
-          },
-          {
-            segmentName: "Владельцы малого бизнеса (SMB)",
-            jtbd: [
-              { job: "Понять куда уходят деньги без звонков бухгалтеру и маркетологу", context: "Хочу открыть телефон и сразу увидеть: в плюсе мы сегодня или в минусе" },
-              { job: "Убедиться что маркетинговый бюджет тратится на то что реально приносит клиентов", context: "Я плачу 150 000 в месяц за рекламу и не знаю работает ли она. Мне говорят 'лиды идут' но кассу не вижу" },
-              { job: "Получить контроль над бизнесом без погружения в детали", context: "Мне не нужно знать как — мне нужно знать сколько. Продаж, клиентов, прибыли." },
-              { job: "Принимать решения об увольнении и найме на основе данных а не ощущений", context: "Мой продавец говорит что работает на 100%. Но я не знаю правда ли это." },
-              { job: "Сравнивать этот месяц с прошлым без Excel и звонков", context: "В конце месяца я звоню бухгалтеру, она присылает таблицу, я трачу час чтобы разобраться." }
-            ],
-            pains: [
-              { pain: "Не понимаю куда ушёл бюджет — отдел маркетинга говорит одно, касса показывает другое", frequency_rating: 5 },
-              { pain: "Чтобы узнать любую цифру нужно звонить кому-то и ждать", frequency_rating: 5 },
-              { pain: "Отчёты приходят раз в месяц — к тому времени уже поздно что-то менять", frequency_rating: 4 },
-              { pain: "Не понимаю сложные дашборды которые делает маркетолог — слишком много данных", frequency_rating: 4 },
-              { pain: "Разные люди называют разные цифры на одни и те же вопросы", frequency_rating: 5 },
-              { pain: "Трачу деньги на подрядчиков которых не могу проверить", frequency_rating: 4 }
-            ],
-            fears: [
-              { fear: "Меня обманывает отдел маркетинга: они показывают красивые лиды, а денег в кассе нет", frequency_rating: 5 },
-              { fear: "Бизнес незаметно работает в минус, а я узнаю об этом слишком поздно", frequency_rating: 5 },
-              { fear: "Вложить деньги в рекламу которая не работает и не узнать об этом вовремя", frequency_rating: 5 },
-              { fear: "Потерять контроль над бизнесом пока занимаюсь другими делами", frequency_rating: 4 },
-              { fear: "Принять неправильное решение из-за неверных данных", frequency_rating: 4 }
-            ],
-            objections: [
-              { objection: "Это дорого и только для корпораций с большим IT-отделом", howToRemove: "Тарифы от 2 990 руб/мес. Настройка без IT — сами, за 1 день. Кейсы малого бизнеса на сайте." },
-              { objection: "У меня нет времени разбираться в новых программах", howToRemove: "Интерфейс как телефон. 3 главных цифры на главном экране. Разобрался наш клиент 58 лет за 20 минут." },
-              { objection: "Мы и так всё видим в 1С и CRM — зачем ещё один сервис?", howToRemove: "Мы берём данные из 1С и CRM автоматически и показываем итог в одном месте. Не нужно заходить никуда." },
-              { objection: "Мои сотрудники не будут пользоваться ещё одним инструментом", howToRemove: "Сотрудники ничего не делают — они работают в своих системах. Данные собираем мы сами автоматически." },
-              { objection: "Мне нужно посоветоваться с партнёром/бухгалтером/директором", howToRemove: "Сделайте демо-аккаунт для партнёра. Мы пришлём презентацию на 5 слайдов с ROI расчётом." }
-            ],
-            behaviorMarkers: [
-              { marker: "Пишу в общий чат 'Ребята, какие у нас продажи за неделю?' и жду ответ 3-4 часа" },
-              { marker: "Захожу в CRM раз в месяц и не понимаю ничего из того что вижу" },
-              { marker: "Смотрю на выписку из банка и пытаюсь понять куда ушли деньги" },
-              { marker: "Узнаю о серьёзных проблемах последним — когда уже поздно" },
-              { marker: "Принимаю решения 'на глаз' потому что на цифры уходит слишком много времени" },
-              { marker: "Сравниваю разные таблицы от бухгалтера и маркетолога и не понимаю почему они не совпадают" }
-            ],
-            cjm: [
-              { scenario: "Этап 1 — Триггер: Конец месяца. Прошу бухгалтера прислать отчёт. Жду 2 дня. Получаю таблицу на 15 листов. Не понимаю ничего. Звоню — объясняет час по телефону." },
-              { scenario: "Этап 2 — Осознание: Разговариваю с другим предпринимателем на нетворкинге. Он говорит 'я вижу свои цифры в телефоне в любой момент'. Понимаю что так можно." },
-              { scenario: "Этап 3 — Поиск: Ищу в Instagram и YouTube 'контроль над бизнесом дашборд'. Смотрю несколько видео. Нахожу несколько сервисов. Сравниваю цены." },
-              { scenario: "Этап 4 — Оценка: Регистрируюсь на триал. Вижу сложный интерфейс — закрываю. Нахожу сервис с простым главным экраном. Пробую подключить 1С — получается." },
-              { scenario: "Этап 5 — Решение: Показываю жене/партнёру. Они одобряют. Плачу первый месяц с карты. Через неделю говорю менеджеру 'наконец-то я понимаю что происходит'." }
-            ],
-            motivations: [
-              { motivation: "Хочу контроль — знать что происходит в бизнесе не выходя из автомобиля" },
-              { motivation: "Хочу спать спокойно зная что если что-то пойдёт не так — я узнаю первым" },
-              { motivation: "Хочу перестать зависеть от людей которые 'держат информацию у себя'" },
-              { motivation: "Хочу принимать решения быстро — расти или сокращать — на основе реальных данных" },
-              { motivation: "Хочу наконец понять окупается ли реклама и какой канал работает лучше" }
-            ],
-            portrait: "Собственник малого или среднего бизнеса, 35-55 лет. Нет времени на учёбу — всё делегирует. Но именно поэтому теряет контроль. Ищет 'волшебную кнопку' которая покажет 3 главные цифры без лишних деталей. Готов платить за спокойствие и ясность."
+    const url = new URL(request.url);
+    const step = url.searchParams.get('step');
+    const segmentToResearch = url.searchParams.get('segment');
+
+    // 1. Схема для списка сегментов
+    const segmentsSchema = {
+      type: 'object',
+      properties: {
+        segments: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              segmentName: { type: 'string' },
+              summary: { type: 'string' }
+            }
           }
-        ]
-      });
-
-    }
-
-    // Если ключ есть, вызываем реальный Gemini
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash", generationConfig: { responseMimeType: "application/json" } });
-
-    const prompt = `
-    Ты эксперт-маркетолог и исследователь целевой аудитории. 
-    Твоя задача — проанализировать предоставленный бриф и сгенерировать 2-3 маркетинговых аватара (сегмента).
-    
-    ВНИМАНИЕ! Основной источник информации может быть в поле "Расширенный контекст из предоставленного заполненного Google-брифа" (внутри description). Если он там есть — опирайся на него в первую очередь, заполняя пробелы в остальных полях.
-    КРИТИЧЕСКИ ВАЖНО: Если в брифе пользователя указана страна/ГЕО ("geo": "${brief.geo}"), ты ОБЯЗАН адаптировать весь анализ аудитории строго под этот регион (учитывать локальную специфику, цены, культурные особенности), ДАЖЕ ЕСЛИ в Google-документе упоминаются другие страны! ГЕО, указанное в форме пользователя, имеет абсолютный приоритет.
-
-    Бриф пользователя:
-    ${JSON.stringify(brief, null, 2)}
-
-    Ответ СТРОГО в формате JSON:
-    {
-      "segments": [
-        {
-          "segmentName": "Название",
-          "jtbd": [ { "job": "...", "context": "Цитата" } ],
-          "pains": [ { "pain": "...", "frequency_rating": 5 } ],
-          "fears": [ { "fear": "...", "frequency_rating": 5 } ],
-          "objections": [ { "objection": "...", "howToRemove": "..." } ],
-          "behaviorMarkers": [ { "marker": "..." } ],
-          "cjm": [ { "scenario": "..." } ],
-          "motivations": [ { "motivation": "..." } ],
-          "portrait": "Живой художественный текст, описывающий человека."
         }
-      ]
-    }
-    По каждому параметру давай 2-5 элементов с прямыми цитатами от первого лица (язык клиента). Исключительно валидный JSON без маркдаун разметки (\`\`\`json).
-    `;
+      },
+      required: ['segments']
+    };
 
-    const result = await model.generateContent(prompt);
-    const resultText = result.response.text();
-    
-    return NextResponse.json(JSON.parse(resultText));
-    
+    // 2. Схема для детального исследования одного сегмента
+    const researchSchema = {
+      type: 'object',
+      properties: {
+        segmentName: { type: 'string' },
+        summary: { type: 'string' },
+        portrait: { type: 'string' },
+        jtbd: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: { job: { type: 'string' }, context: { type: 'string' } }
+          }
+        },
+        outcomes: {
+          type: 'object',
+          properties: {
+            mainPromise: { type: 'string' },
+            items: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: { outcome: { type: 'string' }, explanation: { type: 'string' } }
+              }
+            }
+          }
+        },
+        pains: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: { pain: { type: 'string' }, context: { type: 'string' }, frequency_rating: { type: 'number' } }
+          }
+        },
+        fears: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: { fear: { type: 'string' }, context: { type: 'string' }, frequency_rating: { type: 'number' } }
+          }
+        },
+        symptoms: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: { symptom: { type: 'string' }, context: { type: 'string' }, frequency_rating: { type: 'number' } }
+          }
+        },
+        behaviorMarkers: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: { marker: { type: 'string' }, context: { type: 'string' }, frequency_rating: { type: 'number' } }
+          }
+        },
+        motivations: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: { motivation: { type: 'string' }, context: { type: 'string' }, frequency_rating: { type: 'number' } }
+          }
+        },
+        objections: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: { objection: { type: 'string' }, context: { type: 'string' }, howToRemove: { type: 'string' }, frequency_rating: { type: 'number' } }
+          }
+        },
+        cjm: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: { title: { type: 'string' }, scenario: { type: 'string' } }
+          }
+        }
+      },
+      required: ['segmentName', 'summary', 'portrait', 'jtbd', 'outcomes', 'pains', 'fears', 'symptoms', 'behaviorMarkers', 'motivations', 'objections', 'cjm']
+    };
+
+    // РЕЖИМ 1: Только идентификация сегментов
+    if (step === 'identify') {
+      console.log('Step: Identify segments');
+      const segmentsPrompt = PROMPTS.IDENTIFY_SEGMENTS(brief);
+      const data = await callGemini(apiKey, segmentsPrompt);
+      return NextResponse.json(data);
+    }
+
+    // РЕЖИМ 2: Исследование конкретного сегмента (параллельные вызовы с фронта)
+    if (step === 'research' && segmentToResearch) {
+      console.log('Step: Research specific segment:', segmentToResearch);
+      const segmentObj = { segmentName: segmentToResearch, summary: '' };
+      const researchPrompt = PROMPTS.RESEARCH_SEGMENT(segmentObj, brief);
+      
+      try {
+        const data = await callGemini(apiKey, researchPrompt);
+        return NextResponse.json(data);
+      } catch (err: any) {
+        console.error(`Research error for ${segmentToResearch}:`, err);
+        return NextResponse.json({ segmentName: segmentToResearch, error: true, message: err.message });
+      }
+    }
+
+    // РЕЖИМ 3: Регенерация одного сегмента (из дашборда)
+    if (regenerateOne) {
+      const existingNames = (existingAvatars || []).map((a: any) => a.segmentName);
+      const singleSegmentPrompt = `На основе брифа продукта "${brief.productName}", предложи 1 НОВЫЙ сегмент ЦА, отличный от: ${existingNames.join(', ')}. Верни JSON: { "segments": [{ "segmentName": "...", "summary": "..." }] }`;
+      const segData = await callGemini(apiKey, singleSegmentPrompt);
+      const segments = segData.segments || [];
+
+      const avatars = await Promise.all(segments.map(async (segment: any) => {
+        try {
+          const researchPrompt = PROMPTS.RESEARCH_SEGMENT(segment, brief);
+          return await callGemini(apiKey, researchPrompt);
+        } catch (err) {
+          return { ...segment, error: true };
+        }
+      }));
+
+      return NextResponse.json({ avatars });
+    }
+
+    return NextResponse.json({ error: 'Invalid mode' }, { status: 400 });
+
   } catch (error: any) {
-    console.error('API Error:', error);
-    // Возвращаем детальную ошибку в тело ответа, чтобы фронтенд мог её показать
-    const msg = error?.message || 'Error generating avatars';
-    const isQuota = msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED');
-    const is503 = msg.includes('503') || msg.includes('unavailable');
-    const friendlyMsg = isQuota
-      ? 'Квота Gemini API исчерпана. Включите биллинг на Google Cloud или подождите сброса лимитов.'
-      : is503
-        ? 'Серверы Gemini перегружены. Попробуйте через минуту.'
-        : msg;
-    return NextResponse.json({ error: friendlyMsg }, { status: 500 });
+    console.error('Generation failure:', error);
+    return NextResponse.json({ error: `[Ошибка ИИ] ${error.message}` }, { status: 500 });
   }
 }

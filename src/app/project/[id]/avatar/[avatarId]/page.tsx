@@ -1,394 +1,342 @@
 'use client';
 
-import { use, useState, useEffect } from 'react';
-import BackButton from '@/components/BackButton';
 import {
-  Target, AlertTriangle, ShieldAlert, MessageSquareX,
-  Route, Zap, User, ChevronDown, ChevronUp,
-  RefreshCcw, Trash2, Plus, Download, Loader2
+  ArrowLeft, Brain, Target, ShieldAlert, Heart, MessageSquare,
+  Footprints, Flame, AlertCircle, CheckCircle2, Star, Plus, RefreshCw, Trash2, Loader2,
+  Edit3, GripVertical
 } from 'lucide-react';
-import * as XLSX from 'xlsx';
+import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 
-const SECTION_META: Record<string, { icon: any; label: string; color: string }> = {
-  jtbd:            { icon: Target,           label: 'Jobs To Be Done (JTBD)',    color: '#3b82f6' },
-  pains:           { icon: AlertTriangle,    label: 'Боли аудитории',            color: '#f59e0b' },
-  fears:           { icon: ShieldAlert,      label: 'Страхи',                    color: '#ef4444' },
-  objections:      { icon: MessageSquareX,  label: 'Возражения и ответы',       color: '#8b5cf6' },
-  behaviorMarkers: { icon: Zap,             label: 'Маркеры поведения',         color: '#06b6d4' },
-  cjm:             { icon: Route,           label: 'Сценарии CJM',              color: '#10b981' },
-  motivations:     { icon: Zap,             label: 'Мотивации',                 color: '#f97316' },
-};
+export default function AvatarPage() {
+  const params = useParams();
+  const router = useRouter();
+  const [project, setProject] = useState<any>(null);
+  const [allAvatars, setAllAvatars] = useState<any[]>([]);
+  const [avatar, setAvatar] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [workingKey, setWorkingKey] = useState<string | null>(null);
+  const [editingItem, setEditingItem] = useState<{ section: string, idx: number, data: any } | null>(null);
+  const [draggedItem, setDraggedItem] = useState<{ section: string, idx: number } | null>(null);
 
-function RatingDots({ value }: { value: number }) {
-  return (
-    <div style={{ display: 'flex', gap: '3px', marginTop: '4px' }}>
-      {[1,2,3,4,5].map(i => (
-        <span key={i} style={{
-          width: 8, height: 8, borderRadius: '50%',
-          background: i <= value ? '#ef4444' : 'var(--border)'
-        }} />
-      ))}
-    </div>
-  );
-}
+  const allAvatarsRef = useRef<any[]>([]);
 
-function Section({ 
-  sectionKey, 
-  data, 
-  segmentName,
-  briefContext,
-  onUpdate 
-}: { 
-  sectionKey: string; 
-  data: any[]; 
-  segmentName: string;
-  briefContext: any;
-  onUpdate: (newData: any[]) => void;
-}) {
-  const [open, setOpen] = useState(true);
-  const [loadingIdx, setLoadingIdx] = useState<number | null>(null);
-  const [isAdding, setIsAdding] = useState(false);
-  const [isAddingManual, setIsAddingManual] = useState(false);
-  const [manualInput, setManualInput] = useState('');
+  useEffect(() => { loadProjectData(); }, [params.id, params.avatarId]);
 
-  const meta = SECTION_META[sectionKey];
-  if (!meta) return null;
-  const Icon = meta.icon;
+  const loadProjectData = async () => {
+    try {
+      setIsLoading(true);
+      const projectId = params.id as string;
+      const avatarIdx = parseInt(params.avatarId as string);
 
-  const handleDelete = (idx: number) => {
-    const newData = [...data];
-    newData.splice(idx, 1);
-    onUpdate(newData);
+      let currentAvatars: any[] = [];
+      let currentProject: any = null;
+
+      if (projectId && projectId !== 'temp-id') {
+        const res = await fetch(`/api/projects?id=${projectId}`);
+        if (res.ok) {
+          const data = await res.json();
+          const raw = data.project || data.product || data;
+          currentProject = { ...raw, brief: raw.brief || raw.product_info || raw.details || {} };
+          currentAvatars = raw.avatars || raw.segments || [];
+        }
+      }
+
+      const localKey = `tempAvatars_${projectId}`;
+      const local = localStorage.getItem(localKey) || localStorage.getItem('tempGeneratedAvatars');
+      if (local && (currentAvatars.length === 0 || projectId === 'temp-id')) {
+        currentAvatars = JSON.parse(local);
+      }
+
+      const localBrief = localStorage.getItem(`tempBrief_${projectId}`) || localStorage.getItem('tempBrief');
+      if (localBrief && !currentProject) {
+        currentProject = { brief: JSON.parse(localBrief) };
+      }
+
+      allAvatarsRef.current = currentAvatars;
+      setAllAvatars(currentAvatars);
+      setProject(currentProject);
+      if (currentAvatars[avatarIdx]) setAvatar(currentAvatars[avatarIdx]);
+    } catch (err) { console.error(err); } finally { setIsLoading(false); }
   };
 
-  const handleRegenerate = async (idx: number) => {
-    setLoadingIdx(idx);
-    try {
-      const res = await fetch('/api/avatar/regenerate-item', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'replace',
-          sectionKey,
-          existingItems: data,
-          segmentName,
-          briefContext
-        })
-      });
-      const resData = await res.json();
-      if (resData.item) {
-        const newData = [...data];
-        newData[idx] = resData.item;
-        onUpdate(newData);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoadingIdx(null);
+  const syncToDB = async (avatarsList: any[]) => {
+    const projectId = params.id as string;
+    localStorage.setItem(`tempAvatars_${projectId}`, JSON.stringify(avatarsList));
+    if (projectId && projectId !== 'temp-id') {
+      try {
+        await fetch('/api/projects', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: projectId, avatars: avatarsList })
+        });
+      } catch (e) { console.error(e); }
     }
   };
 
-  const handleAddAI = async () => {
-    setIsAdding(true);
-    try {
-      const res = await fetch('/api/avatar/regenerate-item', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'add',
-          sectionKey,
-          existingItems: data,
-          segmentName,
-          briefContext
-        })
-      });
-      const resData = await res.json();
-      if (resData.item) {
-        onUpdate([...data, resData.item]);
-        setOpen(true);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsAdding(false);
-    }
+  const saveUpdatedAvatar = (updated: any) => {
+    const avatarIdx = parseInt(params.avatarId as string);
+    const newAvatars = [...allAvatarsRef.current];
+    newAvatars[avatarIdx] = updated;
+    allAvatarsRef.current = newAvatars;
+    setAllAvatars(newAvatars);
+    setAvatar(updated);
+    syncToDB(newAvatars);
   };
 
-  const handleSaveManual = () => {
-    if (!manualInput.trim()) return;
-    let item: any = {};
-    if (sectionKey === 'jtbd') item = { job: manualInput };
-    else if (sectionKey === 'pains') item = { pain: manualInput, frequency_rating: 4 };
-    else if (sectionKey === 'fears') item = { fear: manualInput, frequency_rating: 4 };
-    else if (sectionKey === 'objections') item = { objection: manualInput, howToRemove: '...' };
-    else if (sectionKey === 'behaviorMarkers') item = { marker: manualInput };
-    else if (sectionKey === 'cjm') item = { scenario: manualInput };
-    else if (sectionKey === 'motivations') item = { motivation: manualInput };
-    
-    onUpdate([...data, item]);
-    setManualInput('');
-    setIsAddingManual(false);
+  const onDragStart = (section: string, idx: number) => setDraggedItem({ section, idx });
+  const onDragOver = (e: React.DragEvent) => e.preventDefault();
+  const onDrop = (section: string, targetIdx: number) => {
+    if (!draggedItem || draggedItem.section !== section) return;
+    const updated = { ...avatar };
+    const items = section === 'outcomes' ? [...(updated.outcomes?.items || [])] : [...(updated[section] || [])];
+    const [moved] = items.splice(draggedItem.idx, 1);
+    items.splice(targetIdx, 0, moved);
+    if (section === 'outcomes') updated.outcomes.items = items; else updated[section] = items;
+    saveUpdatedAvatar(updated);
+    setDraggedItem(null);
+  };
+
+  const handleManualAdd = (section: string) => {
+    const updated = { ...avatar };
+    let newItem: any = { context: "Новый элемент...", frequency_rating: 5 };
+    if (section === 'jtbd') newItem.job = "Задача";
+    if (section === 'pains') newItem.pain = "Боль";
+    if (section === 'fears') newItem.fear = "Страх";
+    if (section === 'symptoms') newItem.symptom = "Симптом";
+    if (section === 'behaviorMarkers') newItem.marker = "Marker";
+    if (section === 'motivations') newItem.motivation = "Мотивация";
+    if (section === 'objections') { newItem.objection = "Сомнение"; newItem.howToRemove = "Решение"; }
+    if (section === 'cjm') newItem = { title: "Сценарий", scenario: "1. Первый шаг..." };
+
+    if (section === 'outcomes') {
+      if (!updated.outcomes) updated.outcomes = { items: [] };
+      if (!updated.outcomes.items) updated.outcomes.items = [];
+      updated.outcomes.items.push({ outcome: "Результат", explanation: "Детали..." });
+    } else {
+      if (!updated[section]) updated[section] = [];
+      updated[section].push(newItem);
+    }
+    saveUpdatedAvatar(updated);
+    const list = section === 'outcomes' ? updated.outcomes.items : updated[section];
+    setEditingItem({ section, idx: list.length - 1, data: list[list.length - 1] });
+  };
+
+  const handleDeleteItem = (section: string, idx: number) => {
+    if (!confirm('Удалить?')) return;
+    const updated = { ...avatar };
+    if (section === 'outcomes') updated.outcomes.items = updated.outcomes.items.filter((_: any, i: number) => i !== idx);
+    else updated[section] = updated[section].filter((_: any, i: number) => i !== idx);
+    saveUpdatedAvatar(updated);
+  };
+
+  const handleAction = async (action: 'add' | 'replace', sectionKey: string, itemIdx?: number) => {
+    if (workingKey || !avatar) return;
+    setWorkingKey(`${sectionKey}-${itemIdx ?? 'new'}`);
+    try {
+      const existingItems = sectionKey === 'outcomes' ? (avatar.outcomes?.items || []) : (avatar[sectionKey] || []);
+      const res = await fetch('/api/avatar/regenerate-item', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, sectionKey, existingItems, segmentName: avatar.segmentName, briefContext: project?.brief || {} })
+      });
+      const data = await res.json();
+      if (res.ok && data.item) {
+        const updated = JSON.parse(JSON.stringify(avatar));
+        if (sectionKey === 'outcomes') {
+          if (!updated.outcomes) updated.outcomes = { items: [] };
+          if (!updated.outcomes.items) updated.outcomes.items = [];
+          if (action === 'add') updated.outcomes.items.push(data.item);
+          else updated.outcomes.items[itemIdx!] = data.item;
+        } else {
+          if (!updated[sectionKey]) updated[sectionKey] = [];
+          if (action === 'add') updated[sectionKey].push(data.item);
+          else updated[sectionKey][itemIdx!] = data.item;
+        }
+        saveUpdatedAvatar(updated);
+      } else { alert(`Ошибка: ${data.error || 'ИИ не ответил'}`); }
+    } catch (err) { console.error(err); } finally { setWorkingKey(null); }
   };
 
   return (
-    <div className="card" style={{ padding: 0, overflow: 'visible' }}>
-      <div style={{
-          width: '100%', display: 'flex', alignItems: 'center', gap: '0.75rem',
-          padding: '1rem 1.5rem', background: 'transparent',
-          borderBottom: open ? '1px solid var(--border)' : 'none'
-      }}>
-        <button onClick={() => setOpen(!open)} style={{ display: 'flex', flex: 1, alignItems: 'center', gap: '0.75rem', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left' }}>
-          <span style={{
-            width: 36, height: 36, borderRadius: '50%',
-            background: meta.color + '18', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', color: meta.color, flexShrink: 0
-          }}>
-            <Icon size={18} />
-          </span>
-          <span style={{ flex: 1, fontWeight: 600, fontSize: '1rem' }}>{meta.label}</span>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginRight: '0.5rem' }}>
-            {data.length} пунктов
-          </span>
-          {open ? <ChevronUp size={16} color="var(--text-muted)" /> : <ChevronDown size={16} color="var(--text-muted)" />}
-        </button>
-      </div>
+    <div className="avatar-page-main">
+      <style jsx>{`
+        .avatar-page-main { maxWidth: 940px; margin: 0 auto; padding: 0 1rem 8rem; }
+        .card { background: white; padding: 2.5rem; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .item-mini-card { position: relative; padding: 1.25rem; border: 1px solid #e2e8f0; border-radius: 12px; background: white; transition: all 0.2s; }
+        .item-ctrls { position: absolute; top: 0.75rem; right: 0.75rem; display: flex; gap: 4px; z-index: 10; }
+        .item-ctrls button, .drag-hnd { background: #f8fafc; border: 1px solid #f1f5f9; padding: 6px; border-radius: 8px; cursor: pointer; color: #94a3b8; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .item-ctrls button:hover { background: white; color: black; border-color: #3b82f6; transform: scale(1.1); }
+        .item-ctrls button:active { transform: scale(0.9); }
+        .modal-fix { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-content { background: white; padding: 2.5rem; border-radius: 24px; width: 90%; max-width: 550px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        @keyframes spinAround { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .spin-wrapper { display: inline-flex; animation: spinAround 0.8s linear infinite !important; }
+        .btn { border-radius: 12px; cursor: pointer; transition: all 0.2s; border: none; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+        .btn:active { transform: scale(0.96); }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-primary:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+        .text-primary { color: #3b82f6; }
+        .text-danger { color: #ef4444; }
+        .text-warning { color: #f59e0b; }
+        .text-pink { color: #ec4899; }
+      `}</style>
 
-      {open && (
-        <div style={{ padding: '1.5rem', display: 'grid', gap: '1rem' }}>
-          {data.length === 0 && <p style={{color: 'var(--text-muted)', fontSize: '0.875rem'}}>Нет данных.</p>}
-          {data.map((item: any, i: number) => (
-            <div key={i} className="item-row" style={{
-              background: 'var(--secondary)', borderRadius: 'var(--radius-md)',
-              padding: '1rem 1.25rem', borderLeft: `3px solid ${meta.color}`,
-              position: 'relative', display: 'flex', gap: '1rem'
-            }}>
-              <div style={{ flex: 1 }}>
-                {item.job && <>
-                  <p style={{ fontWeight: 600, marginBottom: '0.35rem' }}>{item.job}</p>
-                  {item.context && <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>«{item.context}»</p>}
-                </>}
-                {item.pain && <>
-                  <p style={{ fontWeight: 600 }}>{item.pain}</p>
-                  {item.frequency_rating && <RatingDots value={item.frequency_rating} />}
-                </>}
-                {item.fear && <>
-                  <p style={{ fontWeight: 600 }}>{item.fear}</p>
-                  {item.frequency_rating && <RatingDots value={item.frequency_rating} />}
-                </>}
-                {item.objection && <>
-                  <p style={{ fontWeight: 600, marginBottom: '0.35rem' }}>❌ {item.objection}</p>
-                  {item.howToRemove && <p style={{ fontSize: '0.875rem', color: '#10b981' }}>✅ {item.howToRemove}</p>}
-                </>}
-                {item.marker && <p style={{ fontWeight: 500 }}>「{item.marker}」</p>}
-                {item.scenario && <p style={{ fontSize: '0.875rem', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{item.scenario}</p>}
-                {item.motivation && <p style={{ fontWeight: 500, fontStyle: 'italic' }}>💡 {item.motivation}</p>}
-              </div>
-
-              {/* Actions */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', opacity: loadingIdx === i ? 1 : undefined }} className="item-actions">
-                <button onClick={() => handleRegenerate(i)} disabled={loadingIdx === i} className="btn-icon" title="Заменить новым смыслом (AI)">
-                  {loadingIdx === i ? <Loader2 size={14} className="animate-spin" /> : <RefreshCcw size={14} />}
-                </button>
-                <button onClick={() => handleDelete(i)} disabled={loadingIdx === i} className="btn-icon hover-red" title="Удалить">
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            </div>
-          ))}
-
-          {/* Add Form Component */}
-          <div style={{ marginTop: '0.5rem' }}>
-            {isAddingManual ? (
-              <div style={{ background: 'var(--secondary)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
-                <textarea 
-                  autoFocus
-                  rows={2} 
-                  value={manualInput} 
-                  onChange={e => setManualInput(e.target.value)} 
-                  placeholder="Опишите смысл..."
-                  style={{ width: '100%', marginBottom: '0.75rem', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}
-                />
-                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                  <button onClick={() => setIsAddingManual(false)} className="btn btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Отмена</button>
-                  <button onClick={handleSaveManual} className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Сохранить</button>
+      {isLoading ? <div style={{ padding: '8rem', textAlign: 'center' }}><span className="spin-wrapper"><Loader2 size={42} color="#3b82f6" /></span></div> : !avatar ? <div style={{ padding: '4rem', textAlign: 'center' }}>Аватар не найден</div> : (
+        <>
+          {editingItem && (
+            <div className="modal-fix">
+              <div className="modal-content">
+                <h3 style={{ marginBottom: '1.5rem', fontWeight: 900, fontSize: '1.25rem' }}>Редактирование</h3>
+                {Object.keys(editingItem.data).map(k => (
+                  <div key={k} style={{ marginBottom: '1.25rem' }}>
+                    <label style={{ fontSize: '0.7rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{k}</label>
+                    <textarea value={editingItem.data[k]} onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, [k]: e.target.value } })} style={{ width: '100%', padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '12px', fontSize: '0.95rem', outline: 'none' }} rows={4} />
+                  </div>
+                ))}
+                <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+                  <button onClick={() => {
+                    const updated = JSON.parse(JSON.stringify(avatar));
+                    if (editingItem.section === 'outcomes') updated.outcomes.items[editingItem.idx] = editingItem.data;
+                    else updated[editingItem.section][editingItem.idx] = editingItem.data;
+                    saveUpdatedAvatar(updated);
+                    setEditingItem(null);
+                  }} className="btn btn-primary" style={{ flex: 1, justifyContent: 'center', padding: '1rem' }}>Сохранить</button>
+                  <button onClick={() => setEditingItem(null)} style={{ flex: 1, background: '#f8fafc', color: '#64748b', padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', fontWeight: 700, cursor: 'pointer' }}>Отмена</button>
                 </div>
               </div>
-            ) : (
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button onClick={() => setIsAddingManual(true)} className="btn btn-secondary" style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <Plus size={16} /> Вписать вручную
-                </button>
-                <button onClick={handleAddAI} disabled={isAdding} className="btn" style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.4rem', border: '1px solid var(--border)', background: 'transparent' }}>
-                  {isAdding ? <Loader2 size={16} className="animate-spin" /> : <Zap size={16} color="var(--primary)" />} Сгенерировать AI
-                </button>
+            </div>
+          )}
+
+          <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>
+            <Link href="/" style={{ color: '#94a3b8', textDecoration: 'none' }}>Проекты</Link>
+            <span>/</span>
+            <Link href={`/project/${params.id}`} style={{ color: '#3b82f6', textDecoration: 'none' }}>{project?.name || project?.productName || 'Проект'}</Link>
+            <span>/</span>
+            <span style={{ color: '#1e293b' }}>{avatar.segmentName}</span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '3rem' }}>
+            <button onClick={() => router.back()} style={{ background: 'white', border: '1px solid #e2e8f0', padding: '0.75rem', borderRadius: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#64748b' }}><ArrowLeft size={20} /></button>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: '#3b82f6', letterSpacing: '0.15em', fontWeight: 800, marginBottom: '0.4rem' }}>Проект: {project?.name || project?.productName || '...'}</div>
+              <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 900, color: '#1e293b' }}>{avatar.segmentName}</h1>
+              <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginTop: '0.4rem', fontWeight: 500 }}>Полное исследование сегмента аудитории. Вы можете править любой параметр</p>
+            </div>
+            <Link href={`/project/${params.id}/generate`} className="btn btn-primary" style={{ padding: '0.85rem 1.5rem', textDecoration: 'none' }}>Генерация креативов →</Link>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+            <section className="card">
+              <h3 style={{ fontSize: '0.7rem', color: '#3b82f6', fontWeight: 800, marginBottom: '1.25rem', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Brain size={16} /> Психологический портрет</h3>
+              <textarea value={avatar.portrait} onChange={e => setAvatar({ ...avatar, portrait: e.target.value })} onBlur={() => saveUpdatedAvatar(avatar)} onInput={(e: any) => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }} ref={(el) => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } }} style={{ width: '100%', background: 'transparent', border: 'none', fontSize: '1.05rem', fontStyle: 'italic', lineHeight: 1.8, outline: 'none', resize: 'none', minHeight: '100px', overflow: 'hidden', color: '#334155' }} />
+            </section>
+
+            {[
+              { title: 'JTBD (Задачи)', key: 'jtbd', icon: Target, color: 'text-primary' },
+              { title: 'Боли сегмента', key: 'pains', icon: Flame, color: 'text-danger' },
+              { title: 'Симптомы болей', key: 'symptoms', icon: AlertCircle, color: 'text-warning' },
+              { title: 'Глубинные страхи', key: 'fears', icon: ShieldAlert, color: 'text-primary' },
+              { title: 'Маркеры поведения', key: 'behaviorMarkers', icon: Footprints, color: 'text-muted' },
+              { title: 'Мотивация', key: 'motivations', icon: Heart, color: 'text-pink' },
+              { title: 'Возражения', key: 'objections', icon: MessageSquare, color: 'text-danger' }
+            ].map(sec => (
+              <section key={sec.key} className="card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '1rem' }}>
+                  <h2 className={sec.color} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '1.35rem', fontWeight: 900, margin: 0 }}><sec.icon size={22} /> {sec.title}</h2>
+                  <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <button onClick={() => handleManualAdd(sec.key)} style={{ fontSize: '0.8rem', fontWeight: 800, color: '#94a3b8', border: 'none', background: 'none', cursor: 'pointer' }}>+ Вручную</button>
+                    <button onClick={() => handleAction('add', sec.key)} className="btn btn-primary" style={{ fontSize: '0.75rem', padding: '0.5rem 1rem', minWidth: '120px', justifyContent: 'center' }}>
+                      {workingKey === `${sec.key}-new` ? <span className="spin-wrapper"><Loader2 size={14} /></span> : <Plus size={14} />} AI Добавить
+                    </button>
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                  {(avatar[sec.key] || []).map((item: any, i: number) => (
+                    <div key={i} className={`item-mini-card`}>
+                      <div className="item-ctrls">
+                        <div className="drag-hnd" draggable onDragStart={() => onDragStart(sec.key, i)}><GripVertical size={14} /></div>
+                        <button onClick={() => setEditingItem({ section: sec.key, idx: i, data: item })}><Edit3 size={12} /></button>
+                        <button onClick={() => handleAction('replace', sec.key, i)}>
+                          {workingKey === `${sec.key}-${i}` ? <span className="spin-wrapper"><RefreshCw size={12} /></span> : <RefreshCw size={12} />}
+                        </button>
+                        <button onClick={() => handleDeleteItem(sec.key, i)} style={{ color: '#ef4444' }}><Trash2 size={12} /></button>
+                      </div>
+                      <div style={{ fontWeight: 900, fontSize: '1rem', marginBottom: '0.6rem', paddingRight: '90px', color: '#1e293b', lineHeight: 1.4 }}>{item.job || item.pain || item.fear || item.symptom || item.marker || item.motivation || item.objection}</div>
+                      {(item.frequency_rating || sec.key === 'motivations') && <div style={{ display: 'flex', gap: '3px', color: '#fbbf24', marginBottom: '0.75rem' }}>{[...Array(5)].map((_, iR) => <Star key={iR} size={11} fill={iR < (item.frequency_rating || 0) ? 'currentColor' : 'none'} />)}</div>}
+                      <div style={{ fontStyle: 'italic', color: '#64748b', fontSize: '0.9rem', lineHeight: 1.6 }}>"{item.context}"</div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ))}
+
+            <section className="card" style={{ border: '1.5px solid #10b981', background: '#f0fdf4' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <h2 style={{ color: '#065f46', fontSize: '1.35rem', fontWeight: 900, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}><CheckCircle2 size={22} /> Результаты (Outcomes)</h2>
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button onClick={() => handleManualAdd('outcomes')} style={{ fontSize: '0.8rem', fontWeight: 800, color: '#059669', border: 'none', background: 'none', cursor: 'pointer' }}>+ Вручную</button>
+                  <button onClick={() => handleAction('add', 'outcomes')} className="btn btn-primary" style={{ fontSize: '0.75rem', padding: '0.5rem 1rem', minWidth: '120px', justifyContent: 'center' }}>
+                    {workingKey === 'outcomes-new' ? <span className="spin-wrapper"><Loader2 size={14} /></span> : <Plus size={14} />} AI Добавить
+                  </button>
+                </div>
               </div>
-            )}
-          </div>
+              <div style={{ background: 'white', padding: '1.5rem', borderRadius: '15px', marginBottom: '2rem', textAlign: 'center', fontWeight: 900, fontSize: '1.15rem', color: '#064e3b', border: '1px solid #d1fae5', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>«{avatar.outcomes?.mainPromise}»</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                {(avatar.outcomes?.items || []).map((item: any, i: number) => (
+                  <div key={i} className={`item-mini-card`} style={{ background: 'white' }}>
+                    <div className="item-ctrls">
+                      <div className="drag-hnd" draggable onDragStart={() => onDragStart('outcomes', i)}><GripVertical size={14} /></div>
+                      <button onClick={() => setEditingItem({ section: 'outcomes', idx: i, data: item })}><Edit3 size={12} /></button>
+                      <button onClick={() => handleAction('replace', 'outcomes', i)}>
+                        {workingKey === `outcomes-${i}` ? <span className="spin-wrapper"><RefreshCw size={12} /></span> : <RefreshCw size={12} />}
+                      </button>
+                      <button onClick={() => handleDeleteItem('outcomes', i)} style={{ color: '#ef4444' }}><Trash2 size={12} /></button>
+                    </div>
+                    <div style={{ fontWeight: 900, color: '#065f46', fontSize: '1.05rem', paddingRight: '90px', marginBottom: '0.4rem', lineHeight: 1.4 }}>✅ {item.outcome}</div>
+                    <div style={{ color: '#475569', fontSize: '0.9rem', lineHeight: 1.6 }}>{item.explanation}</div>
+                  </div>
+                ))}
+              </div>
+            </section>
 
-        </div>
+            <section className="card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
+                <h2 className="text-primary" style={{ fontSize: '1.35rem', fontWeight: 900, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}><Footprints size={22} /> Карта CJM</h2>
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button onClick={() => handleManualAdd('cjm')} style={{ fontSize: '0.8rem', fontWeight: 800, color: '#94a3b8', border: 'none', background: 'none', cursor: 'pointer' }}>+ Вручную</button>
+                  <button onClick={() => handleAction('add', 'cjm')} className="btn btn-primary" style={{ fontSize: '0.75rem', padding: '0.5rem 1rem', minWidth: '120px', justifyContent: 'center' }}>
+                    {workingKey === 'cjm-new' ? <span className="spin-wrapper"><Loader2 size={14} /></span> : <Plus size={14} />} AI Добавить
+                  </button>
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                {(avatar.cjm || []).map((item: any, i: number) => (
+                  <div key={i} className={`item-mini-card`}>
+                    <div className="item-ctrls">
+                      <div className="drag-hnd" draggable onDragStart={() => onDragStart('cjm', i)}><GripVertical size={14} /></div>
+                      <button onClick={() => setEditingItem({ section: 'cjm', idx: i, data: item })}><Edit3 size={12} /></button>
+                      <button onClick={() => handleAction('replace', 'cjm', i)}>
+                        {workingKey === `cjm-${i}` ? <span className="spin-wrapper"><RefreshCw size={12} /></span> : <RefreshCw size={12} />}
+                      </button>
+                      <button onClick={() => handleDeleteItem('cjm', i)} style={{ color: '#ef4444' }}><Trash2 size={12} /></button>
+                    </div>
+                    <div style={{ fontWeight: 950, fontSize: '1.1rem', color: '#1e293b', marginBottom: '1.25rem', paddingRight: '110px' }}>{item.title || `Сценарий #${i + 1}`}</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                      {(item.scenario || '').split(/\n|(?=\d+\.)/).map((s: string) => s.trim()).filter((s: string) => s.length > 3).map((step: string, sIdx: number) => (
+                        <div key={sIdx} style={{ display: 'flex', gap: '1.25rem', background: '#f8fafc', padding: '1.25rem', borderRadius: '15px', fontSize: '1rem', border: '1px solid #f1f5f9', boxShadow: '0 2px 4px rgba(0,0,0,0.03)' }}>
+                          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'white', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: 900, flexShrink: 0, color: '#3b82f6', boxShadow: '0 2px 4px rgba(0,0,0,0.03)' }}>{sIdx + 1}</div>
+                          <div style={{ color: '#334155', lineHeight: 1.7 }}>{step.replace(/^\d+\.\s*/, '')}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+        </>
       )}
-    </div>
-  );
-}
-
-export default function AvatarDetail({ params }: { params: Promise<{ id: string; avatarId: string }> }) {
-  const { id, avatarId } = use(params);
-  const [avatar, setAvatar] = useState<any | null>(null);
-  const [allAvatars, setAllAvatars] = useState<any[]>([]);
-  const [briefContext, setBriefContext] = useState<any>({});
-  const [isExporting, setIsExporting] = useState(false);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('tempGeneratedAvatars');
-      const brief = localStorage.getItem('tempBrief');
-      if (stored) {
-        const all = JSON.parse(stored);
-        setAllAvatars(all);
-        const idx = parseInt(avatarId, 10);
-        setAvatar(all[idx] || null);
-      }
-      if (brief) setBriefContext(JSON.parse(brief));
-    } catch (e) {}
-  }, [avatarId]);
-
-  const saveAvatar = (newAvatarData: any) => {
-    setAvatar({ ...newAvatarData });
-    const idx = parseInt(avatarId, 10);
-    const newAll = [...allAvatars];
-    newAll[idx] = newAvatarData;
-    setAllAvatars(newAll);
-    localStorage.setItem('tempGeneratedAvatars', JSON.stringify(newAll));
-    
-    // In real env, save to Supabase too
-    const currentProjectId = localStorage.getItem('currentProjectId');
-    if (currentProjectId && currentProjectId !== 'temp-id') {
-      fetch('/api/projects', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          id: currentProjectId,  // need id to update (api doesn't support update yet, but mock works)
-          avatars: newAll 
-        })
-      });
-    }
-  };
-
-  const handleExportExcel = () => {
-    if (!avatar) return;
-    setIsExporting(true);
-    try {
-      const rows: any[] = [];
-      const sections = ['jtbd', 'pains', 'fears', 'objections', 'behaviorMarkers', 'cjm', 'motivations'];
-      
-      sections.forEach(s => {
-        if (avatar[s]) {
-          avatar[s].forEach((item: any) => {
-            let content = '';
-            let metaInfo = '';
-            
-            if (item.job) { content = item.job; metaInfo = item.context || ''; }
-            else if (item.pain) { content = item.pain; metaInfo = `Рейтинг: ${item.frequency_rating}/5`; }
-            else if (item.fear) { content = item.fear; metaInfo = `Рейтинг: ${item.frequency_rating}/5`; }
-            else if (item.objection) { content = item.objection; metaInfo = `Ответ: ${item.howToRemove}`; }
-            else if (item.marker) { content = item.marker; }
-            else if (item.scenario) { content = item.scenario; }
-            else if (item.motivation) { content = item.motivation; }
-
-            rows.push({
-              "Категория": SECTION_META[s]?.label || s,
-              "Содержание": content,
-              "Дополнительно": metaInfo
-            });
-          });
-        }
-      });
-
-      const worksheet = XLSX.utils.json_to_sheet(rows);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Avatar Data");
-      
-      const safeName = avatar.segmentName.replace(/[^a-zA-Z0-9-рА-Яа-я]/g, '_').substring(0, 30);
-      XLSX.writeFile(workbook, `Avatar_${safeName}.xlsx`);
-    } catch (e) {
-      console.error(e);
-      alert('Ошибка экспорта');
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  if (!avatar) {
-    return (
-      <div>
-        <BackButton fallbackUrl={`/project/${id}`} />
-        <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
-          <p style={{ color: 'var(--text-muted)' }}>Аватар не найден.</p>
-        </div>
-      </div>
-    );
-  }
-
-  const sections = ['jtbd', 'pains', 'fears', 'objections', 'behaviorMarkers', 'cjm', 'motivations'];
-
-  return (
-    <div>
-      <BackButton fallbackUrl={`/project/${id}`} />
-
-      {/* Шапка */}
-      <div className="card" style={{ padding: '2rem', marginBottom: '2rem', background: 'linear-gradient(135deg, var(--card) 0%, var(--secondary) 100%)' }}>
-        <div className="flex-between" style={{ alignItems: 'flex-start' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
-            <div style={{
-              width: 56, height: 56, borderRadius: '50%',
-              background: 'var(--primary)', display: 'flex',
-              alignItems: 'center', justifyContent: 'center', flexShrink: 0
-            }}>
-              <User size={28} color="#fff" />
-            </div>
-            <div>
-              <span className="badge badge-success" style={{ marginBottom: '0.5rem' }}>Полный профиль аватара</span>
-              <h1 className="page-title" style={{ marginBottom: '0.5rem' }}>{avatar.segmentName}</h1>
-              {avatar.portrait && (
-                <p style={{ lineHeight: 1.7, color: 'var(--text-muted)', maxWidth: '700px' }}>
-                  {avatar.portrait}
-                </p>
-              )}
-            </div>
-          </div>
-          
-          <button onClick={handleExportExcel} disabled={isExporting} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />} 
-            Скачать XLSX
-          </button>
-        </div>
-
-        {/* Счетчики */}
-        <div style={{ display: 'flex', gap: '1.5rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
-          {sections.filter(s => avatar[s]?.length).map(s => (
-            <div key={s} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.875rem' }}>
-              <span style={{ fontWeight: 700, color: SECTION_META[s]?.color }}>{avatar[s].length}</span>
-              <span style={{ color: 'var(--text-muted)' }}>{SECTION_META[s]?.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Секции */}
-      <div style={{ display: 'grid', gap: '1rem' }}>
-        {sections.map(s => (
-          <Section 
-            key={s} 
-            sectionKey={s} 
-            data={avatar[s] || []} 
-            segmentName={avatar.segmentName}
-            briefContext={briefContext}
-            onUpdate={(newData) => {
-              saveAvatar({ ...avatar, [s]: newData });
-            }}
-          />
-        ))}
-      </div>
     </div>
   );
 }

@@ -60,6 +60,15 @@ export default function Dashboard() {
       }
     }
 
+    allProjects = allProjects.map(p => {
+      let scriptsCount = 0;
+      try {
+        const scripts = JSON.parse(localStorage.getItem(`projectScripts_${p.id}`) || '[]');
+        scriptsCount = scripts.length;
+      } catch (e) {}
+      return { ...p, scriptsCount };
+    });
+
     setProjects(allProjects);
     setLoading(false);
   };
@@ -103,6 +112,104 @@ export default function Dashboard() {
     }
   };
 
+  const handleSyncToCloud = async () => {
+    if (!window.confirm('Синхронизировать все локальные сценарии с облаком? Это позволит видеть их на сервере Vercel.')) return;
+    
+    setLoading(true);
+    let successCount = 0;
+    
+    try {
+      for (const project of projects) {
+        if (project.id === 'temp-id') continue;
+        
+        const scripts = JSON.parse(localStorage.getItem(`projectScripts_${project.id}`) || '[]');
+        if (scripts.length === 0) continue;
+        
+        // Получаем текущий бриф проекта
+        const res = await fetch(`/api/projects?id=${project.id}`);
+        if (!res.ok) continue;
+        const data = await res.json();
+        const currentProject = data.project || data.product || data;
+        
+        // Обновляем бриф, добавляя туда сценарии
+        const updatedBrief = { 
+          ...(currentProject.brief || {}), 
+          scripts: scripts 
+        };
+        
+        const updateRes = await fetch('/api/projects', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: project.id,
+            brief: updatedBrief
+          })
+        });
+        
+        if (updateRes.ok) successCount++;
+      }
+      
+      alert(`Синхронизация завершена! Успешно обновлено проектов: ${successCount}. Теперь сценарии доступны на сервере.`);
+      loadProjects();
+    } catch (err) {
+      console.error('Sync error:', err);
+      alert('Произошла ошибка при синхронизации');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleExportAll = () => {
+    const backupData: any = {
+      version: '1.0',
+      timestamp: new Date().toISOString(),
+      localStorage: {}
+    };
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (
+        key.startsWith('projectScripts_') || 
+        key.startsWith('tempBrief_') || 
+        key.startsWith('tempAvatars_') ||
+        key === 'tempBrief' ||
+        key === 'tempGeneratedAvatars'
+      )) {
+        backupData.localStorage[key] = localStorage.getItem(key);
+      }
+    }
+
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", `creo_ai_backup_${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  };
+
+  const handleImportAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target?.result as string);
+        if (data.localStorage) {
+          Object.keys(data.localStorage).forEach(key => {
+            localStorage.setItem(key, data.localStorage[key]);
+          });
+          alert('Данные успешно импортированы! Перезагружаем страницу...');
+          window.location.reload();
+        }
+      } catch (err) {
+        alert('Ошибка при импорте файла');
+      }
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
@@ -111,9 +218,30 @@ export default function Dashboard() {
           <p style={{ color: 'var(--text-muted)' }}>Управляйте вашими брифами и рекламными креативами</p>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          <button onClick={loadProjects} className="btn btn-secondary" title="Обновить список">
-            <RefreshCw size={16} /> Обновить
-          </button>
+          
+          {/* Панель инструментов синхронизации */}
+          <div style={{ 
+            display: 'flex', 
+            gap: '0.25rem', 
+            padding: '4px', 
+            background: 'var(--card-bg)', 
+            borderRadius: '12px', 
+            border: '1px solid var(--border)',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+          }}>
+            <button onClick={handleSyncToCloud} className="btn btn-secondary" title="Облачная синхронизация (сохранить все в БД)" style={{ padding: '8px', border: 'none', background: 'transparent' }}>
+              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} style={{ color: 'var(--primary)' }} />
+            </button>
+            <div style={{ width: '1px', background: 'var(--border)', margin: '4px 0' }}></div>
+            <button onClick={handleExportAll} className="btn btn-secondary" title="Экспорт в файл" style={{ padding: '8px', border: 'none', background: 'transparent' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
+            <label className="btn btn-secondary" title="Импорт из файла" style={{ cursor: 'pointer', margin: 0, padding: '8px', border: 'none', background: 'transparent' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <input type="file" accept=".json" style={{ display: 'none' }} onChange={handleImportAll} />
+            </label>
+          </div>
+
           <Link href="/project/new" className="btn btn-primary">
             <Plus size={18} /> Новый проект
           </Link>
@@ -144,15 +272,15 @@ export default function Dashboard() {
         </div>
       ) : (
         <div className="projects-grid">
-          {projects.map((project) => (
-            <div key={project.id} className="card">
-              <div className="card-header" style={{ position: 'relative' }}>
+          {projects.map((project: any) => (
+            <div key={project.id} className="card project-card" style={{ padding: 0, overflow: 'hidden' }}>
+              <div className="card-header" style={{ position: 'relative', padding: '1.5rem 1.5rem 0' }}>
                 <div style={{ paddingRight: '2rem' }}>
-                  <h3 className="card-title">{project.name}</h3>
+                  <h3 className="card-title text-truncate">{project.name}</h3>
                   <p className="card-subtitle">{formatDate(project.created_at)}</p>
                 </div>
                 
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', position: 'absolute', top: 0, right: 0 }}>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', position: 'absolute', top: '1.5rem', right: '1.5rem' }}>
                   {project.status === 'done' ? (
                     <span className="badge badge-success">
                       <CheckCircle size={12} style={{ display: 'inline', marginRight: 4 }} /> Готово
@@ -173,29 +301,19 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="preview-box">
-                {project.avatars?.length ? (
-                  <div style={{
-                    position: 'relative', width: '100%', height: '100%',
-                    background: 'linear-gradient(135deg, #1e293b, #0f172a)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
-                  }}>
-                    <span style={{ color: '#94a3b8', fontSize: '0.875rem' }}>
-                      {project.avatars.length} аватар{project.avatars.length > 1 ? 'а' : ''}
-                    </span>
-                  </div>
-                ) : (
-                  <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Ожидает генерации</span>
-                )}
-              </div>
-
-              <div className="flex-between mt-4">
-                <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                  {project.avatars?.length ? `${project.avatars.length} сегм. аудитории` : 'Нет данных'}
-                </span>
-                <Link href={`/project/${project.id}`} className="btn btn-secondary">
-                  {project.status === 'done' ? 'Смотреть' : 'Открыть →'}
-                </Link>
+              <div style={{ padding: '1.5rem' }}>
+                <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+                  {project.avatars?.length ? `${project.avatars.length} сегм. аудитории` : 'Аватары не сгенерированы'}
+                </div>
+                
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <Link href={`/project/${project.id}`} className="btn btn-secondary" style={{ flex: 1, textAlign: 'center', fontSize: '0.85rem', padding: '0.5rem' }}>
+                    Аватары ({project.avatars?.length || 0})
+                  </Link>
+                  <Link href={`/project/${project.id}/scripts`} className="btn btn-secondary" style={{ flex: 1, textAlign: 'center', fontSize: '0.85rem', padding: '0.5rem' }}>
+                    Сценарии ({project.scriptsCount || 0})
+                  </Link>
+                </div>
               </div>
             </div>
           ))}

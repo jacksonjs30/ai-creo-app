@@ -245,7 +245,8 @@ export const PROMPTS = {
     toneOfVoice: string, 
     count: number, 
     language: string,
-    colors?: { main: string, secondary: string, accent: string }
+    colors?: { main: string, secondary: string, accent: string },
+    focusDirection?: string
   }) => {
     return `
 РОЛЬ
@@ -271,6 +272,12 @@ ${params.colors ? `
 - Основний колір: ${params.colors.main}
 - Другорядний колір: ${params.colors.secondary}
 - Колір акцентів: ${params.colors.accent}
+` : ''}
+
+${params.focusDirection ? `
+🎯 СПЕЦІАЛЬНЕ НАПРЯМОК / ФОКУС:
+Користувач задав чітке спрямування (фокус) для цих креативів: "${params.focusDirection}".
+Ти ПОВИНЕН обов'язково адаптувати генерацію та заснувати ВСІ ${params.count} варіантів сценаріїв навколо цієї теми, болю або ситуації. Зроби акцент саме на цьому, поєднуючи його з психологічним портретом аватара.
 ` : ''}
 
 🗂️ БАЗА ЗНАНЬ (ДЖЕРЕЛО ПРАВДИ)
