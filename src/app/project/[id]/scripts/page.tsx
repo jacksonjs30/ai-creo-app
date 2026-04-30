@@ -13,6 +13,7 @@ export default function ScriptsPage({ params }: { params: Promise<{ id: string }
   const [scripts, setScripts] = useState<any[]>([]);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   const [editingScriptId, setEditingScriptId] = useState<string | null>(null);
   const [editTableData, setEditTableData] = useState<string[][]>([]);
@@ -33,6 +34,7 @@ export default function ScriptsPage({ params }: { params: Promise<{ id: string }
   });
 
   useEffect(() => {
+    setMounted(true);
     async function loadData() {
       setIsLoading(true);
 
@@ -145,7 +147,7 @@ export default function ScriptsPage({ params }: { params: Promise<{ id: string }
   };
 
   return (
-    <div>
+    <div suppressHydrationWarning>
       <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>
         <Link href="/" style={{ color: '#94a3b8', textDecoration: 'none' }}>Проекты</Link>
         <span>/</span>

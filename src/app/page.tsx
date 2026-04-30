@@ -16,8 +16,10 @@ export default function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasLocal, setHasLocal] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     loadProjects();
     // Проверяем есть ли несохранённая сессия в localStorage
     const local = localStorage.getItem('tempGeneratedAvatars');
@@ -211,7 +213,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div>
+    <div suppressHydrationWarning>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
         <div>
           <h1 className="page-title">Мои проекты</h1>
@@ -303,15 +305,15 @@ export default function Dashboard() {
 
               <div style={{ padding: '1.5rem' }}>
                 <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-                  {project.avatars?.length ? `${project.avatars.length} сегм. аудитории` : 'Аватары не сгенерированы'}
+                  {mounted && project.avatars?.length ? `${project.avatars.length} сегм. аудитории` : '...'}
                 </div>
                 
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <Link href={`/project/${project.id}`} className="btn btn-secondary" style={{ flex: 1, textAlign: 'center', fontSize: '0.85rem', padding: '0.5rem' }}>
-                    Аватары ({project.avatars?.length || 0})
+                    Аватары {mounted ? `(${project.avatars?.length || 0})` : ''}
                   </Link>
                   <Link href={`/project/${project.id}/scripts`} className="btn btn-secondary" style={{ flex: 1, textAlign: 'center', fontSize: '0.85rem', padding: '0.5rem' }}>
-                    Сценарии ({project.scriptsCount || 0})
+                    Сценарии {mounted ? `(${project.scriptsCount || 0})` : ''}
                   </Link>
                 </div>
               </div>
