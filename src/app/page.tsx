@@ -238,6 +238,23 @@ export default function Dashboard() {
             border: '1px solid var(--border)',
             boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
           }}>
+            <button 
+              onClick={() => {
+                const content = `# A-to-A: Логика работы AI Creative Engine\n\n**A-to-A (Avatar-to-Ads)** — это интеллектуальная система автоматизации маркетинговых исследований и генерации рекламных креативов. Сервис превращает сухие данные продукта в глубокие психологические портреты аудитории и готовые сценарии для продакшена.\n\n---\n\n## 1. Концепция: Исследование прежде Креатива\nГлавная логика сервиса: **реклама не работает без понимания боли**.\n\n## 2. Этапы трансформации идеи\n### Этап А: Сбор контекста (Бриф)\n### Этап Б: Идентификация сегментов (Discovery)\n### Этап В: Глубокое исследование (Avatar Research)\n### Этап Г: Генерация сценариев (Creative Studio)\n### Этап Д: Производство активов (Asset Production)\n### Этап Е: Автоматизированный запуск (Deployment)\n### Этап Ж: Аналитический цикл и обучение (Feedback Loop)\n\n*(Полный текст доступен в файле SERVICE_LOGIC.md)*`;
+                const blob = new Blob([content], { type: 'text/markdown' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'SERVICE_LOGIC.md';
+                a.click();
+              }} 
+              className="btn btn-secondary" 
+              title="Скачать описание логики сервиса" 
+              style={{ padding: '8px', border: 'none', background: 'transparent' }}
+            >
+              <FileText size={16} style={{ color: 'var(--text-muted)' }} />
+            </button>
+            <div style={{ width: '1px', background: 'var(--border)', margin: '4px 0' }}></div>
             <button onClick={handleSyncToCloud} className="btn btn-secondary" title="Облачная синхронизация (сохранить все в БД)" style={{ padding: '8px', border: 'none', background: 'transparent' }}>
               <RefreshCw size={16} className={loading ? 'animate-spin' : ''} style={{ color: 'var(--primary)' }} />
             </button>
