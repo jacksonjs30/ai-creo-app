@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, Folder, Clock, CheckCircle, Play, Loader2, RefreshCw, Trash2 } from 'lucide-react';
+import { Plus, Folder, Clock, CheckCircle, Play, Loader2, RefreshCw, Trash2, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
@@ -66,7 +66,7 @@ export default function Dashboard() {
       let scriptsCount = 0;
       try {
         const localScripts = JSON.parse(localStorage.getItem(`projectScripts_${p.id}`) || '[]');
-        const dbScripts = p.brief?.scripts || [];
+        const dbScripts = (p as any).brief?.scripts || [];
         
         // Объединяем по ID, чтобы не дублировать
         const allScriptsMap = new Map();
