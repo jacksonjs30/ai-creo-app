@@ -74,9 +74,13 @@ export default function GenerateCreatives({ params }: { params: Promise<{ id: st
 
         if (loadedProject) {
            setProject(loadedProject);
-           setProductName(loadedProject.name || loadedProject.productName || '');
+           const name = loadedProject.productName || loadedProject.name || loadedProject.product_name || '';
+           setProductName(name);
         }
-        if (loadedAvatars) setAvatars(loadedAvatars);
+        if (loadedAvatars.length > 0) {
+          setAvatars(loadedAvatars);
+          setSelectedAvatarIdx(0); // Auto-select the first avatar
+        }
 
       } catch (e) {
         console.error('Error loading project:', e);
@@ -350,7 +354,16 @@ export default function GenerateCreatives({ params }: { params: Promise<{ id: st
           </div>
         </section>
 
-        <div style={{ gridColumn: '1 / -1', marginTop: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ gridColumn: '1 / -1', marginTop: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+          {/* Show inline hint about what's missing */}
+          {(selectedAvatarIdx === null || !selectedType || !productName?.trim()) && !isGenerating && (
+            <div style={{ fontSize: '0.82rem', color: '#f59e0b', background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: '8px', padding: '0.5rem 1rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              ⚠️
+              {!productName?.trim() && <span>Введите название продукта.</span>}
+              {productName?.trim() && selectedAvatarIdx === null && <span>Выберите аватар выше.</span>}
+              {productName?.trim() && selectedAvatarIdx !== null && !selectedType && <span>Выберите формат креатива.</span>}
+            </div>
+          )}
           <button 
             type="submit" 
             className="btn btn-primary" 
