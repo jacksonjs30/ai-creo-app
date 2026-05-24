@@ -204,22 +204,26 @@ export default function NewProjectPage() {
         <style>{`
           @keyframes custom-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
           .force-spin { animation: custom-spin 1.5s linear infinite !important; }
-          .progress-bar { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin: 1rem 0; }
-          .progress-fill { height: 100%; background: #3b82f6; transition: width 0.4s ease; }
-          .segment-card { border: 2px solid #e2e8f0; border-radius: 16px; padding: 1rem; cursor: pointer; transition: all 0.2s; text-align: left; background: white; }
-          .segment-card.selected { border-color: #3b82f6; background: #eff6ff; }
-          .segment-card:hover { border-color: #3b82f6; }
+          .progress-bar { width: 100%; height: 6px; background: var(--secondary); border-radius: 99px; overflow: hidden; margin: 1rem 0; }
+          .progress-fill { height: 100%; background: var(--primary); transition: width 0.4s ease; }
+          .segment-card { border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; cursor: pointer; transition: all 0.2s; text-align: left; background: white; }
+          .segment-card.selected { border-color: var(--primary); background: #eff6ff; box-shadow: 0 0 0 1px var(--primary); }
+          .segment-card:hover:not(.selected) { border-color: #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transform: translateY(-1px); }
         `}</style>
 
-        <div className="card" style={{ textAlign: 'center', padding: '3rem', maxWidth: 800, width: '100%', borderRadius: '32px' }}>
+        <div className="card" style={{ textAlign: 'center', padding: '3rem', maxWidth: 800, width: '100%', borderRadius: '12px' }}>
           {generationStep !== 'selection' && (
-            <Loader2 size={64} className="force-spin" color="#3b82f6" style={{ marginBottom: '2rem' }} />
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
+              <div style={{ padding: '1.5rem', background: '#eff6ff', borderRadius: '50%' }}>
+                <Loader2 size={48} className="force-spin" color="var(--primary)" />
+              </div>
+            </div>
           )}
 
           {generationStep === 'selection' ? (
             <div>
-              <h2 style={{ fontSize: '2rem', fontWeight: 950, marginBottom: '1rem' }}>Выберите до 4 сегментов для глубокого анализа</h2>
-              <p style={{ color: '#64748b', marginBottom: '2.5rem' }}>ИИ предложил 10 вариантов. Выберите те, которые максимально актуальны для ваших целей.</p>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.75rem', color: '#0f172a' }}>Выберите целевые сегменты</h2>
+              <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>AI предложил 10 вариантов. Выберите до 4 самых релевантных для глубокого исследования.</p>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem', marginBottom: '2.5rem' }}>
                 {foundSegments.map((s, i) => (
@@ -257,7 +261,7 @@ export default function NewProjectPage() {
             </div>
           ) : (
             <>
-              <h2 style={{ fontSize: '1.75rem', fontWeight: 950, marginBottom: '0.5rem' }}>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem', color: '#0f172a' }}>
                 {generationStep === 'parsing' && 'Анализируем лендинг...'}
                 {generationStep === 'identifying' && 'Ищем сегменты аудитории...'}
                 {generationStep === 'researching' && 'Проводим глубокое исследование...'}
@@ -271,7 +275,7 @@ export default function NewProjectPage() {
               </p>
 
               {generationStep === 'researching' && (
-                <div style={{ textAlign: 'left', background: '#f8fafc', padding: '1.5rem', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                <div style={{ textAlign: 'left', background: 'var(--secondary)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
                   <div className="progress-bar">
                     <div className="progress-fill" style={{ width: `${(completedSegments / selectedSegments.length) * 100}%` }}></div>
                   </div>
@@ -280,16 +284,18 @@ export default function NewProjectPage() {
                       <div key={i} style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '0.75rem',
-                        fontSize: '1rem',
-                        fontWeight: i === completedSegments ? 800 : 500,
-                        color: i < completedSegments ? '#10b981' : i === completedSegments ? '#3b82f6' : '#94a3b8'
+                        justifyContent: 'space-between',
+                        fontSize: '0.9rem',
+                        fontWeight: i === completedSegments ? 700 : 500,
+                        color: i < completedSegments ? '#0f172a' : i === completedSegments ? 'var(--primary)' : 'var(--text-muted)'
                       }}>
-                        <span style={{ fontSize: '1.2rem' }}>
-                          {i < completedSegments ? '✅' : i === completedSegments ? '⏳' : '⚪️'}
-                        </span>
-                        <span>{name}</span>
-                        {i === completedSegments && <span style={{ fontSize: '0.8rem', color: '#3b82f6', fontWeight: 500 }}>(в процессе...)</span>}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          <span style={{ fontSize: '1.1rem' }}>
+                            {i < completedSegments ? '✅' : i === completedSegments ? <Loader2 size={16} className="force-spin" /> : '⚪️'}
+                          </span>
+                          <span>{name}</span>
+                        </div>
+                        {i === completedSegments && <span style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 600, textTransform: 'uppercase' }}>Генерация...</span>}
                       </div>
                     ))}
                   </div>
