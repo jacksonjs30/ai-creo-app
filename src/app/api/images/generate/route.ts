@@ -36,13 +36,25 @@ export async function POST(req: NextRequest) {
       });
     } catch (e: any) {
       if (e.message && e.message.includes("does not exist")) {
-        console.log("Falling back to dall-e-2 due to API key restrictions...");
-        response = await openai.images.generate({
-          model: "dall-e-2",
-          prompt: prompt,
-          n: 1,
-          size: "512x512" // dall-e-2 standard size for cheaper fallback
-        });
+        try {
+          console.log("Falling back to dall-e-2 due to API key restrictions...");
+          response = await openai.images.generate({
+            model: "dall-e-2",
+            prompt: prompt,
+            n: 1,
+            size: "512x512" 
+          });
+        } catch (e2) {
+          console.log("OpenAI DALL-E is completely unavailable. Falling back to free Pollinations.ai API...");
+          const encodedPrompt = encodeURIComponent(prompt);
+          const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true`;
+          
+          response = {
+            data: [
+              { url: pollinationsUrl }
+            ]
+          };
+        }
       } else {
         throw e;
       }
