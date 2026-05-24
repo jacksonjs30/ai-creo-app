@@ -170,7 +170,7 @@ export async function POST(req: NextRequest) {
           prompt,
           n: 1,
           size: '1024x1024',
-          quality: 'high',   // upgraded to high for text accuracy
+          quality: 'medium', // low=$0.011 | medium=$0.042 | high=$0.167 per image
         });
 
         const imgData = response.data?.[0];

@@ -169,7 +169,7 @@ export default function ScriptStudio({ id }: { id: string }) {
 
   // Generate images for a specific table row
   // rowCells: all cells of the row; last cell is typically the design brief
-  const handleGenerateRowImage = async (script: any, rowIdx: number, rowCells: string[], action: 'add' | 'replace' = 'add', imgIdx?: number) => {
+  const handleGenerateRowImage = async (script: any, rowIdx: number, rowCells: string[], action: 'add' | 'replace' = 'add', imgIdx?: number, genCount: number = 1) => {
     setIsGeneratingImage({ scriptId: script.id, rowIdx, action, imgIdx });
     try {
       const rowImages: Record<number, string[]> = script.rowImages || {};
@@ -193,7 +193,7 @@ export default function ScriptStudio({ id }: { id: string }) {
           productName: script.productName || project?.name,
           action,
           oldImageUrl,
-          count: action === 'add' ? 3 : 1
+          count: action === 'replace' ? 1 : genCount
         })
       });
 
@@ -509,25 +509,48 @@ export default function ScriptStudio({ id }: { id: string }) {
                                     </span>
                                   )}
                                 </div>
-                                <button
-                                  onClick={() => handleGenerateRowImage(script, dataRowIdx, row, 'add')}
-                                  disabled={isAnyGen}
-                                  style={{
-                                    display: 'flex', alignItems: 'center', gap: '0.4rem',
-                                    background: isGenThisRow ? '#4338ca' : '#6366f1',
-                                    color: 'white', border: 'none', borderRadius: '8px',
-                                    padding: '0.4rem 0.9rem', fontSize: '0.78rem', fontWeight: 700,
-                                    cursor: isAnyGen ? 'not-allowed' : 'pointer',
-                                    opacity: isAnyGen && !isGenThisRow ? 0.5 : 1,
-                                    transition: 'all 0.2s'
-                                  }}
-                                >
-                                  {isGenThisRow && isGeneratingImage?.action === 'add' ? (
-                                    <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}><Loader2 size={13} /></span> Генерирую 3 шт…</>
-                                  ) : (
-                                    <><Plus size={13} /> {thisRowImgs.length > 0 ? 'Ещё 3 варианта' : 'Сгенерировать 3 варианта'}</>
+                                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                  {/* Generate 1 image — primary button, cheap */}
+                                  <button
+                                    onClick={() => handleGenerateRowImage(script, dataRowIdx, row, 'add', undefined, 1)}
+                                    disabled={isAnyGen}
+                                    title="~$0.04 за 1 зображення (medium quality)"
+                                    style={{
+                                      display: 'flex', alignItems: 'center', gap: '0.4rem',
+                                      background: isGenThisRow ? '#4338ca' : '#6366f1',
+                                      color: 'white', border: 'none', borderRadius: '8px',
+                                      padding: '0.4rem 0.9rem', fontSize: '0.78rem', fontWeight: 700,
+                                      cursor: isAnyGen ? 'not-allowed' : 'pointer',
+                                      opacity: isAnyGen && !isGenThisRow ? 0.5 : 1,
+                                      transition: 'all 0.2s'
+                                    }}
+                                  >
+                                    {isGenThisRow && isGeneratingImage?.action === 'add' ? (
+                                      <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}><Loader2 size={13} /></span> Генерирую…</>
+                                    ) : (
+                                      <><Plus size={13} /> {thisRowImgs.length > 0 ? '+ 1 вариант' : 'Сгенерировать (~$0.04)'}</>
+                                    )}
+                                  </button>
+                                  {/* Generate 3 images — secondary, more expensive */}
+                                  {!isGenThisRow && (
+                                    <button
+                                      onClick={() => handleGenerateRowImage(script, dataRowIdx, row, 'add', undefined, 3)}
+                                      disabled={isAnyGen}
+                                      title="~$0.12 за 3 зображення (medium quality)"
+                                      style={{
+                                        display: 'flex', alignItems: 'center', gap: '0.3rem',
+                                        background: 'transparent', border: '1px solid #a5b4fc',
+                                        color: '#6366f1', borderRadius: '8px',
+                                        padding: '0.4rem 0.75rem', fontSize: '0.72rem', fontWeight: 600,
+                                        cursor: isAnyGen ? 'not-allowed' : 'pointer',
+                                        opacity: isAnyGen ? 0.4 : 1,
+                                        transition: 'all 0.2s'
+                                      }}
+                                    >
+                                      <Plus size={12} /> 3 варианта (~$0.12)
+                                    </button>
                                   )}
-                                </button>
+                                </div>
                               </div>
 
                               {thisRowImgs.length > 0 && (
