@@ -38,11 +38,6 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   min-height: 100vh;
-  /* subtle glass background effect base */
-  background-image: 
-    radial-gradient(at 0% 0%, hsla(253,16%,7%,0) 0, transparent 50%), 
-    radial-gradient(at 50% 0%, hsla(225,39%,30%,0) 0, transparent 50%), 
-    radial-gradient(at 100% 0%, hsla(339,49%,30%,0) 0, transparent 50%);
 }
 
 a {
@@ -175,18 +170,17 @@ header {
 
 /* Cards */
 .card {
-  background: var(--card-bg);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
 }
 
 .card:hover {
-  box-shadow: var(--shadow-md), var(--shadow-glow);
-  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  border-color: #cbd5e1;
   transform: translateY(-2px);
 }
 
@@ -198,8 +192,9 @@ header {
 }
 
 .card-title {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 1.125rem;
+  color: #0f172a;
 }
 
 .card-subtitle {

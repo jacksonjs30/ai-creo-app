@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { LayoutDashboard, Users, FileSearch, PenTool, ImagePlay, Activity, Blocks } from 'lucide-react';
 import { use } from 'react';
@@ -24,12 +24,9 @@ export default function ProjectLayout({
 }) {
   const { id } = use(params);
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentTab = searchParams.get('tab') || 'avatars'; // default to avatars
 
-  // Пока мы все объединяем на одной странице, 
-  // активный шаг можно определять по хешу или просто жестко задать для демо.
-  // Так как мы делаем SPA-подобный экран, все разделы будут на странице page.tsx
-  // Мы можем использовать якоря (#avatars, #studio)
-  
   return (
     <div className="workspace-layout">
       {/* Sidebar */}
@@ -65,17 +62,20 @@ export default function ProjectLayout({
           <nav>
             {STEPS.map((step) => {
               const Icon = step.icon;
-              // Пока что все на одной странице, поэтому мы сделаем 3 и 4 шаг активными визуально
-              const isActive = step.id === 'avatars' || step.id === 'studio';
+              // If we are deep inside a route (e.g. /avatar/0), don't highlight the tabs strictly,
+              // or highlight 'avatars' if we are in avatar route.
+              const isActive = pathname === `/project/${id}` ? currentTab === step.id : (pathname.includes('/avatar/') && step.id === 'avatars');
+              
               return (
-                <a 
+                <Link 
                   key={step.id} 
-                  href={`#${step.id}`}
+                  href={`/project/${id}?tab=${step.id}`}
                   className={`workspace-step ${isActive ? 'active' : ''}`}
+                  style={{ textDecoration: 'none' }}
                 >
                   <Icon size={18} className="step-icon" />
                   <span style={{ fontSize: '0.875rem' }}>{step.label}</span>
-                </a>
+                </Link>
               );
             })}
           </nav>

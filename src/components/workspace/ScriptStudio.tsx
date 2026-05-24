@@ -152,14 +152,14 @@ export default function ScriptStudio({ id }: { id: string }) {
           <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.25rem' }}>Сценарии креативов</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Сгенерированные ТЗ и сценарии для передачи в продакшен.</p>
         </div>
-        <Link
-          href={`/project/${id}/generate`}
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           className="btn btn-primary"
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', border: 'none', cursor: 'pointer' }}
         >
           <Plus size={18} />
           Сгенерировать еще
-        </Link>
+        </button>
       </div>
 
       {scripts.length > 0 && (

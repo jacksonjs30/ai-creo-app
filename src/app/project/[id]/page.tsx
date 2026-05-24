@@ -1,7 +1,7 @@
 'use client';
 
 import { use, useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Users, BrainCircuit, ChevronRight, RefreshCw, Copy, CheckCircle2, PenTool, FileText } from 'lucide-react';
 import GenerateCreative from '@/components/workspace/GenerateCreative';
@@ -10,13 +10,13 @@ import ScriptStudio from '@/components/workspace/ScriptStudio';
 export default function ProjectDashboard({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const activeSection = searchParams.get('tab') || 'avatars';
 
   const [avatars, setAvatars] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [projectName, setProjectName] = useState('');
-
-  // Tab state for the workspace sections
-  const [activeSection, setActiveSection] = useState<'avatars' | 'generate' | 'scripts'>('avatars');
+  const [projectBrief, setProjectBrief] = useState<any>(null);
 
   useEffect(() => {
     async function fetchProject() {
@@ -38,6 +38,7 @@ export default function ProjectDashboard({ params }: { params: Promise<{ id: str
             setAvatars(proj.avatars);
           }
           setProjectName(proj?.name || proj?.productName || '');
+          setProjectBrief(proj?.brief || null);
         }
       } catch (e) {
         console.error('Fetch error:', e);
@@ -136,62 +137,75 @@ export default function ProjectDashboard({ params }: { params: Promise<{ id: str
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Рабочее пространство проекта — исследование, генерация и сценарии</p>
       </div>
 
-      {/* Section tabs */}
-      <div style={{ 
-        display: 'flex', 
-        gap: '0.25rem', 
-        marginBottom: '2rem', 
-        background: 'white', 
-        padding: '4px', 
-        borderRadius: '12px', 
-        border: '1px solid var(--border)',
-        boxShadow: 'var(--shadow-sm)'
-      }}>
-        {[
-          { key: 'avatars' as const, label: 'Avatar Research', icon: Users, count: avatars.length },
-          { key: 'generate' as const, label: 'Creative Studio', icon: PenTool },
-          { key: 'scripts' as const, label: 'Script Studio', icon: FileText },
-        ].map(tab => {
-          const Icon = tab.icon;
-          const isActive = activeSection === tab.key;
-          return (
-            <button
-              key={tab.key}
-              onClick={() => setActiveSection(tab.key)}
-              style={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-                padding: '0.75rem 1rem',
-                borderRadius: '10px',
-                border: 'none',
-                background: isActive ? 'var(--primary)' : 'transparent',
-                color: isActive ? 'white' : 'var(--text-muted)',
-                fontWeight: isActive ? 700 : 500,
-                fontSize: '0.875rem',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              <Icon size={18} />
-              {tab.label}
-              {tab.count !== undefined && (
-                <span style={{
-                  background: isActive ? 'rgba(255,255,255,0.25)' : 'var(--secondary)',
-                  padding: '2px 8px',
-                  borderRadius: '99px',
-                  fontSize: '0.75rem',
-                  fontWeight: 700
-                }}>{tab.count}</span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
       {/* Section content */}
+      {activeSection === 'brief' && (
+        <div className="card" style={{ padding: '2rem' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>Ingestion / Brief</h2>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Данные брифа, заполненные при создании проекта.</p>
+          
+          {projectBrief ? (
+            <div style={{ display: 'grid', gap: '1.5rem' }}>
+              <div>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>Название продукта</span>
+                <div style={{ fontSize: '1.1rem', fontWeight: 500, marginTop: '0.25rem' }}>{projectBrief.productName || projectName}</div>
+              </div>
+              
+              <div>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>Ссылка на бриф</span>
+                <div style={{ fontSize: '1rem', marginTop: '0.25rem', wordBreak: 'break-all' }}>
+                  {projectBrief.url ? (
+                    <a href={projectBrief.url} target="_blank" rel="noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>{projectBrief.url}</a>
+                  ) : 'Не указана'}
+                </div>
+              </div>
+
+              {projectBrief.description && (
+                <div>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>Описание / Текст брифа</span>
+                  <div style={{ fontSize: '1rem', marginTop: '0.25rem', background: 'var(--secondary)', padding: '1rem', borderRadius: '8px', whiteSpace: 'pre-wrap' }}>
+                    {projectBrief.description}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{ padding: '2rem', textAlign: 'center', background: 'var(--secondary)', borderRadius: '12px' }}>
+              <p style={{ color: 'var(--text-muted)' }}>Бриф не найден или проект создан без брифа.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeSection === 'discovery' && (
+        <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
+          <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+            <BrainCircuit size={32} color="var(--primary)" />
+          </div>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>Audience Discovery</h2>
+          <p style={{ color: 'var(--text-muted)', maxWidth: '500px', margin: '0 auto' }}>Здесь будет отображаться процесс первичного поиска сегментов аудитории. Сейчас результаты поиска уже сохранены во вкладке "Avatar Research".</p>
+        </div>
+      )}
+
+      {activeSection === 'assets' && (
+        <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>Asset Production</h2>
+          <p style={{ color: 'var(--text-muted)' }}>Модуль генерации видео и изображений (в разработке).</p>
+        </div>
+      )}
+
+      {activeSection === 'feedback' && (
+        <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>Feedback Loop</h2>
+          <p style={{ color: 'var(--text-muted)' }}>Аналитика и самообучение ИИ на основе результатов (в разработке).</p>
+        </div>
+      )}
+
+      {activeSection === 'integrations' && (
+        <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>Integrations / API</h2>
+          <p style={{ color: 'var(--text-muted)' }}>Подключение Facebook Ads и TikTok Ads (в разработке).</p>
+        </div>
+      )}
       {activeSection === 'avatars' && (
         <div>
           {/* Action bar */}
@@ -263,12 +277,16 @@ export default function ProjectDashboard({ params }: { params: Promise<{ id: str
         </div>
       )}
 
-      {activeSection === 'generate' && (
-        <GenerateCreative id={id} />
-      )}
-
-      {activeSection === 'scripts' && (
-        <ScriptStudio id={id} />
+      {activeSection === 'studio' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          {/* We show both generation form and generated scripts list in the Creative Studio section */}
+          <div className="card" style={{ padding: '2rem' }}>
+             <GenerateCreative id={id} />
+          </div>
+          <div className="card" style={{ padding: '2rem' }}>
+             <ScriptStudio id={id} />
+          </div>
+        </div>
       )}
     </div>
   );
