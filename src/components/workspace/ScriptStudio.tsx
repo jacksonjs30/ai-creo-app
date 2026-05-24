@@ -18,7 +18,7 @@ export default function ScriptStudio({ id }: { id: string }) {
   const [editTableData, setEditTableData] = useState<string[][]>([]);
   const [editOtherText, setEditOtherText] = useState<{ before: string, after: string }>({ before: '', after: '' });
   const [isRegenerating, setIsRegenerating] = useState<string | null>(null);
-  const [isGeneratingImage, setIsGeneratingImage] = useState<{ scriptId: string, action: 'add' | 'replace', index?: number } | null>(null);
+  const [isGeneratingImage, setIsGeneratingImage] = useState<{ scriptId: string, rowIdx: number, action: 'add' | 'replace', imgIdx?: number } | null>(null);
 
   const [filterFormat, setFilterFormat] = useState<string>('Все');
   const [filterProduct, setFilterProduct] = useState<string>('Все');
@@ -149,18 +149,38 @@ export default function ScriptStudio({ id }: { id: string }) {
     }
   };
 
-  const handleGenerateImage = async (script: any, action: 'add' | 'replace' = 'add', index?: number) => {
-    setIsGeneratingImage({ scriptId: script.id, action, index });
+  // Parse markdown table into rows (returns array of cell arrays, skipping separator row)
+  const parseTableRows = (content: string): string[][] => {
+    const cleaned = content
+      .replace(/^```(?:markdown|html)?\n?/i, '')
+      .replace(/```$/i, '')
+      .replace(/\|\s*\|---/g, '|\n|---')
+      .trim();
+    const lines = cleaned.split('\n').filter(l => l.trim().startsWith('|'));
+    return lines
+      .filter(l => !l.replace(/\|/g, '').replace(/-/g, '').trim().startsWith('') || l.replace(/[|\-\s]/g, '').length > 0)
+      .filter(l => !l.replace(/\|/g, '').replace(/-+/g, '').trim() === false)
+      .map(l => {
+        const parts = l.split('|');
+        return parts.slice(1, parts.length - 1).map(p => p.trim());
+      })
+      .filter(row => !row.every(cell => /^-+$/.test(cell.replace(/\s/g, ''))));
+  };
+
+  // Generate images for a specific table row
+  const handleGenerateRowImage = async (script: any, rowIdx: number, rowText: string, action: 'add' | 'replace' = 'add', imgIdx?: number) => {
+    setIsGeneratingImage({ scriptId: script.id, rowIdx, action, imgIdx });
     try {
-      const oldImageUrl = action === 'replace' && index !== undefined ? script.images?.[index] : undefined;
+      const rowImages: Record<number, string[]> = script.rowImages || {};
+      const oldImageUrl = action === 'replace' && imgIdx !== undefined ? rowImages[rowIdx]?.[imgIdx] : undefined;
 
       const res = await fetch('/api/images/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           projectId: id,
-          scriptId: script.id,
-          scriptText: script.content,
+          scriptId: `${script.id}_row${rowIdx}`,
+          scriptText: rowText,
           avatarName: script.avatarName,
           productName: script.productName || project?.name,
           action,
@@ -172,29 +192,26 @@ export default function ScriptStudio({ id }: { id: string }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to generate image');
 
-      // Update script with new image
       const newScripts = [...scripts];
       const scriptIndex = newScripts.findIndex(s => s.id === script.id);
-      
       if (scriptIndex !== -1) {
-        const targetScript = newScripts[scriptIndex];
-        const images = [...(targetScript.images || [])];
-        
+        const targetScript = { ...newScripts[scriptIndex] };
+        const newRowImages: Record<number, string[]> = { ...(targetScript.rowImages || {}) };
+        const existingRowImgs = [...(newRowImages[rowIdx] || [])];
+
         if (action === 'add') {
-          if (data.urls && data.urls.length > 0) {
-            images.push(...data.urls);
-          } else if (data.url) {
-            images.push(data.url);
-          }
-        } else if (action === 'replace' && index !== undefined) {
-          images[index] = data.url;
+          if (data.urls?.length > 0) existingRowImgs.push(...data.urls);
+          else if (data.url) existingRowImgs.push(data.url);
+        } else if (action === 'replace' && imgIdx !== undefined) {
+          existingRowImgs[imgIdx] = data.urls?.[0] || data.url;
         }
 
-        targetScript.images = images;
+        newRowImages[rowIdx] = existingRowImgs;
+        targetScript.rowImages = newRowImages;
+        newScripts[scriptIndex] = targetScript;
         setScripts(newScripts);
         localStorage.setItem(`projectScripts_${id}`, JSON.stringify(newScripts));
 
-        // Save to DB if possible
         if (id && id !== 'temp-id') {
           fetch('/api/projects', {
             method: 'PUT',
@@ -209,6 +226,11 @@ export default function ScriptStudio({ id }: { id: string }) {
     } finally {
       setIsGeneratingImage(null);
     }
+  };
+
+  // Legacy: keep for backwards compat
+  const handleGenerateImage = async (script: any, action: 'add' | 'replace' = 'add', index?: number) => {
+    return handleGenerateRowImage(script, -1, script.content, action, index);
   };
 
   if (!mounted) return null;
@@ -379,137 +401,168 @@ export default function ScriptStudio({ id }: { id: string }) {
                 </div>
               </div>
 
-              {/* Image Gallery */}
-              <div style={{ padding: '1.5rem 2rem', background: '#fafbfc', borderBottom: '1px solid #e2e8f0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                  <div>
-                    <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1rem', fontWeight: 700, color: '#1e293b', margin: 0 }}>
-                      <ImageIcon size={18} style={{ color: '#6366f1' }} />
-                      Визуалы для этого сценария (gpt-image-1)
-                      {script.images && script.images.length > 0 && (
-                        <span style={{ background: '#e0e7ff', color: '#4338ca', fontSize: '0.75rem', padding: '0.15rem 0.6rem', borderRadius: '99px', fontWeight: 600 }}>
-                          {script.images.length} шт.
-                        </span>
-                      )}
-                    </h4>
-                    <p style={{ margin: '0.25rem 0 0', fontSize: '0.8rem', color: '#94a3b8' }}>
-                      Генерирует 3 варианта через gpt-image-1 на основе текста именно этого сценария
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleGenerateImage(script, 'add')}
-                    disabled={isGeneratingImage !== null}
-                    className="btn btn-primary shadow-sm"
-                    style={{ padding: '0.65rem 1.25rem', fontSize: '0.875rem', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: isGeneratingImage !== null && isGeneratingImage.scriptId !== script.id ? 0.5 : 1 }}
-                  >
-                    {isGeneratingImage?.scriptId === script.id && isGeneratingImage?.action === 'add' ? (
-                      <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}><Loader2 size={16} /></span> Генерирую 3 варианта…</>
-                    ) : (
-                      <><Plus size={16} /> Сгенерировать 3 варианта</>
-                    )}
-                  </button>
-                </div>
-                
-                {script.images && script.images.length > 0 ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' }}>
-                    {script.images.map((imgUrl: string, imgIdx: number) => (
-                      <div key={imgIdx} style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', background: '#f1f5f9', aspectRatio: '1/1', boxShadow: '0 2px 8px rgba(0,0,0,0.07)' }}>
-                        <img src={imgUrl} alt={`Визуал ${imgIdx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        <div style={{ position: 'absolute', top: '0.5rem', left: '0.5rem', background: 'rgba(0,0,0,0.55)', color: 'white', fontSize: '0.7rem', fontWeight: 700, padding: '0.2rem 0.5rem', borderRadius: '6px' }}>
-                          #{imgIdx + 1}
-                        </div>
-                        <div
-                          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.55)', opacity: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transition: 'opacity 0.2s', gap: '0.5rem' }}
-                          onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                          onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}
-                        >
-                          <a href={imgUrl} target="_blank" rel="noreferrer" style={{ background: 'white', color: '#1e293b', padding: '0.4rem 0.9rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>🔍 Открыть</a>
-                          <button
-                            onClick={() => handleGenerateImage(script, 'replace', imgIdx)}
-                            disabled={isGeneratingImage !== null}
-                            style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.4)', color: 'white', padding: '0.4rem 0.9rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-                          >
-                            {isGeneratingImage?.scriptId === script.id && isGeneratingImage?.index === imgIdx ? (
-                              <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}><Loader2 size={14} /></span> Замена…</>
-                            ) : (
-                              <><RefreshCw size={14} /> Заменить</>
-                            )}
-                          </button>
-                        </div>
+
+              {/* Content + per-row image generation */}
+              <div style={{ padding: '1.5rem', overflowX: 'auto' }}>
+                {(() => {
+                  const tableRows = parseTableRows(script.content);
+                  const headerRow = tableRows[0] || [];
+                  const dataRows = tableRows.slice(1);
+                  const rowImages: Record<number, string[]> = script.rowImages || {};
+
+                  if (editingScriptId === script.id) {
+                    return (
+                      <div style={{ overflowX: 'auto' }}>
+                        <table className="script-table" style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1rem', border: '1px solid #cbd5e1' }}>
+                          <tbody>
+                            {editTableData.map((row, rIdx) => (
+                              <tr key={rIdx}>
+                                {row.map((cell, cIdx) => {
+                                  const isHeaderOrSeparator = rIdx === 0 || rIdx === 1 || cell.includes('---');
+                                  if (isHeaderOrSeparator) {
+                                    return (
+                                      <td key={cIdx} style={{ padding: '1rem', border: '1px solid #cbd5e1', background: '#f8fafc', fontWeight: 600 }}>
+                                        {cell}
+                                      </td>
+                                    );
+                                  }
+                                  return (
+                                    <td key={cIdx} style={{ padding: 0, border: '1px solid #cbd5e1', verticalAlign: 'top' }}>
+                                      <textarea
+                                        value={cell}
+                                        onChange={(e) => {
+                                          const newData = [...editTableData];
+                                          newData[rIdx][cIdx] = e.target.value;
+                                          setEditTableData(newData);
+                                        }}
+                                        style={{ width: '100%', minHeight: '150px', padding: '1rem', border: 'none', resize: 'vertical', outline: 'none', fontFamily: 'inherit', fontSize: '0.95rem' }}
+                                      />
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
-                    ))}
-                    {/* Add more button */}
-                    <button
-                      onClick={() => handleGenerateImage(script, 'add')}
-                      disabled={isGeneratingImage !== null}
-                      style={{ borderRadius: '12px', border: '2px dashed #c7d2fe', background: '#f5f3ff', color: '#6366f1', aspectRatio: '1/1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = '#ede9fe'; }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = '#f5f3ff'; }}
-                    >
-                      {isGeneratingImage?.scriptId === script.id && isGeneratingImage?.action === 'add' ? (
-                        <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}><Loader2 size={24} /></span> Генерирую…</>
-                      ) : (
-                        <><Plus size={24} /> Ещё 3 варианта</>
-                      )}
-                    </button>
-                  </div>
-                ) : (
-                  <div style={{ padding: '2.5rem 2rem', textAlign: 'center', background: 'white', borderRadius: '12px', border: '2px dashed #c7d2fe' }}>
-                    <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🖼️</div>
-                    <p style={{ color: '#4338ca', fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.35rem' }}>Нет визуалов для этого сценария</p>
-                    <p style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Нажмите «Сгенерировать 3 варианта» — gpt-image-1 создаст 3 уникальных изображения по тексту именно этого сценария</p>
-                  </div>
-                )}
-              </div>
+                    );
+                  }
 
+                  if (dataRows.length === 0) {
+                    // Fallback: render markdown as-is (no table detected)
+                    return (
+                      <div className="markdown-content">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+                          {script.content.replace(/^```(?:markdown|html)?\n?/i, '').replace(/```$/i, '').trim()}
+                        </ReactMarkdown>
+                      </div>
+                    );
+                  }
 
-              {/* Content */}
-              <div className="markdown-content" style={{ padding: '1.5rem', overflowX: 'auto' }}>
-                {editingScriptId === script.id ? (
-                  <div style={{ overflowX: 'auto' }}>
-                    <table className="script-table" style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1rem', border: '1px solid #cbd5e1' }}>
-                      <tbody>
-                        {editTableData.map((row, rIdx) => (
-                          <tr key={rIdx}>
-                            {row.map((cell, cIdx) => {
-                              const isHeaderOrSeparator = rIdx === 0 || rIdx === 1 || cell.includes('---');
-                              if (isHeaderOrSeparator) {
-                                return (
-                                  <td key={cIdx} style={{ padding: '1rem', border: '1px solid #cbd5e1', background: '#f8fafc', fontWeight: 600 }}>
-                                    {cell}
-                                  </td>
-                                );
-                              }
-                              return (
-                                <td key={cIdx} style={{ padding: 0, border: '1px solid #cbd5e1', verticalAlign: 'top' }}>
-                                  <textarea
-                                    value={cell}
-                                    onChange={(e) => {
-                                      const newData = [...editTableData];
-                                      newData[rIdx][cIdx] = e.target.value;
-                                      setEditTableData(newData);
-                                    }}
-                                    style={{ width: '100%', minHeight: '150px', padding: '1rem', border: 'none', resize: 'vertical', outline: 'none', fontFamily: 'inherit', fontSize: '0.95rem' }}
-                                  />
-                                </td>
-                              );
-                            })}
-                          </tr>
+                  return (
+                    <div>
+                      {/* Header row */}
+                      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${headerRow.length}, 1fr)`, background: '#f8fafc', borderRadius: '10px 10px 0 0', border: '1px solid #e2e8f0', borderBottom: 'none' }}>
+                        {headerRow.map((cell, cIdx) => (
+                          <div key={cIdx} style={{ padding: '0.75rem 1rem', fontWeight: 700, fontSize: '0.85rem', color: '#475569', borderRight: cIdx < headerRow.length - 1 ? '1px solid #e2e8f0' : 'none' }}>
+                            {cell}
+                          </div>
                         ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
-                    {script.content
-                      .replace(/^```(?:markdown|html)?\n?/i, '')
-                      .replace(/```$/i, '')
-                      .replace(/\|\s*\|---/g, '|\n|---') // Fix if AI outputs header and separator on the same line
-                      .trim()}
-                  </ReactMarkdown>
-                )}
+                      </div>
+
+                      {/* Data rows with per-row image gallery */}
+                      {dataRows.map((row, dataRowIdx) => {
+                        const rowText = row.join('\n\n');
+                        const thisRowImgs = rowImages[dataRowIdx] || [];
+                        const isGenThisRow = isGeneratingImage?.scriptId === script.id && isGeneratingImage?.rowIdx === dataRowIdx;
+                        const isAnyGen = isGeneratingImage !== null;
+
+                        return (
+                          <div key={dataRowIdx} style={{ border: '1px solid #e2e8f0', borderTop: dataRowIdx === 0 ? '1px solid #e2e8f0' : 'none', borderRadius: dataRowIdx === dataRows.length - 1 && thisRowImgs.length === 0 ? '0 0 10px 10px' : '0' }}>
+                            {/* Row cells */}
+                            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${headerRow.length}, 1fr)`, background: dataRowIdx % 2 === 0 ? 'white' : '#fafbff' }}>
+                              {row.map((cell, cIdx) => (
+                                <div key={cIdx} style={{ padding: '1rem', fontSize: '0.9rem', color: '#334155', lineHeight: 1.6, borderRight: cIdx < headerRow.length - 1 ? '1px solid #e2e8f0' : 'none', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                                  {cell}
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Per-row image section */}
+                            <div style={{ padding: '1rem 1.25rem', background: '#f5f3ff', borderTop: '1px dashed #c7d2fe' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: thisRowImgs.length > 0 ? '0.75rem' : '0' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                  <ImageIcon size={15} style={{ color: '#6366f1' }} />
+                                  <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#4338ca' }}>
+                                    Визуалы концепции #{dataRowIdx + 1}
+                                  </span>
+                                  {thisRowImgs.length > 0 && (
+                                    <span style={{ background: '#e0e7ff', color: '#4338ca', fontSize: '0.7rem', padding: '0.1rem 0.5rem', borderRadius: '99px', fontWeight: 700 }}>
+                                      {thisRowImgs.length} шт.
+                                    </span>
+                                  )}
+                                </div>
+                                <button
+                                  onClick={() => handleGenerateRowImage(script, dataRowIdx, rowText, 'add')}
+                                  disabled={isAnyGen}
+                                  style={{
+                                    display: 'flex', alignItems: 'center', gap: '0.4rem',
+                                    background: isGenThisRow ? '#4338ca' : '#6366f1',
+                                    color: 'white', border: 'none', borderRadius: '8px',
+                                    padding: '0.4rem 0.9rem', fontSize: '0.78rem', fontWeight: 700,
+                                    cursor: isAnyGen ? 'not-allowed' : 'pointer',
+                                    opacity: isAnyGen && !isGenThisRow ? 0.5 : 1,
+                                    transition: 'all 0.2s'
+                                  }}
+                                >
+                                  {isGenThisRow && isGeneratingImage?.action === 'add' ? (
+                                    <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}><Loader2 size={13} /></span> Генерирую 3 шт…</>
+                                  ) : (
+                                    <><Plus size={13} /> {thisRowImgs.length > 0 ? 'Ещё 3 варианта' : 'Сгенерировать 3 варианта'}</>
+                                  )}
+                                </button>
+                              </div>
+
+                              {thisRowImgs.length > 0 && (
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '0.75rem' }}>
+                                  {thisRowImgs.map((imgUrl: string, imgIdx: number) => (
+                                    <div key={imgIdx} style={{ position: 'relative', borderRadius: '10px', overflow: 'hidden', border: '1px solid #c7d2fe', aspectRatio: '1/1', background: '#ede9fe', boxShadow: '0 2px 6px rgba(99,102,241,0.15)' }}>
+                                      <img src={imgUrl} alt={`Концепция ${dataRowIdx + 1}, вариант ${imgIdx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                      <div style={{ position: 'absolute', top: '0.35rem', left: '0.35rem', background: 'rgba(67,56,202,0.8)', color: 'white', fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.4rem', borderRadius: '5px' }}>
+                                        #{imgIdx + 1}
+                                      </div>
+                                      <div
+                                        style={{ position: 'absolute', inset: 0, background: 'rgba(67,56,202,0.7)', opacity: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', transition: 'opacity 0.2s' }}
+                                        onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                                        onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}
+                                      >
+                                        <a href={imgUrl} target="_blank" rel="noreferrer" style={{ background: 'white', color: '#4338ca', padding: '0.3rem 0.75rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700, textDecoration: 'none' }}>🔍 Открыть</a>
+                                        <button
+                                          onClick={() => handleGenerateRowImage(script, dataRowIdx, rowText, 'replace', imgIdx)}
+                                          disabled={isAnyGen}
+                                          style={{ background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.5)', color: 'white', padding: '0.3rem 0.75rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                                        >
+                                          {isGenThisRow && isGeneratingImage?.imgIdx === imgIdx ? (
+                                            <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}><Loader2 size={12} /></span> Замена</>
+                                          ) : (
+                                            <><RefreshCw size={12} /> Заменить</>
+                                          )}
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
+
           ))}
         </div>
       )}
