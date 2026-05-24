@@ -6,72 +6,41 @@ import { cookies } from 'next/headers';
 export const maxDuration = 300;
 export const dynamic = 'force-dynamic';
 
-/** Words that trigger OpenAI safety filter — replace with neutral equivalents */
-const EXPLICIT_WORDS: [RegExp, string][] = [
-  [/оргазм\w*/gi, 'задоволення'],
-  [/orgasm\w*/gi, 'pleasure'],
-  [/стогн\w*/gi, 'насолоджують'],
-  [/moan\w*/gi, 'enjoy'],
-  [/еротич\w*/gi, 'романтичн'],
-  [/erotic\w*/gi, 'romantic'],
-  [/секс(?!ія|ти|тор|уальн)/gi, 'близкість'],
-  [/\bsex\b/gi, 'intimacy'],
-  [/порно\w*/gi, 'контент'],
-  [/porn\w*/gi, 'content'],
-  [/nude|naked/gi, 'natural'],
-  [/інтим(?!н)/gi, 'особистий'],
-];
-
+/**
+ * Sanitize ONLY explicitly sexual/violent words — replace with neutral equivalents.
+ * DO NOT remove marketing/business/creative language.
+ */
 function sanitize(text: string): string {
-  let result = text;
-  for (const [pattern, replacement] of EXPLICIT_WORDS) {
-    result = result.replace(pattern, replacement);
-  }
-  return result.trim();
-}
-
-/** Extract only visual design tokens from the design brief column */
-function extractVisualStyle(brief: string): string {
-  const lines = brief.split(/\n|<br\s*\/?>/i);
-  const keep: string[] = [];
-
-  for (const line of lines) {
-    const lower = line.toLowerCase();
-    // Keep: color palette, brand style, composition, size, reference lines
-    if (
-      /колір|кольор|палітр|фон:|акцент|контраст|шрифт|розмір|стиль|бренд-гайд|brand|référence|pinterest|розташ|composition|layout|lighting|mood|gradient|тон |tone|1080|1024|instagram|facebook/i.test(lower)
-    ) {
-      // Strip quoted ad copy inside this line (text in long quotes)
-      const cleaned = line
-        .replace(/"[^"]{15,}"/g, '')
-        .replace(/«[^»]{15,}»/g, '')
-        .replace(/\*\*/g, '')
-        .trim();
-      if (cleaned.length > 5) keep.push(cleaned);
-    }
-  }
-
-  return sanitize(keep.join('\n')).substring(0, 600);
-}
-
-/** Build visual scene description from concept title + ad copy */
-function buildSceneDescription(conceptTitle: string, adCopy: string): string {
-  const title = sanitize(conceptTitle).replace(/<br\s*\/?>/gi, ' ').trim();
-  const copy = sanitize(adCopy)
-    .replace(/<br\s*\/?>/gi, ' ')
-    .replace(/\*\*/g, '')
-    .substring(0, 300)
+  return text
+    .replace(/<br\s*\/?>/gi, '\n')  // convert HTML line breaks to newlines
+    .replace(/\*\*/g, '')           // remove markdown bold
+    .replace(/оргазм\w*/gi, 'задоволення')
+    .replace(/orgasm\w*/gi, 'pleasure')
+    .replace(/стогн\w*/gi, 'насолоджуються')
+    .replace(/moan\w*/gi, 'enjoy')
+    .replace(/еротич\w*/gi, 'романтичн')
+    .replace(/erotic\w*/gi, 'romantic')
+    .replace(/\bсекс(?!ія|ти|тор|уальн)\b/gi, 'близькість')
+    .replace(/\bsex\b/gi, 'intimacy')
+    .replace(/порно\w*/gi, 'контент')
+    .replace(/porn\w*/gi, 'content')
+    .replace(/\bnude\b|\bnaked\b/gi, 'natural')
+    .replace(/інтим(?!н)/gi, 'особистий')
     .trim();
-
-  if (!title && !copy) return '';
-  return [title && `Ad concept: "${title}"`, copy && `Scene context: ${copy}`]
-    .filter(Boolean)
-    .join('. ');
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const { projectId, scriptId, cells, designBrief, avatarName, productName, action, oldImageUrl, count = 1 } = await req.json();
+    const {
+      projectId,
+      scriptId,
+      cells,          // string[] — full table row: [№, conceptTitle, adCopy, designBrief]
+      designBrief,    // fallback if cells not provided
+      productName,
+      action,
+      oldImageUrl,
+      count = 1
+    } = await req.json();
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
@@ -80,47 +49,54 @@ export async function POST(req: NextRequest) {
 
     const openai = new OpenAI({ apiKey });
 
-    // cells = all row cells, e.g. [№, conceptTitle, adCopyText, designBriefText]
-    // If cells not provided, fall back to designBrief string
-    let conceptTitle = '';
-    let adCopyText = '';
-    let rawBrief = designBrief || '';
+    // ─── Build the full creative brief from the row cells ───────────────────
+    let fullCreativeBrief = '';
 
     if (Array.isArray(cells) && cells.length >= 2) {
-      conceptTitle = cells[1] || '';           // column 2: concept name
-      adCopyText = cells[2] || cells[1] || ''; // column 3: ad copy
-      rawBrief = cells[cells.length - 1] || designBrief || ''; // last column: design brief
+      const parts: string[] = [];
+
+      // Skip first cell if it's just a number (row index)
+      const startIdx = /^\d+$/.test((cells[0] || '').trim()) ? 1 : 0;
+
+      const labels = ['Назва концепції', 'Текст сценарію', 'ТЗ для дизайнера'];
+      cells.slice(startIdx).forEach((cell, i) => {
+        const cleaned = sanitize(cell || '').trim();
+        if (cleaned.length > 3) {
+          const label = labels[i] || `Частина ${i + 1}`;
+          parts.push(`${label}:\n${cleaned}`);
+        }
+      });
+
+      fullCreativeBrief = parts.join('\n\n');
+    } else if (designBrief) {
+      fullCreativeBrief = sanitize(designBrief);
     }
 
-    const sceneDescription = buildSceneDescription(conceptTitle, adCopyText);
-    const visualStyle = extractVisualStyle(rawBrief);
+    if (!fullCreativeBrief) {
+      fullCreativeBrief = 'Professional advertising image, modern design, premium aesthetic.';
+    }
 
+    // ─── 3 compositional variations ─────────────────────────────────────────
     const variations = [
-      'Dynamic close-up with strong emotion, cinematic lighting.',
-      'Environmental lifestyle scene with authentic context.',
-      'Bold graphic design, strong typography layout, modern art direction.',
+      'Close-up dynamic composition, bold typography visible, cinematic lighting.',
+      'Wide lifestyle/environment scene, authentic real-world context.',
+      'Flat design / graphic poster style, strong visual hierarchy, bold colors.',
     ];
 
     const buildPrompt = (variationHint: string): string => {
-      const parts: string[] = [
-        `Create a professional advertising image. Product: "${sanitize(productName || 'product')}".`,
-      ];
-
-      if (sceneDescription) {
-        parts.push(`Visual concept:\n${sceneDescription}`);
-      }
-
-      if (visualStyle) {
-        parts.push(`Design style and color palette:\n${visualStyle}`);
-      }
-
-      parts.push(`Composition: ${variationHint}`);
-      parts.push(`Produce a premium, high-impact advertising visual matching the concept above. Focus on the ad's message and aesthetic.`);
-
-      return parts.join('\n\n');
+      return [
+        `Create a professional advertising image for the product "${sanitize(productName || 'product')}".`,
+        `Use the following creative brief EXACTLY — it defines the concept, scene, text, colors, and layout for this specific ad:`,
+        `---`,
+        fullCreativeBrief,
+        `---`,
+        `Compositional approach: ${variationHint}`,
+        `Generate a premium, high-quality visual that accurately reflects the brief above. The image must be thematically relevant to the ad concept described.`,
+      ].join('\n\n');
     };
 
-    console.log(`[images/generate] ${count} image(s) for script ${scriptId}. Concept: "${conceptTitle}"`);
+    console.log(`[images/generate] Generating ${count} images for: ${scriptId}`);
+    console.log(`[images/generate] Brief preview: ${fullCreativeBrief.substring(0, 200)}...`);
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -132,7 +108,6 @@ export async function POST(req: NextRequest) {
 
     for (let index = 0; index < count; index++) {
       const prompt = buildPrompt(variations[index % variations.length]);
-      console.log(`[images/generate] Prompt #${index}: ${prompt.substring(0, 200)}...`);
 
       let b64ImageData: string;
       try {
@@ -151,17 +126,16 @@ export async function POST(req: NextRequest) {
       } catch (openAiError: any) {
         const msg: string = openAiError?.message || '';
         console.error('[images/generate] OpenAI error:', msg);
-        console.error('[images/generate] Prompt was:\n', buildPrompt(variations[index % variations.length]));
 
         if (msg.includes('does not exist') || msg.includes('model_not_found')) {
-          return NextResponse.json({ error: `gpt-image-1 недоступна для этого ключа.\n${msg}` }, { status: 400 });
+          return NextResponse.json({ error: `Модель gpt-image-1 недоступна. Проверьте ключ OpenAI.\n${msg}` }, { status: 400 });
         }
         if (msg.includes('billing') || msg.includes('quota') || msg.includes('insufficient')) {
           return NextResponse.json({ error: `Недостаточно кредитов OpenAI. Пополните баланс.\n${msg}` }, { status: 402 });
         }
         if (msg.includes('safety')) {
           return NextResponse.json({
-            error: `OpenAI заблокировал запрос из-за контента. Для этой концепции невозможно сгенерировать изображение — слишком чувствительная тематика. Попробуйте другую концепцию.\n\n${msg}`
+            error: `OpenAI заблокировал запрос: контент концепции несовместим с правилами генерации изображений. Попробуйте другую концепцию или перефразируйте ТЗ.\n\nОшибка: ${msg}`
           }, { status: 400 });
         }
         throw openAiError;
@@ -175,9 +149,9 @@ export async function POST(req: NextRequest) {
         .upload(fileName, buffer, { contentType: 'image/png', upsert: false });
 
       if (uploadError) {
-        let errMsg = `Ошибка загрузки в Supabase: ${uploadError.message}.`;
+        let errMsg = `Supabase: ${uploadError.message}.`;
         if (uploadError.message.includes('Bucket not found')) errMsg += ' Создайте бакет "creatives".';
-        else if (uploadError.message.includes('row-level security')) errMsg += ' Добавьте RLS политику INSERT для бакета "creatives".';
+        else if (uploadError.message.includes('row-level security')) errMsg += ' Добавьте RLS INSERT для бакета "creatives".';
         throw new Error(errMsg);
       }
 
