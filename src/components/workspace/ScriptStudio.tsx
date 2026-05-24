@@ -385,7 +385,7 @@ export default function ScriptStudio({ id }: { id: string }) {
                   <div>
                     <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1rem', fontWeight: 700, color: '#1e293b', margin: 0 }}>
                       <ImageIcon size={18} style={{ color: '#6366f1' }} />
-                      Визуалы для этого сценария
+                      Визуалы для этого сценария (gpt-image-1)
                       {script.images && script.images.length > 0 && (
                         <span style={{ background: '#e0e7ff', color: '#4338ca', fontSize: '0.75rem', padding: '0.15rem 0.6rem', borderRadius: '99px', fontWeight: 600 }}>
                           {script.images.length} шт.
@@ -393,7 +393,7 @@ export default function ScriptStudio({ id }: { id: string }) {
                       )}
                     </h4>
                     <p style={{ margin: '0.25rem 0 0', fontSize: '0.8rem', color: '#94a3b8' }}>
-                      Генерирует 3 варианта через DALL-E 3 на основе текста именно этого сценария
+                      Генерирует 3 варианта через gpt-image-1 на основе текста именно этого сценария
                     </p>
                   </div>
                   <button
@@ -457,7 +457,7 @@ export default function ScriptStudio({ id }: { id: string }) {
                   <div style={{ padding: '2.5rem 2rem', textAlign: 'center', background: 'white', borderRadius: '12px', border: '2px dashed #c7d2fe' }}>
                     <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🖼️</div>
                     <p style={{ color: '#4338ca', fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.35rem' }}>Нет визуалов для этого сценария</p>
-                    <p style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Нажмите «Сгенерировать 3 варианта» — DALL-E 3 создаст 3 уникальных изображения по тексту именно этого сценария</p>
+                    <p style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Нажмите «Сгенерировать 3 варианта» — gpt-image-1 создаст 3 уникальных изображения по тексту именно этого сценария</p>
                   </div>
                 )}
               </div>
