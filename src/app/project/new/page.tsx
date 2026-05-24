@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2, FilePlus, Users, Layout } from 'lucide-react';
 import Link from 'next/link';
+import TopHeader from '@/components/TopHeader';
 
 const CATEGORIES = ['Образование', 'Услуги', 'Товары', 'IT/SaaS', 'B2B', 'Другое'];
 const INCOME_LEVELS = ['Низкий', 'Средний', 'Высокий', 'Любой'];
@@ -302,8 +303,10 @@ export default function NewProjectPage() {
   }
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 1rem 5rem' }} suppressHydrationWarning>
-      <button onClick={() => router.push('/')} style={{ background: 'none', border: 'none', padding: '1rem 0', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#64748b', fontWeight: 600 }}>
+    <div className="app-container" suppressHydrationWarning>
+      <TopHeader />
+      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 1rem 5rem' }}>
+        <button onClick={() => router.push('/')} style={{ background: 'none', border: 'none', padding: '1rem 0', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#64748b', fontWeight: 600 }}>
         <ArrowLeft size={20} /> Назад
       </button>
 
@@ -431,6 +434,7 @@ export default function NewProjectPage() {
           Запустить создание аватаров
         </button>
       </form>
+    </div>
     </div>
   );
 }

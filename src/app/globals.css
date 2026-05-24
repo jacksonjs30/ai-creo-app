@@ -64,6 +64,60 @@ button {
   padding: 0 1.5rem;
 }
 
+.workspace-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--background);
+}
+
+.workspace-sidebar {
+  width: 280px;
+  background-color: white;
+  border-right: 1px solid var(--border);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.workspace-content {
+  flex: 1;
+  padding: 2rem 3rem;
+  background-color: #f1f5f9; /* Soft grey from Banani */
+  min-height: 100vh;
+  overflow-y: auto;
+}
+
+.workspace-step {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 0.25rem;
+}
+
+.workspace-step:hover {
+  background-color: var(--secondary);
+}
+
+.workspace-step.active {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.workspace-step.active .step-icon {
+  color: var(--primary);
+}
+
 header {
   padding: 1.5rem 0;
   display: flex;

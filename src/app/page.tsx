@@ -3,6 +3,7 @@
 import { Plus, Folder, Clock, CheckCircle, Play, Loader2, RefreshCw, Trash2, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import TopHeader from '@/components/TopHeader';
 
 interface Project {
   id: string;
@@ -220,7 +221,8 @@ export default function Dashboard() {
   };
 
   return (
-    <div suppressHydrationWarning>
+    <div className="app-container" suppressHydrationWarning>
+      <TopHeader />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
         <div>
           <h1 className="page-title">Мои проекты</h1>

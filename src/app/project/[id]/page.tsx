@@ -3,41 +3,28 @@
 import { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import BackButton from '@/components/BackButton';
-import { Settings, Users, BrainCircuit, Activity, ShieldAlert, ChevronRight, RefreshCw, Copy, CheckCircle2 } from 'lucide-react';
-
-// Мок данные аватаров для MVP
-const mockAvatars = [
-  {
-    id: 1,
-    segmentName: "Маркетологи / Офисные работники / Молодожены и т.д",
-    summary: "Устали копировать данные вручную. Хотят уйти вовремя. Много задач и т.д.",
-    stats: { pains: 5, fears: 3, objections: 2 },
-    portrait: "Аналитик, 25-35 лет. Глаза красные от таблиц. Боится потерять клиента из-за 'разъехавшихся' данных. Готов платить за сервис, если он реально автоматом соберет всё воедино и покажет красивый график для босса."
-  },
-  {
-    id: 2,
-    segmentName: "Владельцы малого бизнеса (SMB)",
-    summary: "Нуждаются в контроле цифр без звонков бухгалтеру.",
-    stats: { pains: 4, fears: 4, objections: 3 },
-    portrait: "Собственник, 35-50 лет. Нет времени на учебу. Много делегирует, но теряет контроль финансов. Ищет 'волшебную кнопку' для ясности."
-  }
-];
+import { Users, BrainCircuit, ChevronRight, RefreshCw, Copy, CheckCircle2, PenTool, FileText } from 'lucide-react';
+import GenerateCreative from '@/components/workspace/GenerateCreative';
+import ScriptStudio from '@/components/workspace/ScriptStudio';
 
 export default function ProjectDashboard({ params }: { params: Promise<{ id: string }> }) {
-  // Использование нового React API для params в серверных/клиентских компонентах
   const { id } = use(params);
   const router = useRouter();
 
   const [avatars, setAvatars] = useState<any[]>([]);
-  const [isNavigating, setIsNavigating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [projectName, setProjectName] = useState('');
+
+  // Tab state for the workspace sections
+  const [activeSection, setActiveSection] = useState<'avatars' | 'generate' | 'scripts'>('avatars');
 
   useEffect(() => {
     async function fetchProject() {
       if (!id || id === 'temp-id') {
         const stored = localStorage.getItem('tempGeneratedAvatars');
         if (stored) setAvatars(JSON.parse(stored));
+        const brief = localStorage.getItem('tempBrief');
+        if (brief) setProjectName(JSON.parse(brief).productName || '');
         setIsLoading(false);
         return;
       }
@@ -50,6 +37,7 @@ export default function ProjectDashboard({ params }: { params: Promise<{ id: str
           if (proj && proj.avatars) {
             setAvatars(proj.avatars);
           }
+          setProjectName(proj?.name || proj?.productName || '');
         }
       } catch (e) {
         console.error('Fetch error:', e);
@@ -60,20 +48,13 @@ export default function ProjectDashboard({ params }: { params: Promise<{ id: str
     fetchProject();
   }, [id]);
 
-  const handleProceedToGenerate = () => {
-    setIsNavigating(true);
-    router.push(`/project/${id}/generate`);
-  };
-
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopyAllToExcel = () => {
     if (avatars.length === 0) return;
 
-    // Определяем максимальное количество CJM среди всех аватаров
     const maxCJMs = Math.max(...avatars.map(a => (a.cjm || []).length));
 
-    // Определяем строки (параметры)
     const rowLabels = [
       "СЕГМЕНТ",
       "Название",
@@ -88,7 +69,6 @@ export default function ProjectDashboard({ params }: { params: Promise<{ id: str
       "Возражения",
     ];
 
-    // Добавляем строки для CJM
     for (let i = 0; i < maxCJMs; i++) {
       rowLabels.push(`CJM Сценарий ${i + 1}`);
     }
@@ -103,9 +83,8 @@ export default function ProjectDashboard({ params }: { params: Promise<{ id: str
       }).join('\n\n');
     };
 
-    // Генерируем данные для каждого ряда
     const finalRows = rowLabels.map((label, rowIndex) => {
-      const rowData = [label]; // Первый столбец - название параметра
+      const rowData = [label];
 
       avatars.forEach(a => {
         let value = "";
@@ -121,7 +100,6 @@ export default function ProjectDashboard({ params }: { params: Promise<{ id: str
         else if (rowIndex === 9) value = formatList(a.motivations, 'motivation');
         else if (rowIndex === 10) value = formatList(a.objections, 'objection');
         else {
-          // Это строки CJM
           const cjmIndex = rowIndex - 11;
           const cjm = a.cjm && a.cjm[cjmIndex];
           if (cjm) {
@@ -152,90 +130,146 @@ export default function ProjectDashboard({ params }: { params: Promise<{ id: str
 
   return (
     <div suppressHydrationWarning>
-      <BackButton fallbackUrl="/" />
-
-      <div className="flex-between mb-8" style={{ alignItems: 'flex-start' }}>
-        <div>
-          <h1 className="page-title">Аватары проекта</h1>
-          <p className="page-subtitle">Мы провели исследование и выделили {avatars.length} сегмента аудитории</p>
-        </div>
-
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <button
-            onClick={handleCopyAllToExcel}
-            className={`btn ${isCopied ? 'btn-success' : 'btn-secondary'}`}
-            style={{ padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-          >
-            {isCopied ? <CheckCircle2 size={18} /> : <Copy size={18} />}
-            {isCopied ? 'Скопировано!' : 'Для таблиц (Excel/Sheets)'}
-          </button>
-
-          <button
-            onClick={handleProceedToGenerate}
-            disabled={isNavigating}
-            className="btn btn-primary"
-            style={{ padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-          >
-            {isNavigating ? <RefreshCw size={18} className="animate-spin" /> : <Settings size={18} />}
-            {isNavigating ? 'Загрузка...' : 'Перейти к генерации креативов'}
-          </button>
-        </div>
+      {/* Project header */}
+      <div style={{ marginBottom: '2rem' }}>
+        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.25rem' }}>{projectName || 'Проект'}</h1>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Рабочее пространство проекта — исследование, генерация и сценарии</p>
       </div>
 
-      <div style={{ display: 'grid', gap: '1.5rem' }}>
-        {avatars.map((avatar, idx) => (
-          <div key={avatar.id || idx} className="card" style={{ padding: '2rem' }}>
-            <div className="flex-between" style={{ borderBottom: '1px solid var(--border)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
-              <div>
-                <span className="badge badge-success" style={{ marginBottom: '0.5rem' }}>Сегмент #{idx + 1}</span>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>{avatar.segmentName}</h2>
-                <p style={{ color: 'var(--text-muted)', marginTop: '0.25rem' }}>{avatar.summary || (avatar.jtbd && avatar.jtbd[0]?.job) || ''}</p>
-              </div>
-              <div style={{ background: 'var(--secondary)', padding: '1rem', borderRadius: 'var(--radius-lg)', minWidth: 220 }}>
-                <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Статистика аватара</p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
-                  {[
-                    { label: 'JTBD', key: 'jtbd', color: '#3b82f6' },
-                    { label: 'Боли', key: 'pains', color: '#f59e0b' },
-                    { label: 'Страхи', key: 'fears', color: '#ef4444' },
-                    { label: 'Возражения', key: 'objections', color: '#8b5cf6' },
-                    { label: 'Маркеры', key: 'behaviorMarkers', color: '#06b6d4' },
-                    { label: 'CJM', key: 'cjm', color: '#10b981' },
-                    { label: 'Мотивации', key: 'motivations', color: '#f97316' },
-                  ].map(({ label, key, color }) => {
-                    const count = avatar[key]?.length || avatar.stats?.[key] || 0;
-                    return (
-                      <div key={key} className="tooltip-container" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem' }}>
-                        <span style={{ fontWeight: 700, color, fontSize: '1rem', minWidth: 20 }}>{count}</span>
-                        <span style={{ color: 'var(--text-muted)' }}>{label}</span>
-                      </div>
-                    );
-                  })}
+      {/* Section tabs */}
+      <div style={{ 
+        display: 'flex', 
+        gap: '0.25rem', 
+        marginBottom: '2rem', 
+        background: 'white', 
+        padding: '4px', 
+        borderRadius: '12px', 
+        border: '1px solid var(--border)',
+        boxShadow: 'var(--shadow-sm)'
+      }}>
+        {[
+          { key: 'avatars' as const, label: 'Avatar Research', icon: Users, count: avatars.length },
+          { key: 'generate' as const, label: 'Creative Studio', icon: PenTool },
+          { key: 'scripts' as const, label: 'Script Studio', icon: FileText },
+        ].map(tab => {
+          const Icon = tab.icon;
+          const isActive = activeSection === tab.key;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveSection(tab.key)}
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                padding: '0.75rem 1rem',
+                borderRadius: '10px',
+                border: 'none',
+                background: isActive ? 'var(--primary)' : 'transparent',
+                color: isActive ? 'white' : 'var(--text-muted)',
+                fontWeight: isActive ? 700 : 500,
+                fontSize: '0.875rem',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <Icon size={18} />
+              {tab.label}
+              {tab.count !== undefined && (
+                <span style={{
+                  background: isActive ? 'rgba(255,255,255,0.25)' : 'var(--secondary)',
+                  padding: '2px 8px',
+                  borderRadius: '99px',
+                  fontSize: '0.75rem',
+                  fontWeight: 700
+                }}>{tab.count}</span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Section content */}
+      {activeSection === 'avatars' && (
+        <div>
+          {/* Action bar */}
+          <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', justifyContent: 'flex-end' }}>
+            <button
+              onClick={handleCopyAllToExcel}
+              className={`btn ${isCopied ? 'btn-success' : 'btn-secondary'}`}
+              style={{ padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            >
+              {isCopied ? <CheckCircle2 size={18} /> : <Copy size={18} />}
+              {isCopied ? 'Скопировано!' : 'Для таблиц (Excel/Sheets)'}
+            </button>
+          </div>
+
+          {/* Avatar cards */}
+          <div style={{ display: 'grid', gap: '1.5rem' }}>
+            {avatars.map((avatar, idx) => (
+              <div key={avatar.id || idx} className="card" style={{ padding: '2rem', background: 'white' }}>
+                <div className="flex-between" style={{ borderBottom: '1px solid var(--border)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
+                  <div>
+                    <span className="badge badge-success" style={{ marginBottom: '0.5rem' }}>Сегмент #{idx + 1}</span>
+                    <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>{avatar.segmentName}</h2>
+                    <p style={{ color: 'var(--text-muted)', marginTop: '0.25rem' }}>{avatar.summary || (avatar.jtbd && avatar.jtbd[0]?.job) || ''}</p>
+                  </div>
+                  <div style={{ background: 'var(--secondary)', padding: '1rem', borderRadius: 'var(--radius-lg)', minWidth: 220 }}>
+                    <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Статистика аватара</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
+                      {[
+                        { label: 'JTBD', key: 'jtbd', color: '#3b82f6' },
+                        { label: 'Боли', key: 'pains', color: '#f59e0b' },
+                        { label: 'Страхи', key: 'fears', color: '#ef4444' },
+                        { label: 'Возражения', key: 'objections', color: '#8b5cf6' },
+                        { label: 'Маркеры', key: 'behaviorMarkers', color: '#06b6d4' },
+                        { label: 'CJM', key: 'cjm', color: '#10b981' },
+                        { label: 'Мотивации', key: 'motivations', color: '#f97316' },
+                      ].map(({ label, key, color }) => {
+                        const count = avatar[key]?.length || avatar.stats?.[key] || 0;
+                        return (
+                          <div key={key} className="tooltip-container" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem' }}>
+                            <span style={{ fontWeight: 700, color, fontSize: '1rem', minWidth: 20 }}>{count}</span>
+                            <span style={{ color: 'var(--text-muted)' }}>{label}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem' }}>
+                    <Users size={18} className="text-gradient" /> Психологический портрет
+                  </h4>
+                  <p style={{ lineHeight: 1.6, color: 'var(--foreground)' }}>
+                    {avatar.portrait}
+                  </p>
+                  <div style={{ marginTop: '1rem' }}>
+                    <Link
+                      href={`/project/${id}/avatar/${idx}`}
+                      className="btn btn-secondary"
+                      style={{ fontSize: '0.875rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                    >
+                      Показать полный JTBD и сценарии CJM <ChevronRight size={15} />
+                    </Link>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div>
-              <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem' }}>
-                <Users size={18} className="text-gradient" /> Психологический портрет
-              </h4>
-              <p style={{ lineHeight: 1.6, color: 'var(--foreground)' }}>
-                {avatar.portrait}
-              </p>
-              <div style={{ marginTop: '1rem' }}>
-                <Link
-                  href={`/project/${id}/avatar/${idx}`}
-                  className="btn btn-secondary"
-                  style={{ fontSize: '0.875rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
-                >
-                  Показать полный JTBD и сценарии CJM <ChevronRight size={15} />
-                </Link>
-              </div>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
 
+      {activeSection === 'generate' && (
+        <GenerateCreative id={id} />
+      )}
+
+      {activeSection === 'scripts' && (
+        <ScriptStudio id={id} />
+      )}
     </div>
   );
 }
