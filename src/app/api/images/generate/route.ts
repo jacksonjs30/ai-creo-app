@@ -111,33 +111,75 @@ export async function POST(req: NextRequest) {
       fullBrief = 'Professional advertising image, modern design, premium aesthetic.';
     }
 
-    // ─── Language-aware instructions ─────────────────────────────────────────
+    // ─── Assemble brief from cells with correct labels ────────────────────────
+    if (Array.isArray(cells) && cells.length >= 2) {
+      const parts: string[] = [];
+      const startIdx = /^\d+$/.test((cells[0] || '').trim()) ? 1 : 0;
+      const dataSlice = cells.slice(startIdx);
+      lang = detectLang(dataSlice.join(' '));
+
+      // Cell 0 after skip = concept name → CONTEXT ONLY, not text to render on image
+      // Cell 1 = ad copy text → scene context
+      // Cell 2+ = design brief → layout, colors, exact text to render
+      const cellLabels: Record<number, string> = {
+        0: lang === 'uk'
+          ? 'КОНТЕКСТ КОНЦЕПЦІЇ (тільки для розуміння теми — НЕ виводити цей текст на зображення)'
+          : lang === 'ru'
+          ? 'КОНТЕКСТ КОНЦЕПЦИИ (только для понимания темы — НЕ выводить этот текст на изображение)'
+          : 'CONCEPT CONTEXT (for theme understanding only — DO NOT render this text on the image)',
+        1: lang === 'uk' ? 'ТЕКСТ РЕКЛАМНОГО ОГОЛОШЕННЯ (сцена, контекст)' :
+           lang === 'ru' ? 'ТЕКСТ РЕКЛАМНОГО ОБЪЯВЛЕНИЯ (сцена, контекст)' :
+           'AD COPY TEXT (scene and context)',
+        2: lang === 'uk' ? 'ТЗ ДЛЯ ДИЗАЙНЕРА — ТОЧНИЙ ТЕКСТ, КОЛЬОРИ, РОЗТАШУВАННЯ (виконуй СТРОГО)' :
+           lang === 'ru' ? 'ТЗ ДЛЯ ДИЗАЙНЕРА — ТОЧНЫЙ ТЕКСТ, ЦВЕТА, РАСПОЛОЖЕНИЕ (выполнять СТРОГО)' :
+           'DESIGNER BRIEF — EXACT TEXT, COLORS, LAYOUT (follow STRICTLY)',
+      };
+
+      dataSlice.forEach((cell, i) => {
+        const cleaned = sanitize(cell || '').trim();
+        if (cleaned.length > 3) {
+          const label = cellLabels[i] || `БЛОК ${i + 1}`;
+          parts.push(`[${label}]\n${cleaned}`);
+        }
+      });
+
+      fullBrief = parts.join('\n\n');
+    }
+
+    // ─── Language-aware instructions ──────────────────────────────────────────
     const langInstructions = LANG_INSTRUCTIONS[lang];
 
-    // ─── Compositional variations ────────────────────────────────────────────
+    // ─── Cyrillic-specific extra instruction ──────────────────────────────────
+    const cyrillicHint = (lang === 'uk' || lang === 'ru') ? (
+      lang === 'uk'
+        ? '\nОСОБЛИВО ВАЖЛИВО — ТЕКСТ НА ЗОБРАЖЕННІ: Рендери кожну літеру кирилиці ТОЧНО та ЧІТКО. Жодних нечитабельних символів, жодних замін кириличних букв латиницею або псевдографікою. Весь текст має бути написаний стандартними кириличними літерами українського алфавіту.'
+        : '\nОСОБЕННО ВАЖНО — ТЕКСТ НА ИЗОБРАЖЕНИИ: Рендери каждую букву кириллицы ТОЧНО и ЧЁТКО. Никаких нечитаемых символов, никаких замен кириллических букв латиницей или псевдографикой. Весь текст должен быть написан стандартными кириллическими буквами.'
+    ) : '';
+
+    // ─── Compositional variations ─────────────────────────────────────────────
     const variations = [
-      lang === 'uk' ? 'Крупний план з сильною емоцією, кінематографічне освітлення, жирна типографіка.' :
-      lang === 'ru' ? 'Крупный план с сильной эмоцией, кинематографическое освещение, жирная типографика.' :
-      'Dynamic close-up with strong emotion, cinematic lighting, bold typography.',
+      lang === 'uk' ? 'Крупний план, кінематографічне освітлення, виразна типографіка.' :
+      lang === 'ru' ? 'Крупный план, кинематографическое освещение, выразительная типографика.' :
+      'Dynamic close-up, cinematic lighting, bold typography.',
 
-      lang === 'uk' ? 'Сцена реального середовища, автентичний контекст, природне освітлення.' :
-      lang === 'ru' ? 'Сцена реальной среды, аутентичный контекст, естественное освещение.' :
-      'Real environment lifestyle scene, authentic context, natural lighting.',
+      lang === 'uk' ? 'Сцена реального середовища, природне освітлення, автентичний контекст.' :
+      lang === 'ru' ? 'Сцена реальной среды, естественное освещение, аутентичный контекст.' :
+      'Real environment lifestyle scene, natural lighting.',
 
-      lang === 'uk' ? 'Графічний дизайн плакату, виразна візуальна ієрархія, сміливі кольори.' :
-      lang === 'ru' ? 'Графический дизайн плаката, выразительная визуальная иерархия, смелые цвета.' :
-      'Graphic poster design, strong visual hierarchy, bold colors.',
+      lang === 'uk' ? 'Графічний плакат, виразна ієрархія, сміливі кольори.' :
+      lang === 'ru' ? 'Графический плакат, выразительная иерархия, смелые цвета.' :
+      'Graphic poster, strong visual hierarchy, bold colors.',
     ];
 
     const buildPrompt = (variationHint: string): string => {
       const productLabel = lang === 'uk' ? 'Продукт' : lang === 'ru' ? 'Продукт' : 'Product';
-      const composLabel = lang === 'uk' ? 'Стиль композиції' : lang === 'ru' ? 'Стиль композиции' : 'Composition style';
-      const briefHeader = lang === 'uk' ? 'ПОВНЕ ТЗ РЕКЛАМНОГО КРЕАТИВУ (виконуй ТОЧНО)' :
-                          lang === 'ru' ? 'ПОЛНОЕ ТЗ РЕКЛАМНОГО КРЕАТИВА (выполнять ТОЧНО)' :
-                          'FULL CREATIVE BRIEF (follow EXACTLY)';
+      const composLabel  = lang === 'uk' ? 'Стиль композиції' : lang === 'ru' ? 'Стиль композиции' : 'Composition style';
+      const briefHeader  = lang === 'uk' ? 'ПОВНЕ ТЗ РЕКЛАМНОГО КРЕАТИВУ' :
+                           lang === 'ru' ? 'ПОЛНОЕ ТЗ РЕКЛАМНОГО КРЕАТИВА' :
+                           'FULL CREATIVE BRIEF';
 
       return [
-        langInstructions,
+        langInstructions + cyrillicHint,
         '',
         `${productLabel}: "${sanitize(productName || '')}"`,
         '',
@@ -148,6 +190,7 @@ export async function POST(req: NextRequest) {
         `${composLabel}: ${variationHint}`,
       ].join('\n');
     };
+
 
     console.log(`[images/generate] lang=${lang}, count=${count}, script=${scriptId}`);
     console.log(`[images/generate] Brief (first 300 chars):\n${fullBrief.substring(0, 300)}`);
