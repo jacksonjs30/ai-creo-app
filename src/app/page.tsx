@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, Folder, Clock, CheckCircle, Play, Loader2, RefreshCw, Trash2, FileText } from 'lucide-react';
+import { Plus, Folder, Clock, CheckCircle, Play, Loader2, RefreshCw, Trash2, FileText, Search, Filter, BarChart2, Users, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import TopHeader from '@/components/TopHeader';
@@ -18,6 +18,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [hasLocal, setHasLocal] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [stats, setStats] = useState({ totalProjects: 0, totalAvatars: 0, totalScripts: 0 });
 
   useEffect(() => {
     setMounted(true);
@@ -63,6 +65,9 @@ export default function Dashboard() {
       }
     }
 
+    let tAvatars = 0;
+    let tScripts = 0;
+
     allProjects = allProjects.map(p => {
       let scriptsCount = 0;
       try {
@@ -76,7 +81,17 @@ export default function Dashboard() {
         });
         scriptsCount = allScriptsMap.size;
       } catch (e) {}
+
+      tAvatars += (p.avatars?.length || 0);
+      tScripts += scriptsCount;
+
       return { ...p, scriptsCount };
+    });
+
+    setStats({
+      totalProjects: allProjects.length,
+      totalAvatars: tAvatars,
+      totalScripts: tScripts
     });
 
     setProjects(allProjects);
@@ -276,75 +291,117 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Stats Ribbon */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+        <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.25rem' }}>
+          <div style={{ background: '#eff6ff', padding: '12px', borderRadius: '12px' }}><LayoutDashboard size={24} color="#3b82f6" /></div>
+          <div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>{mounted ? stats.totalProjects : '-'}</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Активных проектов</div>
+          </div>
+        </div>
+        <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.25rem' }}>
+          <div style={{ background: '#f0fdf4', padding: '12px', borderRadius: '12px' }}><Users size={24} color="#22c55e" /></div>
+          <div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>{mounted ? stats.totalAvatars : '-'}</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Сегментов аудитории</div>
+          </div>
+        </div>
+        <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.25rem' }}>
+          <div style={{ background: '#fef2f2', padding: '12px', borderRadius: '12px' }}><FileText size={24} color="#ef4444" /></div>
+          <div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>{mounted ? stats.totalScripts : '-'}</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Готовых сценариев</div>
+          </div>
+        </div>
+      </div>
 
-
-      {loading ? (
+      {/* Toolbar (Search & Filters) */}
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', alignItems: 'center' }}>
+        <div style={{ flex: 1, position: 'relative' }}>
+          <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+          <input 
+            type="text" 
+            placeholder="Поиск по проектам..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.75rem', borderRadius: '12px', border: '1px solid var(--border)', outline: 'none' }} 
+          />
+        </div>
+        <button className="btn btn-secondary" style={{ background: 'white', border: '1px solid var(--border)' }}>
+          <Filter size={18} /> Фильтры
+        </button>
+      </div>      {loading ? (
         <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
           <Loader2 size={32} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 1rem', display: 'block' }} />
           <p>Загружаем проекты...</p>
           <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
         </div>
       ) : projects.length === 0 ? (
-        <div className="empty-state">
-          <Folder className="empty-state-icon" />
-          <h3>У вас пока нет сохранённых проектов</h3>
-          <p>Создайте первый проект и сгенерируйте аватары вашей аудитории</p>
-          <Link href="/project/new" className="btn btn-primary">
-            <Plus size={18} /> Создать первый проект
+        <div className="empty-state" style={{ background: 'white', border: '1px dashed var(--border)' }}>
+          <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
+            <Folder size={40} color="var(--primary)" />
+          </div>
+          <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>Проектов пока нет</h3>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', maxWidth: '400px' }}>Загрузите ваш первый бриф, чтобы AI провел глубокое исследование аудитории и создал сценарии.</p>
+          <Link href="/project/new" className="btn btn-primary" style={{ padding: '1rem 2rem' }}>
+            <Plus size={20} /> Создать первый проект
           </Link>
-          {!hasLocal && (
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '1rem' }}>
-              💡 Чтобы проекты сохранялись — настройте Supabase в .env.local
-            </p>
-          )}
         </div>
       ) : (
         <div className="projects-grid">
-          {projects.map((project: any) => (
-            <div key={project.id} className="card project-card" style={{ padding: 0, overflow: 'hidden' }}>
-              <div className="card-header" style={{ position: 'relative', padding: '1.5rem 1.5rem 0' }}>
-                <div style={{ paddingRight: '2rem' }}>
-                  <h3 className="card-title text-truncate">{project.name}</h3>
-                  <p className="card-subtitle">{formatDate(project.created_at)}</p>
-                </div>
-                
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', position: 'absolute', top: '1.5rem', right: '1.5rem' }}>
-                  {project.status === 'done' ? (
-                    <span className="badge badge-success">
-                      <CheckCircle size={12} style={{ display: 'inline', marginRight: 4 }} /> Готово
-                    </span>
-                  ) : (
-                    <span className="badge badge-warning">
-                      <Clock size={12} style={{ display: 'inline', marginRight: 4 }} /> В работе
-                    </span>
-                  )}
-                  
-                  <button 
-                    onClick={(e) => handleDelete(e, project.id, project.name)}
-                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '4px' }}
-                    title="Удалить проект"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
+          {projects.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map((project: any) => {
+            const avatarCount = project.avatars?.length || 0;
+            const scriptsCount = project.scriptsCount || 0;
+            // Progress calculation
+            const progress = scriptsCount > 0 ? 100 : (avatarCount > 0 ? 66 : 33);
 
-              <div style={{ padding: '1.5rem' }}>
-                <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-                  {mounted && project.avatars?.length ? `${project.avatars.length} сегм. аудитории` : '...'}
+            return (
+              <div key={project.id} className="card project-card" style={{ padding: '0', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                    <div style={{ paddingRight: '1rem' }}>
+                      <h3 className="card-title text-truncate" style={{ marginBottom: '0.25rem' }}>{project.name}</h3>
+                      <p className="card-subtitle" style={{ fontSize: '0.8rem' }}>{formatDate(project.created_at)}</p>
+                    </div>
+                    <button 
+                      onClick={(e) => handleDelete(e, project.id, project.name)}
+                      style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: '4px' }}
+                      title="Удалить проект"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                  
+                  {/* Progress Bar */}
+                  <div style={{ marginTop: '1.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+                      <span>Прогресс воронки</span>
+                      <span>{progress}%</span>
+                    </div>
+                    <div style={{ width: '100%', height: '6px', background: 'var(--secondary)', borderRadius: '99px', overflow: 'hidden' }}>
+                      <div style={{ width: `${progress}%`, height: '100%', background: progress === 100 ? '#22c55e' : 'var(--primary)' }}></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'var(--border)' }}>
+                  <Link href={`/project/${project.id}?tab=avatars`} style={{ background: 'white', padding: '1rem', textAlign: 'center', textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a' }}>{mounted ? avatarCount : '-'}</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Аватары</span>
+                  </Link>
+                  <Link href={`/project/${project.id}?tab=studio`} style={{ background: 'white', padding: '1rem', textAlign: 'center', textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a' }}>{mounted ? scriptsCount : '-'}</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Сценарии</span>
+                  </Link>
                 </div>
                 
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <Link href={`/project/${project.id}`} className="btn btn-secondary" style={{ flex: 1, textAlign: 'center', fontSize: '0.85rem', padding: '0.5rem' }}>
-                    Аватары {mounted ? `(${project.avatars?.length || 0})` : ''}
-                  </Link>
-                  <Link href={`/project/${project.id}/scripts`} className="btn btn-secondary" style={{ flex: 1, textAlign: 'center', fontSize: '0.85rem', padding: '0.5rem' }}>
-                    Сценарии {mounted ? `(${project.scriptsCount || 0})` : ''}
-                  </Link>
-                </div>
+                <Link href={`/project/${project.id}`} style={{ background: 'var(--secondary)', padding: '1rem', textAlign: 'center', textDecoration: 'none', fontWeight: 600, color: 'var(--primary)', fontSize: '0.875rem' }}>
+                  Открыть Workspace →
+                </Link>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
