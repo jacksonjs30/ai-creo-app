@@ -17,6 +17,9 @@ export default function ProjectDashboard({ params }: { params: Promise<{ id: str
   const [isLoading, setIsLoading] = useState(true);
   const [projectName, setProjectName] = useState('');
   const [projectBrief, setProjectBrief] = useState<any>(null);
+  const [studioTab, setStudioTab] = useState<'generate' | 'scripts'>(() => {
+    return (searchParams.get('view') as 'generate' | 'scripts') || 'generate';
+  });
 
   useEffect(() => {
     async function fetchProject() {
@@ -315,13 +318,36 @@ export default function ProjectDashboard({ params }: { params: Promise<{ id: str
       )}
 
       {activeSection === 'studio' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-          {/* We show both generation form and generated scripts list in the Creative Studio section */}
-          <div className="card" style={{ padding: '2rem' }}>
-             <GenerateCreative id={id} />
+        <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
+          {/* Sub-tabs header */}
+          <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', background: '#f8fafc' }}>
+            <button
+              onClick={() => { setStudioTab('generate'); router.push(`?tab=studio&view=generate`); }}
+              style={{
+                flex: 1, padding: '1.25rem', border: 'none', background: 'transparent', cursor: 'pointer',
+                fontWeight: 700, fontSize: '0.95rem', color: studioTab === 'generate' ? 'var(--primary)' : 'var(--text-muted)',
+                borderBottom: studioTab === 'generate' ? '2px solid var(--primary)' : '2px solid transparent',
+                transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
+              }}
+            >
+              <PenTool size={18} /> Новая генерация ТЗ
+            </button>
+            <button
+              onClick={() => { setStudioTab('scripts'); router.push(`?tab=studio&view=scripts`); }}
+              style={{
+                flex: 1, padding: '1.25rem', border: 'none', background: 'transparent', cursor: 'pointer',
+                fontWeight: 700, fontSize: '0.95rem', color: studioTab === 'scripts' ? 'var(--primary)' : 'var(--text-muted)',
+                borderBottom: studioTab === 'scripts' ? '2px solid var(--primary)' : '2px solid transparent',
+                transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
+              }}
+            >
+              <FileText size={18} /> Готовые сценарии
+            </button>
           </div>
-          <div className="card" style={{ padding: '2rem' }}>
-             <ScriptStudio id={id} />
+
+          <div style={{ padding: '2rem' }}>
+            {studioTab === 'generate' && <GenerateCreative id={id} />}
+            {studioTab === 'scripts' && <ScriptStudio id={id} />}
           </div>
         </div>
       )}

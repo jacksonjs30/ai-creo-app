@@ -147,8 +147,8 @@ export default function GenerateCreative({ id }: { id: string }) {
         }
       }
 
-      // Оновлюємо сторінку, щоб компонент ScriptStudio (нижче) завантажив нові скрипти
-      window.location.reload();
+      // Оновлюємо сторінку, щоб компонент ScriptStudio завантажив нові скрипти, і перемикаємо на вкладку зі скриптами
+      router.push(`/project/${id}?tab=studio&view=scripts`);
     } catch (e: any) {
       console.error(e);
       alert('Ошибка при генерации: ' + (e.message || 'Неизвестная ошибка'));
