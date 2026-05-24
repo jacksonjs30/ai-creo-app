@@ -186,6 +186,7 @@ export default function ScriptStudio({ id }: { id: string }) {
         body: JSON.stringify({
           projectId: id,
           scriptId: `${script.id}_row${rowIdx}`,
+          cells: rowCells,        // Full row: [№, conceptTitle, adCopy, designBrief]
           scriptText,
           designBrief,
           avatarName: script.avatarName,
