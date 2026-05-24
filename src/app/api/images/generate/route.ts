@@ -3,64 +3,80 @@ import OpenAI from 'openai';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-export const maxDuration = 60; // 60 seconds
+export const maxDuration = 300; // 5 minutes for 3 images
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
-    const { projectId, scriptId, scriptText, avatarName, productName, action, oldImageUrl, count = 1 } = await req.json();
+    const { projectId, scriptId, scriptText, avatarName, productName, action, oldImageUrl, imageIndex, count = 1 } = await req.json();
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ error: 'OpenAI API Key is missing' }, { status: 500 });
+      return NextResponse.json({ error: 'OPENAI_API_KEY не найден. Добавьте его в Vercel → Settings → Environment Variables.' }, { status: 500 });
     }
 
     const openai = new OpenAI({ apiKey });
 
-    // Build the DALL-E prompt
-    let prompt = `Create a highly detailed, professional advertising image for a product called "${productName}". Target audience: "${avatarName}". `;
-    prompt += `Visual scene description from the ad script: "${scriptText.substring(0, 1000)}". `;
-    prompt += `CRITICAL INSTRUCTION: Do NOT include any text, words, letters, logos, or typography in the image whatsoever. Focus entirely on the visual scene, characters, and aesthetics. Ensure the aesthetic is premium, modern, and highly engaging.`;
+    // Extract key ad copy text from the script (look for lines with quotes or hooks)
+    const scriptLines = scriptText.split('\n').filter((l: string) => l.trim().length > 10);
+    const adCopyText = scriptLines.slice(0, 5).join(' ').substring(0, 400);
 
-    console.log(`Generating ${count} image(s) for script ${scriptId}...`);
+    // Build a rich DALL-E 3 prompt that INCLUDES the ad text overlaid on the image
+    const buildPrompt = (variationHint: string) => {
+      let p = `Professional advertising creative image. Product: "${productName}". Target audience: "${avatarName}". `;
+      p += `Ad script scene: "${adCopyText}". `;
+      p += `Style: modern, premium, high-contrast. `;
+      p += `${variationHint}`;
+      p += ` The image should tell a visual story matching the ad script. No random decorative text — only text that is a natural part of the scene or design if the script calls for it.`;
+      return p;
+    };
 
-    const imagePromises = Array.from({ length: count }).map(async (_, index) => {
-      // Call OpenAI DALL-E 3 (with fallback to DALL-E 2 if key doesn't have permissions)
+    const variations = [
+      'Composition: close-up emotional portrait shot.',
+      'Composition: lifestyle scene with environment and context.',
+      'Composition: bold graphic/abstract style with strong visual hierarchy.',
+    ];
+
+    console.log(`Generating ${count} image(s) sequentially for script ${scriptId}...`);
+
+    const finalUrls: string[] = [];
+
+    // Generate sequentially (not parallel) to avoid Vercel timeout and OpenAI rate limits
+    for (let index = 0; index < count; index++) {
+      const prompt = buildPrompt(variations[index % variations.length]);
+
+      // DALL-E 3 only — no fallback. If the key doesn't support it, throw a clear error.
       let response;
       try {
         response = await openai.images.generate({
-          model: "dall-e-3",
+          model: 'dall-e-3',
           prompt: prompt,
           n: 1,
-          size: "1024x1024",
-          quality: "standard"
+          size: '1024x1024',
+          quality: 'standard',
         });
-      } catch (e: any) {
-        if (e.message && e.message.includes("does not exist")) {
-          console.log("Falling back to dall-e-2 due to API key restrictions...");
-          response = await openai.images.generate({
-            model: "dall-e-2",
-            prompt: prompt,
-            n: 1,
-            size: "512x512" 
-          });
-        } else {
-          throw e;
+      } catch (openAiError: any) {
+        const msg = openAiError?.message || '';
+        if (msg.includes('does not exist') || msg.includes('model_not_found')) {
+          return NextResponse.json({
+            error: `DALL-E 3 недоступен для вашего ключа OpenAI. Убедитесь, что:\n1. На балансе есть средства (platform.openai.com/billing)\n2. Ключ имеет тип "All" permissions\n3. Аккаунт не ограничен географически.\n\nОшибка от OpenAI: ${msg}`
+          }, { status: 400 });
         }
+        throw openAiError;
       }
 
       const imageUrl = response.data?.[0]?.url;
       if (!imageUrl) {
-        throw new Error("OpenAI did not return an image URL");
+        throw new Error('OpenAI не вернул URL картинки. Попробуйте снова.');
       }
 
-      // Download the image
+      // Download the image from OpenAI (URL is valid for ~1 hour)
       const imageRes = await fetch(imageUrl);
-      if (!imageRes.ok) throw new Error("Failed to download image from OpenAI");
+      if (!imageRes.ok) throw new Error('Не удалось скачать картинку с серверов OpenAI.');
       const arrayBuffer = await imageRes.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
-      // Initialize Supabase Admin client
+      // Upload to Supabase Storage for permanent storage
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
       const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
       const cookieStore = await cookies();
@@ -68,53 +84,48 @@ export async function POST(req: NextRequest) {
         cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} }
       });
 
-      // Upload to Supabase Storage
-      const fileName = `${projectId}/${scriptId}/${Date.now()}_${index}.png`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const timestamp = Date.now();
+      const fileName = `${projectId}/${scriptId}/${timestamp}_${index}.png`;
+
+      const { error: uploadError } = await supabase.storage
         .from('creatives')
-        .upload(fileName, buffer, {
-          contentType: 'image/png',
-          upsert: false
-        });
+        .upload(fileName, buffer, { contentType: 'image/png', upsert: false });
 
       if (uploadError) {
-        if (uploadError.message.includes("Bucket not found") || uploadError.message.includes("violates row-level security policy")) {
-          throw new Error(`Ошибка доступа к Supabase Storage: ${uploadError.message}. Убедитесь, что бакет creatives существует и имеет RLS политику разрешающую INSERT.`);
+        let errMsg = `Ошибка загрузки в Supabase: ${uploadError.message}. `;
+        if (uploadError.message.includes('Bucket not found')) {
+          errMsg += 'Создайте публичный бакет "creatives" в Supabase Storage.';
+        } else if (uploadError.message.includes('row-level security')) {
+          errMsg += 'Добавьте RLS политику INSERT для анонимных пользователей в бакете "creatives".';
         }
-        throw new Error(`Upload to Supabase failed: ${uploadError.message}`);
+        throw new Error(errMsg);
       }
 
-      // Get the public URL
-      const { data: publicUrlData } = supabase.storage
-        .from('creatives')
-        .getPublicUrl(fileName);
+      const { data: publicUrlData } = supabase.storage.from('creatives').getPublicUrl(fileName);
+      finalUrls.push(publicUrlData.publicUrl);
+    }
 
-      return publicUrlData.publicUrl;
-    });
-
-    const finalUrls = await Promise.all(imagePromises);
-
-    // Optional: if action === 'replace' and oldImageUrl exists, we could delete the old image from Supabase
+    // If replacing a single image, optionally clean up the old one
     if (action === 'replace' && oldImageUrl && oldImageUrl.includes('supabase.co')) {
       try {
         const urlParts = oldImageUrl.split('/creatives/');
         if (urlParts.length > 1) {
-          const pathToDelete = urlParts[1];
-          // We can't delete with ANON key without RLS DELETE policy, but we can try
-          const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, { cookies: { getAll: () => [], setAll: () => {} } });
-          await supabase.storage.from('creatives').remove([pathToDelete]);
+          const supabase = createServerClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            { cookies: { getAll: () => [], setAll: () => {} } }
+          );
+          await supabase.storage.from('creatives').remove([urlParts[1]]);
         }
-      } catch (delErr) {
-        console.error("Failed to delete old image:", delErr);
+      } catch {
+        // Non-critical: old image cleanup failed, ignore
       }
     }
 
     return NextResponse.json({ success: true, urls: finalUrls, url: finalUrls[0] });
 
-
-
   } catch (error: any) {
     console.error('Error in /api/images/generate:', error);
-    return NextResponse.json({ error: error.message || "Failed to generate image" }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Не удалось сгенерировать картинку.' }, { status: 500 });
   }
 }

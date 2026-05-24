@@ -380,59 +380,88 @@ export default function ScriptStudio({ id }: { id: string }) {
               </div>
 
               {/* Image Gallery */}
-              <div style={{ padding: '1.5rem', background: 'white', borderBottom: '1px solid #e2e8f0' }}>
+              <div style={{ padding: '1.5rem 2rem', background: '#fafbfc', borderBottom: '1px solid #e2e8f0' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                  <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem', fontWeight: 800, color: '#1e293b' }}>
-                    <ImageIcon size={20} className="text-primary" /> Визуалы (DALL-E 3)
-                  </h4>
+                  <div>
+                    <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1rem', fontWeight: 700, color: '#1e293b', margin: 0 }}>
+                      <ImageIcon size={18} style={{ color: '#6366f1' }} />
+                      Визуалы для этого сценария
+                      {script.images && script.images.length > 0 && (
+                        <span style={{ background: '#e0e7ff', color: '#4338ca', fontSize: '0.75rem', padding: '0.15rem 0.6rem', borderRadius: '99px', fontWeight: 600 }}>
+                          {script.images.length} шт.
+                        </span>
+                      )}
+                    </h4>
+                    <p style={{ margin: '0.25rem 0 0', fontSize: '0.8rem', color: '#94a3b8' }}>
+                      Генерирует 3 варианта через DALL-E 3 на основе текста именно этого сценария
+                    </p>
+                  </div>
                   <button
                     onClick={() => handleGenerateImage(script, 'add')}
-                    disabled={isGeneratingImage?.scriptId === script.id && isGeneratingImage?.action === 'add'}
+                    disabled={isGeneratingImage !== null}
                     className="btn btn-primary shadow-sm"
-                    style={{ padding: '0.6rem 1.25rem', fontSize: '0.9rem', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    style={{ padding: '0.65rem 1.25rem', fontSize: '0.875rem', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: isGeneratingImage !== null && isGeneratingImage.scriptId !== script.id ? 0.5 : 1 }}
                   >
                     {isGeneratingImage?.scriptId === script.id && isGeneratingImage?.action === 'add' ? (
-                      <><span className="spin-wrapper" style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}><Loader2 size={16} /></span> Генерация 3-х вариантов...</>
+                      <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}><Loader2 size={16} /></span> Генерирую 3 варианта…</>
                     ) : (
-                      <><Plus size={16} /> Сгенерировать 3 варианта ($0.12)</>
+                      <><Plus size={16} /> Сгенерировать 3 варианта</>
                     )}
                   </button>
                 </div>
                 
                 {script.images && script.images.length > 0 ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' }}>
                     {script.images.map((imgUrl: string, imgIdx: number) => (
-                      <div key={imgIdx} style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', background: '#f8fafc', aspectRatio: '1/1' }}>
+                      <div key={imgIdx} style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', background: '#f1f5f9', aspectRatio: '1/1', boxShadow: '0 2px 8px rgba(0,0,0,0.07)' }}>
                         <img src={imgUrl} alt={`Визуал ${imgIdx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        
-                        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', opacity: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'opacity 0.2s', gap: '0.5rem' }} 
-                             onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                             onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}
+                        <div style={{ position: 'absolute', top: '0.5rem', left: '0.5rem', background: 'rgba(0,0,0,0.55)', color: 'white', fontSize: '0.7rem', fontWeight: 700, padding: '0.2rem 0.5rem', borderRadius: '6px' }}>
+                          #{imgIdx + 1}
+                        </div>
+                        <div
+                          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.55)', opacity: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transition: 'opacity 0.2s', gap: '0.5rem' }}
+                          onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                          onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}
                         >
-                          <a href={imgUrl} target="_blank" rel="noreferrer" className="btn btn-primary" style={{ padding: '0.5rem', borderRadius: '8px' }}>🔍</a>
-                          <button 
+                          <a href={imgUrl} target="_blank" rel="noreferrer" style={{ background: 'white', color: '#1e293b', padding: '0.4rem 0.9rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>🔍 Открыть</a>
+                          <button
                             onClick={() => handleGenerateImage(script, 'replace', imgIdx)}
-                            disabled={isGeneratingImage?.scriptId === script.id && isGeneratingImage?.index === imgIdx}
-                            className="btn btn-secondary" 
-                            style={{ padding: '0.5rem', borderRadius: '8px', border: 'none' }}
+                            disabled={isGeneratingImage !== null}
+                            style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.4)', color: 'white', padding: '0.4rem 0.9rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
                           >
                             {isGeneratingImage?.scriptId === script.id && isGeneratingImage?.index === imgIdx ? (
-                              <span className="spin-wrapper" style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}><Loader2 size={18} /></span>
+                              <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}><Loader2 size={14} /></span> Замена…</>
                             ) : (
-                              <RefreshCw size={18} />
+                              <><RefreshCw size={14} /> Заменить</>
                             )}
                           </button>
                         </div>
                       </div>
                     ))}
+                    {/* Add more button */}
+                    <button
+                      onClick={() => handleGenerateImage(script, 'add')}
+                      disabled={isGeneratingImage !== null}
+                      style={{ borderRadius: '12px', border: '2px dashed #c7d2fe', background: '#f5f3ff', color: '#6366f1', aspectRatio: '1/1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = '#ede9fe'; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = '#f5f3ff'; }}
+                    >
+                      {isGeneratingImage?.scriptId === script.id && isGeneratingImage?.action === 'add' ? (
+                        <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}><Loader2 size={24} /></span> Генерирую…</>
+                      ) : (
+                        <><Plus size={24} /> Ещё 3 варианта</>
+                      )}
+                    </button>
                   </div>
                 ) : (
-                  <div style={{ padding: '2rem', textAlign: 'center', background: '#f8fafc', borderRadius: '12px', border: '1px dashed #cbd5e1' }}>
-                    <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Нет сгенерированных визуалов для этого сценария.</p>
-                    <p style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Нажмите кнопку выше, чтобы создать уникальную картинку через DALL-E 3.</p>
+                  <div style={{ padding: '2.5rem 2rem', textAlign: 'center', background: 'white', borderRadius: '12px', border: '2px dashed #c7d2fe' }}>
+                    <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🖼️</div>
+                    <p style={{ color: '#4338ca', fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.35rem' }}>Нет визуалов для этого сценария</p>
+                    <p style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Нажмите «Сгенерировать 3 варианта» — DALL-E 3 создаст 3 уникальных изображения по тексту именно этого сценария</p>
                   </div>
                 )}
               </div>
+
 
               {/* Content */}
               <div className="markdown-content" style={{ padding: '1.5rem', overflowX: 'auto' }}>
