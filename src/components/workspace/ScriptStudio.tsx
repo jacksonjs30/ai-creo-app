@@ -22,12 +22,15 @@ export default function ScriptStudio({ id }: { id: string }) {
 
   const [filterFormat, setFilterFormat] = useState<string>('Все');
   const [filterProduct, setFilterProduct] = useState<string>('Все');
+  const [filterAvatar, setFilterAvatar] = useState<string>('Все');
 
   const formatOptions = ['Все', ...Array.from(new Set(scripts.map(s => s.format).filter(Boolean)))];
   const productOptions = ['Все', ...Array.from(new Set(scripts.map(s => s.productName || project?.name || project?.productName || 'Неизвестно').filter(Boolean)))];
+  const avatarOptions = ['Все', ...Array.from(new Set(scripts.map(s => s.avatarName).filter(Boolean)))];
 
   const filteredScripts = scripts.filter(s => {
     if (filterFormat !== 'Все' && s.format !== filterFormat) return false;
+    if (filterAvatar !== 'Все' && s.avatarName !== filterAvatar) return false;
     const sProduct = s.productName || project?.name || project?.productName || 'Неизвестно';
     if (filterProduct !== 'Все' && sProduct !== filterProduct) return false;
     return true;
@@ -207,15 +210,15 @@ export default function ScriptStudio({ id }: { id: string }) {
 
   return (
     <div suppressHydrationWarning>
-      <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.25rem' }}>Сценарии креативов</h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Сгенерированные ТЗ и сценарии для передачи в продакшен.</p>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Сценарии креативов</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Управляйте готовыми ТЗ и отправляйте их в продакшен.</p>
         </div>
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="btn btn-primary"
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', border: 'none', cursor: 'pointer' }}
+          className="btn btn-primary shadow-sm"
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', border: 'none', cursor: 'pointer', borderRadius: '12px', padding: '0.75rem 1.25rem' }}
         >
           <Plus size={18} />
           Сгенерировать еще
@@ -223,28 +226,39 @@ export default function ScriptStudio({ id }: { id: string }) {
       </div>
 
       {scripts.length > 0 && (
-        <div className="card mb-8" style={{ display: 'flex', gap: '1.5rem', padding: '1rem 1.5rem', alignItems: 'center' }}>
-          <span style={{ fontWeight: 600, color: '#475569', fontSize: '0.9rem' }}>Фильтры:</span>
+        <div className="card shadow-sm mb-6" style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', padding: '1.25rem 1.5rem', alignItems: 'center', background: '#fff', borderRadius: '16px' }}>
+          <span style={{ fontWeight: 700, color: '#1e293b', fontSize: '0.95rem' }}>Фильтры:</span>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <label style={{ fontSize: '0.85rem', color: '#64748b' }}>Продукт:</label>
+            <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Продукт:</label>
             <select
               value={filterProduct}
               onChange={e => setFilterProduct(e.target.value)}
-              style={{ padding: '0.4rem 0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', background: 'white' }}
+              style={{ padding: '0.5rem 1rem', borderRadius: '10px', border: '1px solid #e2e8f0', outline: 'none', background: '#f8fafc', color: '#334155', fontWeight: 500, minWidth: '140px', cursor: 'pointer', transition: 'all 0.2s' }}
             >
               {productOptions.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <label style={{ fontSize: '0.85rem', color: '#64748b' }}>Формат:</label>
+            <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Формат:</label>
             <select
               value={filterFormat}
               onChange={e => setFilterFormat(e.target.value)}
-              style={{ padding: '0.4rem 0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', background: 'white' }}
+              style={{ padding: '0.5rem 1rem', borderRadius: '10px', border: '1px solid #e2e8f0', outline: 'none', background: '#f8fafc', color: '#334155', fontWeight: 500, minWidth: '140px', cursor: 'pointer', transition: 'all 0.2s' }}
             >
               {formatOptions.map(f => <option key={f} value={f}>{f}</option>)}
+            </select>
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Аватар:</label>
+            <select
+              value={filterAvatar}
+              onChange={e => setFilterAvatar(e.target.value)}
+              style={{ padding: '0.5rem 1rem', borderRadius: '10px', border: '1px solid #e2e8f0', outline: 'none', background: '#f8fafc', color: '#334155', fontWeight: 500, minWidth: '140px', cursor: 'pointer', transition: 'all 0.2s' }}
+            >
+              {avatarOptions.map(a => <option key={a} value={a}>{a}</option>)}
             </select>
           </div>
         </div>
@@ -272,15 +286,15 @@ export default function ScriptStudio({ id }: { id: string }) {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           {filteredScripts.map((script) => (
-            <div key={script.id} className="card" style={{ padding: '0' }}>
+            <div key={script.id} className="card shadow-md" style={{ padding: '0', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
               {/* Header */}
-              <div style={{ padding: '1.5rem', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f8fafc', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}>
+              <div style={{ padding: '1.5rem 2rem', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f8fafc' }}>
                 <div>
-                  <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '0.5rem' }}>
-                    <span style={{ background: '#dbeafe', color: '#1d4ed8', padding: '0.25rem 0.75rem', borderRadius: '99px', fontSize: '0.75rem', fontWeight: 700 }}>
+                  <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '0.75rem' }}>
+                    <span style={{ background: '#dbeafe', color: '#1d4ed8', padding: '0.35rem 1rem', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700 }}>
                       Аватар: {script.avatarName}
                     </span>
-                    <span style={{ background: '#f1f5f9', color: '#475569', padding: '0.25rem 0.75rem', borderRadius: '99px', fontSize: '0.75rem', fontWeight: 600 }}>
+                    <span style={{ background: '#f1f5f9', color: '#475569', padding: '0.35rem 1rem', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 600 }}>
                       Формат: {script.format}
                     </span>
                   </div>
@@ -291,12 +305,12 @@ export default function ScriptStudio({ id }: { id: string }) {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                   {editingScriptId === script.id ? (
                     <button
                       onClick={() => handleSaveEdit(script.id)}
-                      className="btn btn-primary"
-                      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                      className="btn btn-primary shadow-sm"
+                      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '10px' }}
                     >
                       Сохранить
                     </button>
@@ -320,8 +334,8 @@ export default function ScriptStudio({ id }: { id: string }) {
                         setEditTableData(parsedData);
                         setEditOtherText({ before, after });
                       }}
-                      className="btn btn-secondary"
-                      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                      className="btn btn-secondary shadow-sm"
+                      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '10px', background: 'white' }}
                     >
                       🖊️ Редактировать
                     </button>
@@ -329,30 +343,31 @@ export default function ScriptStudio({ id }: { id: string }) {
                   <button
                     onClick={() => handleRegenerate(script)}
                     disabled={isRegenerating === script.id}
-                    className="btn btn-secondary"
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    className="btn btn-secondary shadow-sm"
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '10px', background: 'white' }}
                   >
-                    {isRegenerating === script.id ? 'Генерация...' : '🔄 Перегенерировать'}
+                    {isRegenerating === script.id ? <Loader2 size={16} className="animate-spin" /> : '🔄'}
+                    {isRegenerating === script.id ? 'Генерация...' : 'Перегенерировать'}
                   </button>
                   <Link
                     href={`/project/${id}/studio/${script.id}`}
-                    className="btn btn-primary"
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}
+                    className="btn btn-primary shadow-sm"
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', borderRadius: '10px' }}
                   >
                     🎨 Мастерская
                   </Link>
                   <button
                     onClick={() => handleCopy(script.id, script.content)}
-                    className="btn btn-secondary"
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    className="btn btn-secondary shadow-sm"
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '10px', background: 'white' }}
                   >
                     {copiedId === script.id ? <CheckCircle2 size={18} color="#10b981" /> : <Copy size={18} />}
                     {copiedId === script.id ? 'Скопировано!' : 'Копировать'}
                   </button>
                   <button
                     onClick={() => handleDeleteScript(script.id)}
-                    className="btn btn-secondary"
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ef4444' }}
+                    className="btn btn-secondary shadow-sm hover-red"
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ef4444', borderRadius: '10px', background: 'white' }}
                   >
                     🗑️
                   </button>

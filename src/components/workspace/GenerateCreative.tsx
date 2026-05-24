@@ -159,16 +159,16 @@ export default function GenerateCreative({ id }: { id: string }) {
 
   return (
     <div>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.25rem' }}>Генерация сценариев</h2>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Генерация точных ТЗ и сценариев по методологии JTBD + CJM</p>
+      <div style={{ marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Новая генерация ТЗ</h2>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Умный помощник для создания креативов на основе JTBD + CJM.</p>
       </div>
 
       <form onSubmit={handleGenerate} className="grid-layout">
         
         {/* Шаг 1: Аватар */}
-        <section className="card" style={{ gridColumn: '1 / -1' }}>
-          <h3 className="card-title mb-4">1. Выберите целевой аватар (сегмент)</h3>
+        <section className="card shadow-sm" style={{ gridColumn: '1 / -1', borderRadius: '16px', padding: '2rem' }}>
+          <h3 className="card-title mb-4" style={{ fontSize: '1.25rem' }}>1. Выберите целевой аватар (сегмент)</h3>
           {avatars.length === 0 ? (
             <p style={{ color: '#ef4444' }}>Аватары не найдены. Сначала сгенерируйте их в проекте.</p>
           ) : (
@@ -200,8 +200,8 @@ export default function GenerateCreative({ id }: { id: string }) {
         </section>
 
         {/* Шаг 2: Формат креатива */}
-        <section className="card">
-          <h3 className="card-title mb-6">2. Формат креатива (один за сессию)</h3>
+        <section className="card shadow-sm" style={{ borderRadius: '16px', padding: '2rem' }}>
+          <h3 className="card-title mb-6" style={{ fontSize: '1.25rem' }}>2. Формат креатива (один за сессию)</h3>
           
           <div className="types-grid" style={{ gridTemplateColumns: '1fr' }}>
             {CREATIVE_TYPES.map(type => {
@@ -229,8 +229,8 @@ export default function GenerateCreative({ id }: { id: string }) {
         </section>
 
         {/* Шаг 3: Настройки */}
-        <section className="card">
-          <h3 className="card-title mb-6">3. Параметры генерации</h3>
+        <section className="card shadow-sm" style={{ borderRadius: '16px', padding: '2rem' }}>
+          <h3 className="card-title mb-6" style={{ fontSize: '1.25rem' }}>3. Параметры генерации</h3>
           
           <div className="settings-grid" style={{ gridTemplateColumns: '1fr' }}>
             <div className="form-group">
@@ -341,15 +341,25 @@ export default function GenerateCreative({ id }: { id: string }) {
           </div>
         </section>
 
-        <div style={{ gridColumn: '1 / -1', marginTop: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ gridColumn: '1 / -1', marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
           <button 
             type="submit" 
             className="btn btn-primary" 
             disabled={selectedAvatarIdx === null || !selectedType || !productName || !productName.trim() || isGenerating}
-            style={{ padding: '1.25rem 3rem', fontSize: '1.125rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderRadius: '16px' }}
+            style={{ 
+              padding: '1.25rem 3rem', 
+              fontSize: '1.125rem', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.75rem', 
+              borderRadius: '16px',
+              boxShadow: '0 4px 14px rgba(59, 130, 246, 0.4)',
+              transition: 'all 0.2s',
+              opacity: (selectedAvatarIdx === null || !selectedType || !productName || !productName.trim() || isGenerating) ? 0.7 : 1
+            }}
           >
-            {isGenerating ? <Loader2 size={24} className="animate-spin" /> : null}
-            {isGenerating ? 'Продумываем сценарии...' : 'Сгенерировать Сценарии и ТЗ'}
+            {isGenerating ? <Loader2 size={24} className="animate-spin" /> : <Palette size={24} />}
+            {isGenerating ? 'Продумываем сценарии...' : 'Сгенерировать ТЗ и Сценарии'}
           </button>
         </div>
 
