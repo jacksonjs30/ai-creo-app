@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
-    const { projectId, scriptId, scriptText, avatarName, productName, action, oldImageUrl } = await req.json();
+    const { projectId, scriptId, scriptText, avatarName, productName, action, oldImageUrl, count = 1 } = await req.json();
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
@@ -18,25 +18,25 @@ export async function POST(req: NextRequest) {
     const openai = new OpenAI({ apiKey });
 
     // Build the DALL-E prompt
-    let prompt = `Create a professional advertising image for a product called "${productName}". Target audience: "${avatarName}". `;
-    prompt += `Visual context from the ad script: "${scriptText.substring(0, 1000)}". `;
-    prompt += `Ensure the aesthetic is premium, modern, and highly engaging. If the script implies a meme or a specific format, adapt the style accordingly. Do not generate large amounts of text.`;
+    let prompt = `Create a highly detailed, professional advertising image for a product called "${productName}". Target audience: "${avatarName}". `;
+    prompt += `Visual scene description from the ad script: "${scriptText.substring(0, 1000)}". `;
+    prompt += `CRITICAL INSTRUCTION: Do NOT include any text, words, letters, logos, or typography in the image whatsoever. Focus entirely on the visual scene, characters, and aesthetics. Ensure the aesthetic is premium, modern, and highly engaging.`;
 
-    console.log(`Generating image for script ${scriptId}...`);
+    console.log(`Generating ${count} image(s) for script ${scriptId}...`);
 
-    // Call OpenAI DALL-E 3 (with fallback to DALL-E 2 if key doesn't have permissions)
-    let response;
-    try {
-      response = await openai.images.generate({
-        model: "dall-e-3",
-        prompt: prompt,
-        n: 1,
-        size: "1024x1024",
-        quality: "standard"
-      });
-    } catch (e: any) {
-      if (e.message && e.message.includes("does not exist")) {
-        try {
+    const imagePromises = Array.from({ length: count }).map(async (_, index) => {
+      // Call OpenAI DALL-E 3 (with fallback to DALL-E 2 if key doesn't have permissions)
+      let response;
+      try {
+        response = await openai.images.generate({
+          model: "dall-e-3",
+          prompt: prompt,
+          n: 1,
+          size: "1024x1024",
+          quality: "standard"
+        });
+      } catch (e: any) {
+        if (e.message && e.message.includes("does not exist")) {
           console.log("Falling back to dall-e-2 due to API key restrictions...");
           response = await openai.images.generate({
             model: "dall-e-2",
@@ -44,92 +44,74 @@ export async function POST(req: NextRequest) {
             n: 1,
             size: "512x512" 
           });
-        } catch (e2) {
-          console.log("OpenAI DALL-E is completely unavailable. Falling back to free Pollinations.ai API...");
-          const encodedPrompt = encodeURIComponent(prompt);
-          const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true`;
-          
-          response = {
-            data: [
-              { url: pollinationsUrl }
-            ]
-          };
+        } else {
+          throw e;
         }
-      } else {
-        throw e;
       }
-    }
 
-    const imageUrl = response.data?.[0]?.url;
+      const imageUrl = response.data?.[0]?.url;
+      if (!imageUrl) {
+        throw new Error("OpenAI did not return an image URL");
+      }
 
-    if (!imageUrl) {
-      throw new Error("OpenAI did not return an image URL");
-    }
+      // Download the image
+      const imageRes = await fetch(imageUrl);
+      if (!imageRes.ok) throw new Error("Failed to download image from OpenAI");
+      const arrayBuffer = await imageRes.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
 
-    // Download the image
-    const imageRes = await fetch(imageUrl);
-    if (!imageRes.ok) throw new Error("Failed to download image from OpenAI");
-    const arrayBuffer = await imageRes.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    // Initialize Supabase Admin client (or standard client with anon key)
-    // To bypass RLS for uploads, we try to use the ANON key if policies allow,
-    // or ideally a service role key. We'll use ANON and rely on the bucket being public and allowing uploads.
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-    
-    // We don't really need cookies for storage upload if bucket is public, but let's use the standard setup
-    const cookieStore = await cookies();
-    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
-      cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} }
-    });
-
-    // Upload to Supabase Storage
-    const fileName = `${projectId}/${scriptId}/${Date.now()}.png`;
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('creatives')
-      .upload(fileName, buffer, {
-        contentType: 'image/png',
-        upsert: false
+      // Initialize Supabase Admin client
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+      const cookieStore = await cookies();
+      const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+        cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} }
       });
 
-    if (uploadError) {
-      console.error("Supabase storage upload error:", uploadError);
-      
-      // If the bucket doesn't exist, we fallback to just returning the OpenAI URL (which lasts 1 hour)
-      // or we throw an error instructing the user to create the bucket.
-      if (uploadError.message.includes("Bucket not found")) {
-        return NextResponse.json({ 
-          error: "Бакет 'creatives' не найден в Supabase. Пожалуйста, создайте публичный бакет с именем 'creatives' в Supabase Storage."
-        }, { status: 500 });
+      // Upload to Supabase Storage
+      const fileName = `${projectId}/${scriptId}/${Date.now()}_${index}.png`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('creatives')
+        .upload(fileName, buffer, {
+          contentType: 'image/png',
+          upsert: false
+        });
+
+      if (uploadError) {
+        if (uploadError.message.includes("Bucket not found") || uploadError.message.includes("violates row-level security policy")) {
+          throw new Error(`Ошибка доступа к Supabase Storage: ${uploadError.message}. Убедитесь, что бакет creatives существует и имеет RLS политику разрешающую INSERT.`);
+        }
+        throw new Error(`Upload to Supabase failed: ${uploadError.message}`);
       }
 
-      throw new Error(`Upload to Supabase failed: ${uploadError.message}`);
-    }
+      // Get the public URL
+      const { data: publicUrlData } = supabase.storage
+        .from('creatives')
+        .getPublicUrl(fileName);
 
-    // Get the public URL
-    const { data: publicUrlData } = supabase.storage
-      .from('creatives')
-      .getPublicUrl(fileName);
+      return publicUrlData.publicUrl;
+    });
 
-    const finalUrl = publicUrlData.publicUrl;
+    const finalUrls = await Promise.all(imagePromises);
 
     // Optional: if action === 'replace' and oldImageUrl exists, we could delete the old image from Supabase
     if (action === 'replace' && oldImageUrl && oldImageUrl.includes('supabase.co')) {
       try {
-        // Extract file path from URL
         const urlParts = oldImageUrl.split('/creatives/');
         if (urlParts.length > 1) {
           const pathToDelete = urlParts[1];
+          // We can't delete with ANON key without RLS DELETE policy, but we can try
+          const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, { cookies: { getAll: () => [], setAll: () => {} } });
           await supabase.storage.from('creatives').remove([pathToDelete]);
-          console.log(`Deleted old image: ${pathToDelete}`);
         }
       } catch (delErr) {
         console.error("Failed to delete old image:", delErr);
       }
     }
 
-    return NextResponse.json({ success: true, url: finalUrl });
+    return NextResponse.json({ success: true, urls: finalUrls, url: finalUrls[0] });
+
+
 
   } catch (error: any) {
     console.error('Error in /api/images/generate:', error);

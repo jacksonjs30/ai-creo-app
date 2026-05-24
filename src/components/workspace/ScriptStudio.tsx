@@ -164,7 +164,8 @@ export default function ScriptStudio({ id }: { id: string }) {
           avatarName: script.avatarName,
           productName: script.productName || project?.name,
           action,
-          oldImageUrl
+          oldImageUrl,
+          count: action === 'add' ? 3 : 1
         })
       });
 
@@ -180,7 +181,11 @@ export default function ScriptStudio({ id }: { id: string }) {
         const images = [...(targetScript.images || [])];
         
         if (action === 'add') {
-          images.push(data.url);
+          if (data.urls && data.urls.length > 0) {
+            images.push(...data.urls);
+          } else if (data.url) {
+            images.push(data.url);
+          }
         } else if (action === 'replace' && index !== undefined) {
           images[index] = data.url;
         }
@@ -383,13 +388,13 @@ export default function ScriptStudio({ id }: { id: string }) {
                   <button
                     onClick={() => handleGenerateImage(script, 'add')}
                     disabled={isGeneratingImage?.scriptId === script.id && isGeneratingImage?.action === 'add'}
-                    className="btn btn-primary"
-                    style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+                    className="btn btn-primary shadow-sm"
+                    style={{ padding: '0.6rem 1.25rem', fontSize: '0.9rem', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                   >
                     {isGeneratingImage?.scriptId === script.id && isGeneratingImage?.action === 'add' ? (
-                      <><span className="spin-wrapper" style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}><Loader2 size={16} /></span> Генерируем...</>
+                      <><span className="spin-wrapper" style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}><Loader2 size={16} /></span> Генерация 3-х вариантов...</>
                     ) : (
-                      <><Plus size={16} /> Сгенерировать картинку ($0.04)</>
+                      <><Plus size={16} /> Сгенерировать 3 варианта ($0.12)</>
                     )}
                   </button>
                 </div>
