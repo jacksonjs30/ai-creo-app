@@ -24,14 +24,29 @@ export async function POST(req: NextRequest) {
 
     console.log(`Generating image for script ${scriptId}...`);
 
-    // Call OpenAI DALL-E 3
-    const response = await openai.images.generate({
-      model: "dall-e-3",
-      prompt: prompt,
-      n: 1,
-      size: "1024x1024",
-      quality: "standard"
-    });
+    // Call OpenAI DALL-E 3 (with fallback to DALL-E 2 if key doesn't have permissions)
+    let response;
+    try {
+      response = await openai.images.generate({
+        model: "dall-e-3",
+        prompt: prompt,
+        n: 1,
+        size: "1024x1024",
+        quality: "standard"
+      });
+    } catch (e: any) {
+      if (e.message && e.message.includes("does not exist")) {
+        console.log("Falling back to dall-e-2 due to API key restrictions...");
+        response = await openai.images.generate({
+          model: "dall-e-2",
+          prompt: prompt,
+          n: 1,
+          size: "512x512" // dall-e-2 standard size for cheaper fallback
+        });
+      } else {
+        throw e;
+      }
+    }
 
     const imageUrl = response.data?.[0]?.url;
 
