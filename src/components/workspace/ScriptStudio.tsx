@@ -168,11 +168,17 @@ export default function ScriptStudio({ id }: { id: string }) {
   };
 
   // Generate images for a specific table row
-  const handleGenerateRowImage = async (script: any, rowIdx: number, rowText: string, action: 'add' | 'replace' = 'add', imgIdx?: number) => {
+  // rowCells: all cells of the row; last cell is typically the design brief
+  const handleGenerateRowImage = async (script: any, rowIdx: number, rowCells: string[], action: 'add' | 'replace' = 'add', imgIdx?: number) => {
     setIsGeneratingImage({ scriptId: script.id, rowIdx, action, imgIdx });
     try {
       const rowImages: Record<number, string[]> = script.rowImages || {};
       const oldImageUrl = action === 'replace' && imgIdx !== undefined ? rowImages[rowIdx]?.[imgIdx] : undefined;
+
+      // Use last column as design brief (colors, layout, composition) — safest for image generation
+      // Earlier columns contain hook text which may trigger safety filters
+      const designBrief = rowCells[rowCells.length - 1] || '';
+      const scriptText = rowCells.join('\n');
 
       const res = await fetch('/api/images/generate', {
         method: 'POST',
@@ -180,7 +186,8 @@ export default function ScriptStudio({ id }: { id: string }) {
         body: JSON.stringify({
           projectId: id,
           scriptId: `${script.id}_row${rowIdx}`,
-          scriptText: rowText,
+          scriptText,
+          designBrief,
           avatarName: script.avatarName,
           productName: script.productName || project?.name,
           action,
@@ -472,7 +479,6 @@ export default function ScriptStudio({ id }: { id: string }) {
 
                       {/* Data rows with per-row image gallery */}
                       {dataRows.map((row, dataRowIdx) => {
-                        const rowText = row.join('\n\n');
                         const thisRowImgs = rowImages[dataRowIdx] || [];
                         const isGenThisRow = isGeneratingImage?.scriptId === script.id && isGeneratingImage?.rowIdx === dataRowIdx;
                         const isAnyGen = isGeneratingImage !== null;
@@ -503,7 +509,7 @@ export default function ScriptStudio({ id }: { id: string }) {
                                   )}
                                 </div>
                                 <button
-                                  onClick={() => handleGenerateRowImage(script, dataRowIdx, rowText, 'add')}
+                                  onClick={() => handleGenerateRowImage(script, dataRowIdx, row, 'add')}
                                   disabled={isAnyGen}
                                   style={{
                                     display: 'flex', alignItems: 'center', gap: '0.4rem',
@@ -538,7 +544,7 @@ export default function ScriptStudio({ id }: { id: string }) {
                                       >
                                         <a href={imgUrl} target="_blank" rel="noreferrer" style={{ background: 'white', color: '#4338ca', padding: '0.3rem 0.75rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700, textDecoration: 'none' }}>🔍 Открыть</a>
                                         <button
-                                          onClick={() => handleGenerateRowImage(script, dataRowIdx, rowText, 'replace', imgIdx)}
+                                          onClick={() => handleGenerateRowImage(script, dataRowIdx, row, 'replace', imgIdx)}
                                           disabled={isAnyGen}
                                           style={{ background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.5)', color: 'white', padding: '0.3rem 0.75rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
                                         >

@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
-    const { projectId, scriptId, scriptText, avatarName, productName, action, oldImageUrl, count = 1 } = await req.json();
+    const { projectId, scriptId, scriptText, designBrief, avatarName, productName, action, oldImageUrl, count = 1 } = await req.json();
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
@@ -19,25 +19,42 @@ export async function POST(req: NextRequest) {
 
     const openai = new OpenAI({ apiKey });
 
-    // Extract key content from the script for the prompt
-    const scriptLines = scriptText.split('\n').filter((l: string) => l.trim().length > 5);
-    const adCopyText = scriptLines.slice(0, 8).join('\n').substring(0, 600);
+    // Sanitize text to avoid safety violations from explicit ad hooks
+    const sanitize = (text: string): string => {
+      return text
+        .replace(/оргазм/gi, 'удовольствие')
+        .replace(/оргазму/gi, 'удовольствия')
+        .replace(/сексу/gi, 'близости')
+        .replace(/секс/gi, 'отношения')
+        .replace(/стогн\w*/gi, 'восхищаются')
+        .replace(/еротич\w*/gi, 'романтическ')
+        .replace(/оргазм|orgasm/gi, 'pleasure')
+        .replace(/sex\w*/gi, 'intimacy')
+        .replace(/nude|naked|explicit/gi, 'authentic')
+        .substring(0, 800);
+    };
 
-    // 3 compositional variations for richer output
+    // The designBrief is the most useful column for images (colors, layout, composition)
+    // scriptText is the full row text as fallback
+    const visualSource = designBrief 
+      ? sanitize(designBrief)
+      : sanitize(scriptText || '');
+
+    // 3 compositional variations for richer, diverse output
     const variations = [
-      'Close-up emotional portrait. Strong face expression, studio lighting.',
-      'Lifestyle scene with environment, natural lighting, real context.',
-      'Bold graphic composition, strong visual hierarchy, design-forward aesthetic.',
+      'Close-up emotional portrait, studio quality lighting, cinematic framing.',
+      'Lifestyle scene with real environment, natural lighting, authentic context.',
+      'Bold graphic design composition, strong visual hierarchy, modern art-direction.',
     ];
 
     const buildPrompt = (variationHint: string) => {
-      return [
-        `Professional advertising creative for product "${productName}". Target: "${avatarName}".`,
-        `Ad script content:\n${adCopyText}`,
-        `Visual style: ${variationHint}`,
-        `Create a premium, high-resolution advertising image that visually tells the story of this ad script.`,
-        `Avoid random decorative text. Only include text if the script specifically calls for a headline or slogan.`,
-      ].join('\n\n');
+      const parts = [
+        `Professional advertising visual creative. Product: "${productName}". Target audience: "${avatarName}".`,
+        `Design brief and visual guidelines:\n${visualSource}`,
+        `Compositional style: ${variationHint}`,
+        `Create a premium, polished advertising image following the design brief above. Focus on colors, mood, layout, and composition as described.`,
+      ];
+      return parts.join('\n\n');
     };
 
     console.log(`Generating ${count} image(s) via gpt-image-1 for script ${scriptId}...`);
