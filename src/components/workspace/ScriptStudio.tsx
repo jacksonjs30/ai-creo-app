@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { FileText, Copy, CheckCircle2, ArrowLeft, Plus } from 'lucide-react';
+import { FileText, Copy, CheckCircle2, ArrowLeft, Plus, Image as ImageIcon, Loader2, RefreshCw } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -18,6 +18,7 @@ export default function ScriptStudio({ id }: { id: string }) {
   const [editTableData, setEditTableData] = useState<string[][]>([]);
   const [editOtherText, setEditOtherText] = useState<{ before: string, after: string }>({ before: '', after: '' });
   const [isRegenerating, setIsRegenerating] = useState<string | null>(null);
+  const [isGeneratingImage, setIsGeneratingImage] = useState<{ scriptId: string, action: 'add' | 'replace', index?: number } | null>(null);
 
   const [filterFormat, setFilterFormat] = useState<string>('Все');
   const [filterProduct, setFilterProduct] = useState<string>('Все');
@@ -144,6 +145,65 @@ export default function ScriptStudio({ id }: { id: string }) {
       setIsRegenerating(null);
     }
   };
+
+  const handleGenerateImage = async (script: any, action: 'add' | 'replace' = 'add', index?: number) => {
+    setIsGeneratingImage({ scriptId: script.id, action, index });
+    try {
+      const oldImageUrl = action === 'replace' && index !== undefined ? script.images?.[index] : undefined;
+
+      const res = await fetch('/api/images/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId: id,
+          scriptId: script.id,
+          scriptText: script.content,
+          avatarName: script.avatarName,
+          productName: script.productName || project?.name,
+          action,
+          oldImageUrl
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to generate image');
+
+      // Update script with new image
+      const newScripts = [...scripts];
+      const scriptIndex = newScripts.findIndex(s => s.id === script.id);
+      
+      if (scriptIndex !== -1) {
+        const targetScript = newScripts[scriptIndex];
+        const images = [...(targetScript.images || [])];
+        
+        if (action === 'add') {
+          images.push(data.url);
+        } else if (action === 'replace' && index !== undefined) {
+          images[index] = data.url;
+        }
+
+        targetScript.images = images;
+        setScripts(newScripts);
+        localStorage.setItem(`projectScripts_${id}`, JSON.stringify(newScripts));
+
+        // Save to DB if possible
+        if (id && id !== 'temp-id') {
+          fetch('/api/projects', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, scripts: newScripts })
+          }).catch(console.error);
+        }
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert('Ошибка при генерации картинки: ' + err.message);
+    } finally {
+      setIsGeneratingImage(null);
+    }
+  };
+
+  if (!mounted) return null;
 
   return (
     <div suppressHydrationWarning>
@@ -297,6 +357,61 @@ export default function ScriptStudio({ id }: { id: string }) {
                     🗑️
                   </button>
                 </div>
+              </div>
+
+              {/* Image Gallery */}
+              <div style={{ padding: '1.5rem', background: 'white', borderBottom: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem', fontWeight: 800, color: '#1e293b' }}>
+                    <ImageIcon size={20} className="text-primary" /> Визуалы (DALL-E 3)
+                  </h4>
+                  <button
+                    onClick={() => handleGenerateImage(script, 'add')}
+                    disabled={isGeneratingImage?.scriptId === script.id && isGeneratingImage?.action === 'add'}
+                    className="btn btn-primary"
+                    style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+                  >
+                    {isGeneratingImage?.scriptId === script.id && isGeneratingImage?.action === 'add' ? (
+                      <><span className="spin-wrapper" style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}><Loader2 size={16} /></span> Генерируем...</>
+                    ) : (
+                      <><Plus size={16} /> Сгенерировать картинку ($0.04)</>
+                    )}
+                  </button>
+                </div>
+                
+                {script.images && script.images.length > 0 ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+                    {script.images.map((imgUrl: string, imgIdx: number) => (
+                      <div key={imgIdx} style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', background: '#f8fafc', aspectRatio: '1/1' }}>
+                        <img src={imgUrl} alt={`Визуал ${imgIdx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        
+                        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', opacity: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'opacity 0.2s', gap: '0.5rem' }} 
+                             onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                             onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}
+                        >
+                          <a href={imgUrl} target="_blank" rel="noreferrer" className="btn btn-primary" style={{ padding: '0.5rem', borderRadius: '8px' }}>🔍</a>
+                          <button 
+                            onClick={() => handleGenerateImage(script, 'replace', imgIdx)}
+                            disabled={isGeneratingImage?.scriptId === script.id && isGeneratingImage?.index === imgIdx}
+                            className="btn btn-secondary" 
+                            style={{ padding: '0.5rem', borderRadius: '8px', border: 'none' }}
+                          >
+                            {isGeneratingImage?.scriptId === script.id && isGeneratingImage?.index === imgIdx ? (
+                              <span className="spin-wrapper" style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}><Loader2 size={18} /></span>
+                            ) : (
+                              <RefreshCw size={18} />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ padding: '2rem', textAlign: 'center', background: '#f8fafc', borderRadius: '12px', border: '1px dashed #cbd5e1' }}>
+                    <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Нет сгенерированных визуалов для этого сценария.</p>
+                    <p style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Нажмите кнопку выше, чтобы создать уникальную картинку через DALL-E 3.</p>
+                  </div>
+                )}
               </div>
 
               {/* Content */}
