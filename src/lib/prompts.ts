@@ -94,11 +94,9 @@ export const PROMPTS = {
 
 4. pains (БОЛИ):
    - 5–7 ОСТРЫХ болей. Только живой язык и ПРЯМЫЕ цитаты. 
-   - Каждой боли дай рейтинг частоты от 1 до 5 звезд (⭐⭐⭐⭐⭐).
 
 5. fears (СТРАХИ):
    - 5–7 глубоких тревог (потеря статуса, увольнение, осознание собственной глупости, репутационные риски). 
-   - Только ПРЯМЫЕ цитаты с рейтингом 1-5 звезд.
 
 6. symptoms (СИМПТОМЫ):
    - 5–7 проявлений боли в рутине. Что человек делает физически, когда страдает? (гуглит до 3 утра, срывается на коллег, пьет лишний кофе, чтобы не заснуть).
@@ -117,24 +115,29 @@ export const PROMPTS = {
     - 1 ОЧЕНЬ детальный сценарий рутины "белки в колесе" (7–10 шагов). 
     - Каждый шаг: Действие (цитата) [Эмоция]. Используй "\\n" для разделения шагов.
 
+ВАЖНО ПРО ЧАСТОТУ УПОМИНАНИЙ (frequency_rating):
+Для ВСЕХ списков (jtbd, pains, fears, symptoms, behaviorMarkers, motivations, objections) ты обязан добавить поле "frequency_rating" (число от 1 до 5).
+Это рейтинг частоты упоминания проблемы на реальных форумах. 
+ЗАПРЕЩЕНО ставить всем 5! Оценивай реалистично в сравнении: самые популярные получают 5, менее популярные 4, 3, 2 или 1. Если это редкая проблема, ставь 1 или 2.
+
 ФОРМАТ ОТВЕТА:
 {
   "segmentName": "${segment.segmentName}",
   "summary": "${segment.summary}",
   "portrait": "...",
   "jtbd": [
-    { "job": "ситуация", "context": "цитата в елочках" }
+    { "job": "ситуация", "context": "цитата в елочках", "frequency_rating": 5 }
   ],
   "outcomes": { 
     "mainPromise": "обещание", 
     "items": [{ "outcome": "результат", "explanation": "было → стало" }] 
   },
-  "pains": [{ "pain": "суть", "context": "цитата", "frequency_rating": 5 }],
-  "fears": [{ "fear": "суть", "context": "цитата", "frequency_rating": 5 }],
-  "symptoms": [{ "symptom": "суть", "context": "цитата", "frequency_rating": 5 }],
-  "behaviorMarkers": [{ "marker": "фраза", "context": "цитата", "frequency_rating": 5 }],
+  "pains": [{ "pain": "суть", "context": "цитата", "frequency_rating": 4 }],
+  "fears": [{ "fear": "суть", "context": "цитата", "frequency_rating": 3 }],
+  "symptoms": [{ "symptom": "суть", "context": "цитата", "frequency_rating": 4 }],
+  "behaviorMarkers": [{ "marker": "фраза", "context": "цитата", "frequency_rating": 3 }],
   "motivations": [{ "motivation": "цель", "context": "цитата", "frequency_rating": 5 }],
-  "objections": [{ "objection": "барьер", "context": "цитата", "howToRemove": "обещание", "frequency_rating": 5 }],
+  "objections": [{ "objection": "барьер", "context": "цитата", "howToRemove": "обещание", "frequency_rating": 2 }],
   "cjm": [
     { "title": "название сценария", "scenario": "Шаг 1...\\nШаг 2..." }
   ]
@@ -178,18 +181,22 @@ export const PROMPTS = {
       "segmentName": "название (2-5 слов)",
       "summary": "краткая суть",
       "portrait": "живой рассказ на 6-8 предложений",
-      "jtbd": [{ "job": "задача", "context": "цитата" }],
+      "jtbd": [{ "job": "задача", "context": "цитата", "frequency_rating": 5 }],
       "outcomes": { "mainPromise": "обещание", "items": [{ "outcome": "результат", "explanation": "было → стало" }] },
-      "pains": [{ "pain": "суть", "context": "цитата", "frequency_rating": 5 }],
-      "fears": [{ "fear": "суть", "context": "цитата", "frequency_rating": 5 }],
-      "symptoms": [{ "symptom": "суть", "context": "цитата", "frequency_rating": 5 }],
-      "behaviorMarkers": [{ "marker": "фраза", "context": "цитата", "frequency_rating": 5 }],
+      "pains": [{ "pain": "суть", "context": "цитата", "frequency_rating": 4 }],
+      "fears": [{ "fear": "суть", "context": "цитата", "frequency_rating": 3 }],
+      "symptoms": [{ "symptom": "суть", "context": "цитата", "frequency_rating": 4 }],
+      "behaviorMarkers": [{ "marker": "фраза", "context": "цитата", "frequency_rating": 3 }],
       "motivations": [{ "motivation": "цель", "context": "цитата", "frequency_rating": 5 }],
-      "objections": [{ "objection": "барьер", "context": "цитата", "howToRemove": "обещание", "frequency_rating": 5 }],
+      "objections": [{ "objection": "барьер", "context": "цитата", "howToRemove": "обещание", "frequency_rating": 2 }],
       "cjm": [{ "title": "название", "scenario": "Шаги через \\n" }]
     }
   ]
 }
+
+ВАЖНО ПРО ЧАСТОТУ УПОМИНАНИЙ (frequency_rating):
+Для ВСЕХ списков (jtbd, pains, fears, symptoms, behaviorMarkers, motivations, objections) ты обязан добавить поле "frequency_rating" (число от 1 до 5).
+Оценивай реалистично в сравнении: самые популярные получают 5, менее популярные 4, 3, 2 или 1. ЗАПРЕЩЕНО ставить всем 5!
 
 ДАННЫЕ БРИФА: ${JSON.stringify(brief)}
 ГЕО: ${brief.geo?.join(', ')}
@@ -209,6 +216,8 @@ export const PROMPTS = {
 
 ТРЕБОВАНИЯ:
 - Верни СТРОГО JSON-объект (не массив).
+- Если раздел предполагает поля frequency_rating (как jtbd, pains, fears, и т.д.), ОБЯЗАТЕЛЬНО добавь его.
+- Оцени частоту упоминания реалистично от 1 до 5 (если добавляешь редкий пункт, ставь 1 или 2, а не 5).
 - Используй кавычки « » для цитат.
 - Язык — живой, "земной". Никаких эпитетов.
 `;

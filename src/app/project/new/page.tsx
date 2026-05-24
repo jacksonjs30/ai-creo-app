@@ -163,7 +163,7 @@ export default function NewProjectPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: finalBrief.productName,
-          brief: finalBrief,
+          brief: { ...finalBrief, foundSegments },
           avatars: avatarResults
         })
       });

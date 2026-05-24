@@ -81,7 +81,7 @@ export async function POST(request: Request) {
           type: 'array',
           items: {
             type: 'object',
-            properties: { job: { type: 'string' }, context: { type: 'string' } }
+            properties: { job: { type: 'string' }, context: { type: 'string' }, frequency_rating: { type: 'number' } }
           }
         },
         outcomes: {

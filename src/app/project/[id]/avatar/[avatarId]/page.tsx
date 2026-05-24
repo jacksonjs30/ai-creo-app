@@ -263,7 +263,7 @@ export default function AvatarPage() {
                         <button onClick={() => handleDeleteItem(sec.key, i)} style={{ color: '#ef4444' }}><Trash2 size={12} /></button>
                       </div>
                       <div style={{ fontWeight: 900, fontSize: '1rem', marginBottom: '0.6rem', paddingRight: '90px', color: '#1e293b', lineHeight: 1.4 }}>{item.job || item.pain || item.fear || item.symptom || item.marker || item.motivation || item.objection}</div>
-                      {(item.frequency_rating || sec.key === 'motivations') && <div style={{ display: 'flex', gap: '3px', color: '#fbbf24', marginBottom: '0.75rem' }}>{[...Array(5)].map((_, iR) => <Star key={iR} size={11} fill={iR < (item.frequency_rating || 0) ? 'currentColor' : 'none'} />)}</div>}
+                      {item.frequency_rating !== undefined && <div style={{ display: 'flex', gap: '3px', color: '#fbbf24', marginBottom: '0.75rem' }}>{[...Array(5)].map((_, iR) => <Star key={iR} size={11} fill={iR < Number(item.frequency_rating) ? 'currentColor' : 'none'} />)}</div>}
                       <div style={{ fontStyle: 'italic', color: '#64748b', fontSize: '0.9rem', lineHeight: 1.6 }}>"{item.context}"</div>
                     </div>
                   ))}

@@ -177,12 +177,49 @@ export default function ProjectDashboard({ params }: { params: Promise<{ id: str
       )}
 
       {activeSection === 'discovery' && (
-        <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
-          <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-            <BrainCircuit size={32} color="var(--primary)" />
+        <div className="card" style={{ padding: '2rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <BrainCircuit size={24} color="var(--primary)" />
+            </div>
+            <div>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a' }}>Audience Discovery</h2>
+              <p style={{ color: 'var(--text-muted)' }}>Найденные ИИ сегменты на основе брифа. Вы можете выбрать дополнительные сегменты для исследования.</p>
+            </div>
           </div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>Audience Discovery</h2>
-          <p style={{ color: 'var(--text-muted)', maxWidth: '500px', margin: '0 auto' }}>Здесь будет отображаться процесс первичного поиска сегментов аудитории. Сейчас результаты поиска уже сохранены во вкладке "Avatar Research".</p>
+
+          {projectBrief?.foundSegments ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
+              {projectBrief.foundSegments.map((seg: any, i: number) => {
+                const isResearched = avatars.some(a => a.segmentName === seg.segmentName);
+                return (
+                  <div key={i} style={{ 
+                    border: `1px solid ${isResearched ? 'var(--primary)' : 'var(--border)'}`, 
+                    borderRadius: '12px', 
+                    padding: '1.5rem',
+                    background: isResearched ? '#eff6ff' : 'white',
+                    display: 'flex', flexDirection: 'column'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
+                      <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a' }}>{seg.segmentName}</h3>
+                      {isResearched ? (
+                        <span className="badge badge-success" style={{ fontSize: '0.7rem' }}>Исследован</span>
+                      ) : (
+                        <button className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '0.75rem' }} onClick={() => alert('Функция доисследования в разработке')}>
+                          + Добавить
+                        </button>
+                      )}
+                    </div>
+                    <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, flex: 1 }}>{seg.summary}</p>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+             <div style={{ padding: '3rem', textAlign: 'center', background: 'var(--secondary)', borderRadius: '12px' }}>
+              <p style={{ color: 'var(--text-muted)' }}>Первичные сегменты не найдены. Вероятно, проект был создан до добавления этой функции.</p>
+            </div>
+          )}
         </div>
       )}
 
