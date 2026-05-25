@@ -163,14 +163,7 @@ export default function ScriptsPage({ params }: { params: Promise<{ id: string }
           <h1 className="page-title">Сценарии креативов</h1>
           <p className="page-subtitle">Сгенерированные ТЗ и сценарии для передачи в продакшен.</p>
         </div>
-        <Link
-          href={`/project/${id}/generate`}
-          className="btn btn-primary"
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}
-        >
-          <Plus size={18} />
-          Сгенерировать еще
-        </Link>
+
       </div>
 
       {scripts.length > 0 && (

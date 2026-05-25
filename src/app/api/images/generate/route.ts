@@ -130,21 +130,21 @@ export async function POST(req: NextRequest) {
       // Cell 1 = ad copy text → scene context
       // Cell 2+ = design brief → layout, colors, exact text to render
       const cellLabels: Record<number, string> = {
-        0: lang === 'uk'
-          ? 'КОНТЕКСТ КОНЦЕПЦІЇ (тільки для розуміння теми — НЕ виводити цей текст на зображення)'
-          : lang === 'ru'
-          ? 'КОНТЕКСТ КОНЦЕПЦИИ (только для понимания темы — НЕ выводить этот текст на изображение)'
-          : 'CONCEPT CONTEXT (for theme understanding only — DO NOT render this text on the image)',
-        1: lang === 'uk' ? 'ТЕКСТ РЕКЛАМНОГО ОГОЛОШЕННЯ (сцена, контекст)' :
-           lang === 'ru' ? 'ТЕКСТ РЕКЛАМНОГО ОБЪЯВЛЕНИЯ (сцена, контекст)' :
-           'AD COPY TEXT (scene and context)',
-        2: lang === 'uk' ? 'ТЗ ДЛЯ ДИЗАЙНЕРА — ТОЧНИЙ ТЕКСТ, КОЛЬОРИ, РОЗТАШУВАННЯ (виконуй СТРОГО)' :
-           lang === 'ru' ? 'ТЗ ДЛЯ ДИЗАЙНЕРА — ТОЧНЫЙ ТЕКСТ, ЦВЕТА, РАСПОЛОЖЕНИЕ (выполнять СТРОГО)' :
-           'DESIGNER BRIEF — EXACT TEXT, COLORS, LAYOUT (follow STRICTLY)',
+        0: lang === 'uk' ? 'СУТЬ КОНЦЕПЦІЇ (тільки візуальний сюжет)' : lang === 'ru' ? 'СУТЬ КОНЦЕПЦИИ (только визуальный сюжет)' : 'CONCEPT ESSENCE (visual plot only)',
+        1: lang === 'uk' ? 'СЦЕНАРІЙ (тільки візуальна дія)' : lang === 'ru' ? 'СЦЕНАРИЙ (только визуальная действие)' : 'SCENARIO (visual action only)',
+        2: lang === 'uk' ? 'ВІЗУАЛЬНЕ ТЗ ДЛЯ ДИЗАЙНЕРА (композиція, стиль, кольори - БЕЗ ТЕКСТУ)' : lang === 'ru' ? 'ВИЗУАЛЬНОЕ ТЗ ДЛЯ ДИЗАЙНЕРА (композиция, стиль, цвета - БЕЗ ТЕКСТА)' : 'VISUAL DESIGNER BRIEF (composition, style, colors - NO TEXT)',
       };
 
       dataSlice.forEach((cell, i) => {
-        const cleaned = sanitize(cell || '').trim();
+        let cleaned = sanitize(cell || '').trim();
+        
+        // CRITICAL: Strip out any text that the model might try to render as letters.
+        // Replace quoted text with a placeholder.
+        cleaned = cleaned.replace(/["«„]([^"»”]+)["»”]/g, '[ТЕКСТ БУДЕ НАКЛАДЕНО ОКРЕМО]');
+        
+        // Strip text hint keywords
+        cleaned = cleaned.replace(/(?:ЗАГОЛОВОК|Хук|CTA|Кнопка|Текст|Напис)[^:]*:/gi, '[ЕЛЕМЕНТ ДИЗАЙНУ]:');
+
         if (cleaned.length > 3) {
           const label = cellLabels[i] || `БЛОК ${i + 1}`;
           parts.push(`[${label}]\n${cleaned}`);
