@@ -529,9 +529,9 @@ export default function ScriptStudio({ id }: { id: string }) {
                   return (
                     <div>
                       {/* Header row */}
-                      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${headerRow.length}, 1fr)`, background: '#f8fafc', borderRadius: '10px 10px 0 0', border: '1px solid #e2e8f0', borderBottom: 'none' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: headerRow.length === 4 ? '60px 1.25fr 2fr 3.5fr' : headerRow.length === 3 ? '1.25fr 2fr 3.5fr' : `repeat(${headerRow.length}, 1fr)`, background: '#f8fafc', borderRadius: '10px 10px 0 0', border: '1px solid #e2e8f0', borderBottom: 'none' }}>
                         {headerRow.map((cell, cIdx) => (
-                          <div key={cIdx} style={{ padding: '0.75rem 1rem', fontWeight: 700, fontSize: '0.85rem', color: '#475569', borderRight: cIdx < headerRow.length - 1 ? '1px solid #e2e8f0' : 'none' }}>
+                          <div key={cIdx} style={{ padding: '0.75rem 1rem', fontWeight: 700, fontSize: '0.85rem', color: '#475569', borderRight: cIdx < headerRow.length - 1 ? '1px solid #e2e8f0' : 'none', textAlign: (headerRow.length === 4 && cIdx === 0) ? 'center' : 'left' }}>
                             {cell}
                           </div>
                         ))}
@@ -650,9 +650,9 @@ export default function ScriptStudio({ id }: { id: string }) {
                             </div>
 
                             {/* Row cells (rendered below) */}
-                            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${headerRow.length}, 1fr)`, background: dataRowIdx % 2 === 0 ? 'white' : '#fafbff' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: headerRow.length === 4 ? '60px 1.25fr 2fr 3.5fr' : headerRow.length === 3 ? '1.25fr 2fr 3.5fr' : `repeat(${headerRow.length}, 1fr)`, background: dataRowIdx % 2 === 0 ? 'white' : '#fafbff' }}>
                               {row.map((cell, cIdx) => (
-                                <div key={cIdx} style={{ padding: '1rem', fontSize: '0.9rem', color: '#334155', lineHeight: 1.6, borderRight: cIdx < headerRow.length - 1 ? '1px solid #e2e8f0' : 'none', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                                <div key={cIdx} style={{ padding: '1rem', fontSize: '0.9rem', color: '#334155', lineHeight: 1.6, borderRight: cIdx < headerRow.length - 1 ? '1px solid #e2e8f0' : 'none', whiteSpace: 'pre-wrap', wordBreak: 'break-word', textAlign: (headerRow.length === 4 && cIdx === 0) ? 'center' : 'left' }}>
                                   {cell}
                                 </div>
                               ))}
