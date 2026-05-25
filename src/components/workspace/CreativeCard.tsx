@@ -324,27 +324,82 @@ export function CreativeCard({
     newWindow.document.close();
   }, [imageUrl, overlay, index]);
 
-  // Download composite PNG
+  // Download high-resolution composite PNG (1024x1024)
   const handleDownload = useCallback(async () => {
-    if (!cardRef.current || isExporting) return;
+    if (isExporting) return;
     setIsExporting(true);
     setHovered(false);
-    await new Promise(r => setTimeout(r, 80));
+
+    // Create a temporary off-screen container at full 1024x1024 resolution
+    const tempContainer = document.createElement('div');
+    tempContainer.style.position = 'fixed';
+    tempContainer.style.left = '-9999px';
+    tempContainer.style.top = '-9999px';
+    tempContainer.style.width = '1024px';
+    tempContainer.style.height = '1024px';
+    tempContainer.style.overflow = 'hidden';
+
+    const isTop = layout.textPos === 'top';
+    const accent = overlay.accentColor;
+
+    // Use full styling parameters identical to buildPreviewHtml
+    tempContainer.innerHTML = `
+      <div style="position:relative; width:1024px; height:1024px; font-family:'Inter', sans-serif; overflow:hidden; background:#0c0a1c;">
+        <img src="${imageUrl}" crossorigin="anonymous" style="width:100%; height:100%; object-fit:cover; display:block;" />
+        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.18);"></div>
+        <div style="position:absolute; ${isTop ? 'top:0' : 'bottom:0'}; left:0; right:0; height:75%; background:${layout.scrim};"></div>
+        <div style="position:absolute; ${isTop ? 'top:0' : 'bottom:0'}; left:0; right:0; padding:80px; display:flex; flex-direction:column; gap:25px; box-sizing:border-box;">
+          <p style="margin:0; font-size:64px; font-weight:800; color:${layout.hlColor}; line-height:1.12; text-shadow:0 3px 18px rgba(0,0,0,0.95); word-break:break-word; ${layout.hlCss}">
+            ${overlay.headline}
+          </p>
+          ${overlay.body ? `
+            <p style="margin:0; font-size:36px; font-weight:400; color:${layout.bodyColor}; line-height:1.35; text-shadow:0 2px 10px rgba(0,0,0,0.95); word-break:break-word;">
+              ${overlay.body}
+            </p>
+          ` : ''}
+          ${overlay.cta ? `
+            <span style="display:inline-block; align-self:flex-start; font-size:28px; font-weight:800; padding:16px 42px; border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,0.3); margin-top:15px; ${layout.ctaCss}">
+              ${overlay.cta}
+            </span>
+          ` : ''}
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(tempContainer);
+
+    // Wait for image loading
+    const tempImg = tempContainer.querySelector('img');
+    if (tempImg) {
+      await new Promise((resolve) => {
+        if (tempImg.complete) resolve(true);
+        tempImg.onload = () => resolve(true);
+        tempImg.onerror = () => resolve(true);
+      });
+    }
+
+    await new Promise(r => setTimeout(r, 120));
+
     try {
       const html2canvas = (await import('html2canvas')).default;
-      const canvas = await html2canvas(cardRef.current, {
-        useCORS: true, allowTaint: false, scale: 2, backgroundColor: null,
+      const canvas = await html2canvas(tempContainer, {
+        useCORS: true,
+        allowTaint: false,
+        scale: 1, // Full 1024x1024 resolution already
+        backgroundColor: null,
       });
       const link = document.createElement('a');
       link.download = `creative_${index}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
-    } catch {
+    } catch (e) {
+      console.error('Download failed, fallback to original background image URL', e);
       window.open(imageUrl, '_blank');
     } finally {
+      document.body.removeChild(tempContainer);
       setIsExporting(false);
     }
-  }, [imageUrl, index, isExporting]);
+  }, [imageUrl, index, isExporting, layout, overlay]);
 
   const isTop = layout.textPos === 'top';
 
