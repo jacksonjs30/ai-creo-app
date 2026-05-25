@@ -39,9 +39,43 @@ export function CreativeCard({
   const [hovered, setHovered] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
-  // Open full-size image directly in new tab (without overlays)
+  // Open full-size image in new tab with a solid dark background wrapper
   const handleOpenFull = () => {
-    window.open(imageUrl, '_blank');
+    const newWindow = window.open('', '_blank');
+    if (!newWindow) {
+      window.open(imageUrl, '_blank');
+      return;
+    }
+    newWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Креатив #${index}</title>
+        <style>
+          body {
+            margin: 0;
+            background-color: #0c0a1c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            font-family: system-ui, -apple-system, sans-serif;
+          }
+          img {
+            max-width: 100%;
+            max-height: 100vh;
+            object-fit: contain;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+          }
+        </style>
+      </head>
+      <body>
+        <img src="${imageUrl}" />
+      </body>
+      </html>
+    `);
+    newWindow.document.close();
   };
 
   // Download raw image directly via fetch

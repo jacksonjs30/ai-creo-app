@@ -42,17 +42,20 @@ const LANG_INSTRUCTIONS = {
   uk: `ВАЖЛИВО: Весь текст на зображенні має бути виключно УКРАЇНСЬКОЮ мовою.
 ВАЖЛИВО: Використовуй ТОЧНО текстові рядки, вказані у ТЗ нижче. Не перекладай, не змінюй, не перефразовуй жодного слова.
 ВАЖЛИВО: Весь текст повинен повністю вміщуватися всередині зображення без обрізання.
-ВАЖЛИВО: Дотримуйся точного розташування елементів, кольорів та стилю, описаних у ТЗ.`,
+ВАЖЛИВО: Дотримуйся точного розташування елементів, кольорів та стилю, описаних у ТЗ.
+ВАЖЛИВО: Зображення повинно мати СУЦІЛЬНИЙ, НЕПРОЗОРИЙ фон (наприклад, суцільний темний або кольоровий фон, відповідний дизайну). Будь-яка прозорість або альфа-канали суворо ЗАБОРОНЕНІ. Усі пікселі мають бути повністю непрозорими.`,
 
   ru: `ВАЖНО: Весь текст на изображении должен быть ТОЛЬКО на РУССКОМ языке.
 ВАЖНО: Используй ТОЧНО текстовые строки, указанные в ТЗ ниже. Не переводи, не меняй, не перефразируй.
 ВАЖНО: Весь текст должен полностью помещаться внутри изображения без обрезания.
-ВАЖНО: Соблюдай точное расположение элементов, цвета и стиль из ТЗ.`,
+ВАЖНО: Соблюдай точное расположение элементов, цвета и стиль из ТЗ.
+ВАЖНО: Изображение должно иметь СПЛОШНОЙ, НЕПРОЗРАЧНЫЙ фон (например, сплошной темный или цветной фон, соответствующий дизайну). Любая прозрачность или альфа-каналы строго ЗАПРЕЩЕНЫ. Все пиксели должны быть полностью непрозрачными.`,
 
   en: `IMPORTANT: All text in the image must be in ENGLISH only.
 IMPORTANT: Use EXACTLY the text strings specified in the brief below. Do not translate, alter, or paraphrase any word.
 IMPORTANT: All text must fit completely within the image without clipping.
-IMPORTANT: Follow exactly the element placement, colors, and style from the brief.`,
+IMPORTANT: Follow exactly the element placement, colors, and style from the brief.
+IMPORTANT: The image must have a SOLID, OPAQUE background (e.g. solid dark or colored background matching the design). Any transparency or alpha channels are strictly FORBIDDEN. All pixels must be fully opaque.`,
 };
 
 const CYRILLIC_HINT = {
