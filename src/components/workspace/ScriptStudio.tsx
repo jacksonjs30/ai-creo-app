@@ -652,8 +652,12 @@ export default function ScriptStudio({ id }: { id: string }) {
                             {/* Row cells (rendered below) */}
                             <div style={{ display: 'grid', gridTemplateColumns: headerRow.length === 4 ? '60px 1.25fr 2fr 3.5fr' : headerRow.length === 3 ? '1.25fr 2fr 3.5fr' : `repeat(${headerRow.length}, 1fr)`, background: dataRowIdx % 2 === 0 ? 'white' : '#fafbff' }}>
                               {row.map((cell, cIdx) => (
-                                <div key={cIdx} style={{ padding: '1rem', fontSize: '0.9rem', color: '#334155', lineHeight: 1.6, borderRight: cIdx < headerRow.length - 1 ? '1px solid #e2e8f0' : 'none', whiteSpace: 'pre-wrap', wordBreak: 'break-word', textAlign: (headerRow.length === 4 && cIdx === 0) ? 'center' : 'left' }}>
-                                  {cell}
+                                <div key={cIdx} style={{ padding: '1rem', fontSize: '0.9rem', color: '#334155', lineHeight: 1.6, borderRight: cIdx < headerRow.length - 1 ? '1px solid #e2e8f0' : 'none', wordBreak: 'break-word', textAlign: (headerRow.length === 4 && cIdx === 0) ? 'center' : 'left' }}>
+                                  <div className="markdown-content">
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+                                      {cell}
+                                    </ReactMarkdown>
+                                  </div>
                                 </div>
                               ))}
                             </div>
