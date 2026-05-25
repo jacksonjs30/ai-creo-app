@@ -1,49 +1,71 @@
 'use client';
 
 import { useRef, useState, useCallback } from 'react';
-import { Download, RefreshCw, Loader2 } from 'lucide-react';
+import { Download, RefreshCw, Loader2, Maximize2 } from 'lucide-react';
 
 export interface CreativeOverlay {
-  /** Main headline from the TZ (ЗАГОЛОВОК/Хук) */
   headline: string;
-  /** Supporting body / pain text */
   body?: string;
-  /** CTA button text */
   cta?: string;
 }
 
 interface CreativeCardProps {
-  /** Index label, e.g. "#1" */
   index: number;
-  /** Background image URL from Supabase */
   imageUrl: string;
-  /** Text overlay data parsed from the TZ */
   overlay: CreativeOverlay;
-  /** Whether replace is loading for this specific card */
   isReplacing?: boolean;
-  /** Disable all actions while another generation is running */
   disabled?: boolean;
   onReplace?: () => void;
 }
 
-/** Extract overlay texts from row cells (concept title, ad copy, design brief) */
+/**
+ * Extract overlay texts from row cells.
+ * cells = [№, conceptTitle, adCopyText, designBrief]
+ *
+ * Rules:
+ * - headline: text in QUOTES after "ЗАГОЛОВОК" in brief → fallback: conceptTitle
+ * - cta: text in QUOTES after "CTA" / "Кнопка" in brief
+ * - body: first meaningful line of adCopy (cleaned of <br>)
+ */
 export function extractOverlay(cells: string[]): CreativeOverlay {
-  // Skip leading row-number cell
   const startIdx = /^\d+$/.test((cells[0] || '').trim()) ? 1 : 0;
-  const conceptName = (cells[startIdx] || '').replace(/<br\s*\/?>/gi, ' ').replace(/\*\*/g, '').trim();
-  const adCopy = (cells[startIdx + 1] || '').replace(/<br\s*\/?>/gi, '\n').replace(/\*\*/g, '').trim();
-  const brief = (cells[startIdx + 2] || cells[cells.length - 1] || '').replace(/<br\s*\/?>/gi, '\n').replace(/\*\*/g, '');
 
-  // Extract ЗАГОЛОВОК line from brief
-  const headlineMatch = brief.match(/(?:заголовок|headline|хук)[^:]*:\s*"?([^"\n]+)"?/i);
-  const headline = headlineMatch?.[1]?.trim() || conceptName;
+  const conceptTitle = (cells[startIdx] || '')
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/\*\*/g, '')
+    .trim();
 
-  // Extract CTA
-  const ctaMatch = brief.match(/(?:cta|кнопка|call to action)[^:]*:\s*"?([^"\n]+)"?/i);
-  const cta = ctaMatch?.[1]?.trim();
+  const adCopy = (cells[startIdx + 1] || '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/\*\*/g, '')
+    .trim();
 
-  // First line of adCopy as body (if different from headline)
-  const firstLine = adCopy.split('\n')[0]?.trim();
+  const brief = (cells[startIdx + 2] || cells[cells.length - 1] || '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/\*\*/g, '');
+
+  // ── Headline: extract ONLY the quoted text after ЗАГОЛОВОК/Хук ──────────
+  // Pattern: ЗАГОЛОВОК (Хук): "THIS IS THE HEADLINE" – rest is layout desc
+  const headlineQuoted = brief.match(/(?:заголовок|headline|хук)[^:]*:\s*[«""]([^»""]+)[»""]/i);
+  const headlineFallback = brief.match(/(?:заголовок|headline|хук)[^:]*:\s*([^\n–—-]{5,60})/i);
+  const headline =
+    headlineQuoted?.[1]?.trim() ||
+    // Fallback: take up to dash/em-dash (stops before layout description)
+    headlineFallback?.[1]?.replace(/[–—].*/g, '').trim() ||
+    conceptTitle;
+
+  // ── CTA: extract ONLY the quoted text after CTA/Кнопка ──────────────────
+  const ctaQuoted = brief.match(/(?:cta|кнопка|call to action)[^:]*:\s*[«""]([^»""]+)[»""]/i);
+  const ctaFallback = brief.match(/(?:cta|кнопка)[^:]*:\s*([^\n–—]{3,40})/i);
+  const cta =
+    ctaQuoted?.[1]?.trim() ||
+    ctaFallback?.[1]?.replace(/[–—].*/g, '').trim();
+
+  // ── Body: first sentence of adCopy, cleaned ──────────────────────────────
+  const firstLine = adCopy
+    .split('\n')
+    .map(l => l.trim())
+    .find(l => l.length > 5);
   const body = firstLine && firstLine !== headline ? firstLine : undefined;
 
   return { headline, body, cta };
@@ -65,30 +87,32 @@ export function CreativeCard({
     if (!cardRef.current || isExporting) return;
     setIsExporting(true);
     try {
-      // Dynamically import html2canvas to avoid SSR issues
       const html2canvas = (await import('html2canvas')).default;
       const canvas = await html2canvas(cardRef.current, {
         useCORS: true,
         allowTaint: false,
-        scale: 2, // 2x for crisp export
+        scale: 2,
         backgroundColor: null,
+        // Exclude hover overlay elements from export
+        ignoreElements: (el) => el.hasAttribute('data-no-export'),
       });
       const link = document.createElement('a');
       link.download = `creative_${index}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
-    } catch (e) {
-      console.error('Export failed:', e);
-      // Fallback: open image in new tab
+    } catch {
       window.open(imageUrl, '_blank');
     } finally {
       setIsExporting(false);
     }
   }, [imageUrl, index, isExporting]);
 
+  const handleOpenFull = useCallback(() => {
+    window.open(imageUrl, '_blank');
+  }, [imageUrl]);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-      {/* Card with overlay */}
       <div
         ref={cardRef}
         onMouseEnter={() => setHovered(true)}
@@ -105,7 +129,7 @@ export function CreativeCard({
           userSelect: 'none',
         }}
       >
-        {/* Background image */}
+        {/* Background image — generated by AI (no text) */}
         <img
           src={imageUrl}
           alt={`Креатив #${index}`}
@@ -113,122 +137,159 @@ export function CreativeCard({
           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
         />
 
-        {/* Gradient scrim at bottom for text readability */}
+        {/* Gradient scrim at bottom so text is readable */}
         <div style={{
           position: 'absolute',
           bottom: 0, left: 0, right: 0,
-          height: '65%',
-          background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)',
+          height: '60%',
+          background: 'linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.35) 60%, transparent 100%)',
           pointerEvents: 'none',
         }} />
 
-        {/* Text overlay */}
+        {/* CSS text overlay — always crisp Cyrillic via browser fonts */}
         <div style={{
           position: 'absolute',
           bottom: 0, left: 0, right: 0,
-          padding: '0.75rem',
+          padding: '0.6rem 0.7rem',
           display: 'flex',
           flexDirection: 'column',
-          gap: '0.25rem',
+          gap: '0.2rem',
           pointerEvents: 'none',
         }}>
           {/* Headline */}
           <p style={{
             margin: 0,
-            fontSize: 'clamp(0.7rem, 2.2cqw, 0.95rem)',
+            fontSize: 'clamp(0.72rem, 3.5cqw, 1rem)',
             fontWeight: 800,
             color: '#ffffff',
             lineHeight: 1.2,
-            textShadow: '0 1px 4px rgba(0,0,0,0.8)',
+            textShadow: '0 1px 5px rgba(0,0,0,0.9)',
             letterSpacing: '-0.01em',
             wordBreak: 'break-word',
             fontFamily: '"Inter", "Roboto", "Arial", sans-serif',
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
           }}>
             {overlay.headline}
           </p>
 
-          {/* Body */}
+          {/* Body text */}
           {overlay.body && (
             <p style={{
               margin: 0,
-              fontSize: 'clamp(0.55rem, 1.6cqw, 0.72rem)',
+              fontSize: 'clamp(0.58rem, 2cqw, 0.72rem)',
               fontWeight: 400,
-              color: 'rgba(255,255,255,0.88)',
+              color: 'rgba(255,255,255,0.85)',
               lineHeight: 1.3,
-              textShadow: '0 1px 3px rgba(0,0,0,0.7)',
+              textShadow: '0 1px 3px rgba(0,0,0,0.8)',
               wordBreak: 'break-word',
               fontFamily: '"Inter", "Roboto", "Arial", sans-serif',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
             }}>
               {overlay.body}
             </p>
           )}
 
-          {/* CTA */}
+          {/* CTA pill */}
           {overlay.cta && (
             <span style={{
               display: 'inline-block',
-              marginTop: '0.25rem',
+              marginTop: '0.2rem',
               alignSelf: 'flex-start',
               background: '#f59e0b',
               color: '#1c1917',
-              fontSize: 'clamp(0.5rem, 1.4cqw, 0.65rem)',
+              fontSize: 'clamp(0.52rem, 1.8cqw, 0.65rem)',
               fontWeight: 800,
-              padding: '0.15rem 0.5rem',
+              padding: '0.12rem 0.45rem',
               borderRadius: '4px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.04em',
+              letterSpacing: '0.02em',
               fontFamily: '"Inter", "Roboto", "Arial", sans-serif',
+              maxWidth: '90%',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
             }}>
               {overlay.cta}
             </span>
           )}
         </div>
 
-        {/* Index badge */}
-        <div style={{
-          position: 'absolute', top: '0.35rem', left: '0.35rem',
-          background: 'rgba(67,56,202,0.85)', color: 'white',
-          fontSize: '0.62rem', fontWeight: 700,
-          padding: '0.12rem 0.4rem', borderRadius: '4px',
-          backdropFilter: 'blur(4px)',
-        }}>
+        {/* Index badge — excluded from export */}
+        <div
+          data-no-export
+          style={{
+            position: 'absolute', top: '0.35rem', left: '0.35rem',
+            background: 'rgba(67,56,202,0.85)', color: 'white',
+            fontSize: '0.6rem', fontWeight: 700,
+            padding: '0.1rem 0.35rem', borderRadius: '4px',
+            backdropFilter: 'blur(4px)',
+          }}
+        >
           #{index}
         </div>
 
-        {/* Hover action overlay */}
+        {/* Hover actions — excluded from export */}
         {hovered && (
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: 'rgba(15,10,60,0.55)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            gap: '0.5rem',
-            backdropFilter: 'blur(2px)',
-          }}>
+          <div
+            data-no-export
+            style={{
+              position: 'absolute', inset: 0,
+              background: 'rgba(10,5,50,0.5)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: '0.4rem',
+              backdropFilter: 'blur(3px)',
+            }}
+          >
+            {/* Open full size */}
             <button
-              onClick={handleDownload}
-              disabled={isExporting}
+              onClick={handleOpenFull}
+              title="Открыть в полном размере"
               style={{
                 display: 'flex', alignItems: 'center', gap: '0.3rem',
                 background: 'white', color: '#4338ca',
                 border: 'none', borderRadius: '6px',
-                padding: '0.4rem 0.75rem', fontSize: '0.72rem', fontWeight: 700,
+                padding: '0.35rem 0.6rem', fontSize: '0.7rem', fontWeight: 700,
                 cursor: 'pointer',
               }}
             >
+              <Maximize2 size={12} /> Открыть
+            </button>
+
+            {/* Download PNG with text overlay */}
+            <button
+              onClick={handleDownload}
+              disabled={isExporting}
+              title="Скачать PNG (фон + текст)"
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.3rem',
+                background: '#6366f1', color: 'white',
+                border: 'none', borderRadius: '6px',
+                padding: '0.35rem 0.6rem', fontSize: '0.7rem', fontWeight: 700,
+                cursor: isExporting ? 'wait' : 'pointer',
+              }}
+            >
               {isExporting
-                ? <><Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> Экспорт...</>
+                ? <><Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> Экспорт…</>
                 : <><Download size={12} /> Скачать</>
               }
             </button>
+
+            {/* Replace */}
             {onReplace && (
               <button
                 onClick={onReplace}
                 disabled={disabled || isReplacing}
+                title="Перегенерировать этот вариант"
                 style={{
                   display: 'flex', alignItems: 'center', gap: '0.3rem',
-                  background: 'rgba(255,255,255,0.15)', color: 'white',
-                  border: '1px solid rgba(255,255,255,0.4)', borderRadius: '6px',
-                  padding: '0.4rem 0.75rem', fontSize: '0.72rem', fontWeight: 700,
+                  background: 'rgba(255,255,255,0.12)', color: 'white',
+                  border: '1px solid rgba(255,255,255,0.35)', borderRadius: '6px',
+                  padding: '0.35rem 0.6rem', fontSize: '0.7rem', fontWeight: 700,
                   cursor: disabled ? 'not-allowed' : 'pointer',
                 }}
               >
