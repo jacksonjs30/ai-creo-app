@@ -25,6 +25,7 @@ export function extractOverlay(cells: string[]): CreativeOverlay {
   const conceptTitle = (cells[startIdx] || '')
     .replace(/<br\s*\/?>/gi, ' ')
     .replace(/\*\*/g, '')
+    .replace(/^["«„]|["»”]$/g, '')
     .trim();
 
   const adCopy = (cells[startIdx + 1] || '')
@@ -36,29 +37,46 @@ export function extractOverlay(cells: string[]): CreativeOverlay {
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/\*\*/g, '');
 
-  // ── Headline: only text in quotes after ЗАГОЛОВОК/Хук ────────────────────
-  const hlMatch =
-    brief.match(/(?:заголовок|headline|хук)[^:]*:\s*[«"„""]([^»""]{3,80})[»""]/i) ||
-    brief.match(/(?:заголовок|headline|хук)[^:]*:\s*([^–—\n]{5,80})/i);
-  const headline = (hlMatch?.[1] ?? conceptTitle)
-    .replace(/\s*[–—].*/, '')   // cut off everything after dash (layout desc)
-    .replace(/^["«„]|["»"]$/g, '')
-    .trim() || conceptTitle;
+  // ── Headline: find quoted text after keyword, then unquoted full line, then adCopy first chunk ──
+  // Strategy 1: quoted text in «» or ""
+  const hlQuoted = brief.match(
+    /(?:заголовок|хук|headline|hook)[^:]*:\s*[\u00ab"\u201e\u201c\u2018]([^\u00bb"\u201d\u2019]{3,120})[\u00bb"\u201d\u2019]/i
+  );
 
-  // ── CTA: quoted, short (≤40 chars), not a color/layout description ────────
-  const ctaMatch =
-    brief.match(/(?:\bcta\b|кнопка)[^:]*:\s*[«"„""]([^»""]{3,40})[»""]/i) ||
-    brief.match(/(?:\bcta\b|кнопка)[^:]*:\s*([^–—\n]{5,40})/i);
-  const rawCta = ctaMatch?.[1]
-    ?.replace(/\s*[–—].*/, '')
-    .replace(/^["«„]|["»"]$/g, '')
+  // Strategy 2: unquoted — grab full line after keyword (no premature dash cutoff)
+  const hlLine = brief.match(
+    /(?:заголовок|хук|headline|hook)[^:]*:\s*([^\n]{5,120})/i
+  );
+
+  // Strategy 3: adCopy first meaningful sentence
+  const adFirst = adCopy
+    .split(/[.!?]+[\s\u00a0]+|<br\s*\/?>|\n/i)[0]
+    ?.replace(/<[^>]+>/g, '')
     .trim();
-  // Reject if looks like color/layout description
-  const isLayoutDesc = rawCta && /жовт|помаранч|колір|фон|елемент|шрифт|розташ/i.test(rawCta);
+
+  // Pick best match, strip trailing " — layout description" (em-dash + lowercase word)
+  const stripLayoutSuffix = (s: string) =>
+    s.replace(/\s*[–—]\s*[a-zа-яіїһєґ]/i, '').replace(/^["\u00ab\u201e]|["\u00bb\u201d]$/g, '').trim();
+
+  const headline =
+    stripLayoutSuffix(hlQuoted?.[1] || '') ||
+    stripLayoutSuffix(hlLine?.[1] || '') ||
+    stripLayoutSuffix(adFirst || '') ||
+    conceptTitle;
+
+  // ── CTA: quoted, short (≤40 chars), not a color/layout description ──
+  const ctaMatch =
+    brief.match(/(?:\bcta\b|кнопка)[^:]*:\s*[\u00ab"\u201e\u201c]([^\u00bb"\u201d]{3,50})[\u00bb"\u201d]/i) ||
+    brief.match(/(?:\bcta\b|кнопка)[^:]*:\s*([^\n]{5,50})/i);
+  const rawCta = ctaMatch?.[1]
+    ?.replace(/\s*[–—]\s*[a-zа-яіїһєґ].*/i, '')
+    .replace(/^["\u00ab\u201e]|["\u00bb\u201d]$/g, '')
+    .trim();
+  const isLayoutDesc = rawCta && /\u0436\u043e\u0432\u0442|\u043f\u043e\u043c\u0430\u0440\u0430\u043d\u0447|колір|фон|елемент|шрифт|розташ/i.test(rawCta);
   const cta = rawCta && !isLayoutDesc ? rawCta : undefined;
 
-  // ── Body: first sentence of adCopy ────────────────────────────────────────
-  const firstSentence = adCopy.split(/[.!?]\s+/)[0]?.trim();
+  // ── Body: first sentence of adCopy (different from headline) ──
+  const firstSentence = adCopy.split(/[.!?]\s+/)[0]?.replace(/<[^>]+>/g, '').trim();
   const body = firstSentence && firstSentence.length > 8 && firstSentence !== headline
     ? firstSentence
     : undefined;
@@ -109,6 +127,16 @@ export function CreativeCard({
 
   const handleOpenFull = useCallback(async () => {
     if (!cardRef.current || isOpening) return;
+
+    // MUST open window synchronously (before any await) — otherwise browser blocks it as popup
+    const newWindow = window.open('', '_blank');
+    if (!newWindow) {
+      alert('Браузер заблокировал всплывающее окно. Разрешите всплывающие для этого сайта.');
+      return;
+    }
+    // Show loading placeholder in the new tab immediately
+    newWindow.document.write('<html><body style="margin:0;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;font-size:18px">Открываю...</body></html>');
+
     setIsOpening(true);
     setHovered(false);
     await new Promise(r => setTimeout(r, 80));
@@ -120,21 +148,16 @@ export function CreativeCard({
         scale: 2,
         backgroundColor: null,
       });
-      // Use a hidden <a> link with target=_blank — this reliably opens in a new tab
       const dataUrl = canvas.toDataURL('image/png');
-      const a = document.createElement('a');
-      a.href = dataUrl;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      newWindow.document.open();
+      newWindow.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Creative #${index}</title><style>*{margin:0;padding:0;box-sizing:border-box}body{background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh}img{max-width:100%;max-height:100vh;object-fit:contain}</style></head><body><img src="${dataUrl}"/></body></html>`);
+      newWindow.document.close();
     } catch {
-      window.open(imageUrl, '_blank');
+      newWindow.location.href = imageUrl;
     } finally {
       setIsOpening(false);
     }
-  }, [imageUrl, isOpening]);
+  }, [imageUrl, index, isOpening]);
 
   return (
     <>
