@@ -237,9 +237,35 @@ export default function ScriptStudio({ id }: { id: string }) {
     }
   };
 
-  // Legacy: keep for backwards compat
-  const handleGenerateImage = async (script: any, action: 'add' | 'replace' = 'add', index?: number) => {
-    return handleGenerateRowImage(script, -1, script.content, action, index);
+  const handleDeleteRowImage = async (script: any, rowIdx: number, imgIdx: number) => {
+    if (!confirm('Видалити цей варіант креативу?')) return;
+    try {
+      const newScripts = [...scripts];
+      const scriptIndex = newScripts.findIndex(s => s.id === script.id);
+      if (scriptIndex !== -1) {
+        const targetScript = { ...newScripts[scriptIndex] };
+        const newRowImages: Record<number, string[]> = { ...(targetScript.rowImages || {}) };
+        const existingRowImgs = [...(newRowImages[rowIdx] || [])];
+        
+        existingRowImgs.splice(imgIdx, 1);
+        newRowImages[rowIdx] = existingRowImgs;
+        targetScript.rowImages = newRowImages;
+        newScripts[scriptIndex] = targetScript;
+        setScripts(newScripts);
+        localStorage.setItem(`projectScripts_${id}`, JSON.stringify(newScripts));
+
+        if (id && id !== 'temp-id') {
+          fetch('/api/projects', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, scripts: newScripts })
+          }).catch(console.error);
+        }
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert('Помилка при видаленні картинки: ' + err.message);
+    }
   };
 
   if (!mounted) return null;
@@ -557,6 +583,7 @@ export default function ScriptStudio({ id }: { id: string }) {
                                       isReplacing={isGenThisRow && isGeneratingImage?.imgIdx === imgIdx}
                                       disabled={isAnyGen}
                                       onReplace={() => handleGenerateRowImage(script, dataRowIdx, row, 'replace', imgIdx)}
+                                      onDelete={() => handleDeleteRowImage(script, dataRowIdx, imgIdx)}
                                     />
                                   ))}
                                 </div>

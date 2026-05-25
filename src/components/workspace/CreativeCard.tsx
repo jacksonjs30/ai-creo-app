@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, useCallback } from 'react';
-import { Download, RefreshCw, Loader2, Eye, X } from 'lucide-react';
+import { Download, RefreshCw, Loader2, Eye, X, Trash2 } from 'lucide-react';
 
 export interface CreativeOverlay {
   headline: string;
@@ -16,6 +16,7 @@ interface CreativeCardProps {
   isReplacing?: boolean;
   disabled?: boolean;
   onReplace?: () => void;
+  onDelete?: () => void;
 }
 
 export function extractOverlay(cells: string[]): CreativeOverlay {
@@ -75,6 +76,7 @@ export function CreativeCard({
   isReplacing,
   disabled,
   onReplace,
+  onDelete,
 }: CreativeCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -300,6 +302,24 @@ export function CreativeCard({
                   ? <><Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> Заменяю…</>
                   : <><RefreshCw size={12} /> Перегенерировать</>
                 }
+              </button>
+            )}
+
+            {/* Delete */}
+            {onDelete && (
+              <button
+                onClick={onDelete}
+                disabled={disabled || isReplacing}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem',
+                  background: 'rgba(220, 38, 38, 0.15)', color: '#fca5a5',
+                  border: '1px solid rgba(220, 38, 38, 0.3)', borderRadius: '7px',
+                  padding: '0.38rem 0', fontSize: '0.68rem', fontWeight: 600,
+                  cursor: disabled ? 'not-allowed' : 'pointer', width: '100%',
+                  marginTop: '0.2rem'
+                }}
+              >
+                <Trash2 size={12} /> Удалить
               </button>
             )}
           </div>
