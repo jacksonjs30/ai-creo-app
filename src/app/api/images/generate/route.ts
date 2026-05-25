@@ -55,6 +55,14 @@ IMPORTANT: All text must fit completely within the image without clipping.
 IMPORTANT: Follow exactly the element placement, colors, and style from the brief.`,
 };
 
+/** Instruction to suppress AI text rendering — we overlay text via CSS */
+const NO_TEXT_INSTRUCTION: Record<'uk' | 'ru' | 'en', string> = {
+  uk: '\nВАЖЛИВО: НЕ малюй жодного тексту, букв, слів або написів на зображенні. Зображення повинно бути ТІЛЬКИ ВІЗУАЛЬНИМ ФОНОМ — без тексту. Текст буде доданий окремо поверх зображення.',
+  ru: '\nВАЖНО: НЕ рисуй никакого текста, букв, слов или надписей на изображении. Изображение должно быть ТОЛЬКО ВИЗУАЛЬНЫМ ФОНОМ — без текста. Текст будет добавлен отдельно поверх изображения.',
+  en: '\nIMPORTANT: Do NOT render any text, letters, words or inscriptions on the image. The image must be a VISUAL BACKGROUND ONLY — no text. Text will be composited on top separately.',
+};
+
+
 export async function POST(req: NextRequest) {
   try {
     const {
@@ -179,7 +187,7 @@ export async function POST(req: NextRequest) {
                            'FULL CREATIVE BRIEF';
 
       return [
-        langInstructions + cyrillicHint,
+        langInstructions + NO_TEXT_INSTRUCTION[lang],
         '',
         `${productLabel}: "${sanitize(productName || '')}"`,
         '',

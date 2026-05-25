@@ -6,6 +6,7 @@ import { FileText, Copy, CheckCircle2, ArrowLeft, Plus, Image as ImageIcon, Load
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
+import { CreativeCard, extractOverlay } from './CreativeCard';
 
 export default function ScriptStudio({ id }: { id: string }) {
   const [project, setProject] = useState<any>(null);
@@ -554,32 +555,17 @@ export default function ScriptStudio({ id }: { id: string }) {
                               </div>
 
                               {thisRowImgs.length > 0 && (
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '0.75rem' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.75rem' }}>
                                   {thisRowImgs.map((imgUrl: string, imgIdx: number) => (
-                                    <div key={imgIdx} style={{ position: 'relative', borderRadius: '10px', overflow: 'hidden', border: '1px solid #c7d2fe', aspectRatio: '1/1', background: '#ede9fe', boxShadow: '0 2px 6px rgba(99,102,241,0.15)' }}>
-                                      <img src={imgUrl} alt={`Концепция ${dataRowIdx + 1}, вариант ${imgIdx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                      <div style={{ position: 'absolute', top: '0.35rem', left: '0.35rem', background: 'rgba(67,56,202,0.8)', color: 'white', fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.4rem', borderRadius: '5px' }}>
-                                        #{imgIdx + 1}
-                                      </div>
-                                      <div
-                                        style={{ position: 'absolute', inset: 0, background: 'rgba(67,56,202,0.7)', opacity: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', transition: 'opacity 0.2s' }}
-                                        onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                                        onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}
-                                      >
-                                        <a href={imgUrl} target="_blank" rel="noreferrer" style={{ background: 'white', color: '#4338ca', padding: '0.3rem 0.75rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700, textDecoration: 'none' }}>🔍 Открыть</a>
-                                        <button
-                                          onClick={() => handleGenerateRowImage(script, dataRowIdx, row, 'replace', imgIdx)}
-                                          disabled={isAnyGen}
-                                          style={{ background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.5)', color: 'white', padding: '0.3rem 0.75rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
-                                        >
-                                          {isGenThisRow && isGeneratingImage?.imgIdx === imgIdx ? (
-                                            <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}><Loader2 size={12} /></span> Замена</>
-                                          ) : (
-                                            <><RefreshCw size={12} /> Заменить</>
-                                          )}
-                                        </button>
-                                      </div>
-                                    </div>
+                                    <CreativeCard
+                                      key={imgIdx}
+                                      index={imgIdx + 1}
+                                      imageUrl={imgUrl}
+                                      overlay={extractOverlay(row)}
+                                      isReplacing={isGenThisRow && isGeneratingImage?.imgIdx === imgIdx}
+                                      disabled={isAnyGen}
+                                      onReplace={() => handleGenerateRowImage(script, dataRowIdx, row, 'replace', imgIdx)}
+                                    />
                                   ))}
                                 </div>
                               )}
