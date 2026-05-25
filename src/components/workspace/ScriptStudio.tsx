@@ -544,18 +544,9 @@ export default function ScriptStudio({ id }: { id: string }) {
                         const isAnyGen = isGeneratingImage !== null;
 
                         return (
-                          <div key={dataRowIdx} style={{ border: '1px solid #e2e8f0', borderTop: dataRowIdx === 0 ? '1px solid #e2e8f0' : 'none', borderRadius: dataRowIdx === dataRows.length - 1 && thisRowImgs.length === 0 ? '0 0 10px 10px' : '0' }}>
-                            {/* Row cells */}
-                            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${headerRow.length}, 1fr)`, background: dataRowIdx % 2 === 0 ? 'white' : '#fafbff' }}>
-                              {row.map((cell, cIdx) => (
-                                <div key={cIdx} style={{ padding: '1rem', fontSize: '0.9rem', color: '#334155', lineHeight: 1.6, borderRight: cIdx < headerRow.length - 1 ? '1px solid #e2e8f0' : 'none', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                                  {cell}
-                                </div>
-                              ))}
-                            </div>
-
-                            {/* Per-row image section */}
-                            <div style={{ padding: '1.25rem', background: '#f5f3ff', borderTop: '1px dashed #c7d2fe' }}>
+                          <div key={dataRowIdx} style={{ border: '1px solid #e2e8f0', borderTop: dataRowIdx === 0 ? '1px solid #e2e8f0' : 'none', borderRadius: dataRowIdx === dataRows.length - 1 ? '0 0 10px 10px' : '0', overflow: 'hidden' }}>
+                            {/* Per-row image section (rendered above) */}
+                            <div style={{ padding: '1.25rem', background: '#f5f3ff', borderBottom: '1px dashed #c7d2fe' }}>
                               
                               {/* Custom prompt/notes input */}
                               <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', alignItems: 'center' }}>
@@ -656,6 +647,15 @@ export default function ScriptStudio({ id }: { id: string }) {
                                   ))}
                                 </div>
                               )}
+                            </div>
+
+                            {/* Row cells (rendered below) */}
+                            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${headerRow.length}, 1fr)`, background: dataRowIdx % 2 === 0 ? 'white' : '#fafbff' }}>
+                              {row.map((cell, cIdx) => (
+                                <div key={cIdx} style={{ padding: '1rem', fontSize: '0.9rem', color: '#334155', lineHeight: 1.6, borderRight: cIdx < headerRow.length - 1 ? '1px solid #e2e8f0' : 'none', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                                  {cell}
+                                </div>
+                              ))}
                             </div>
                           </div>
                         );
