@@ -75,7 +75,8 @@ export async function POST(req: NextRequest) {
       action,
       oldImageUrl,
       count = 1,
-      quality = 'high' // Default to high quality to ensure sharper rendering
+      quality = 'high', // Default to high quality to ensure sharper rendering
+      userNotes
     } = await req.json();
 
     const apiKey = process.env.OPENAI_API_KEY;
@@ -154,7 +155,7 @@ export async function POST(req: NextRequest) {
         ? 'УВАГА: Текст із блоку "ВНУТРІШНЯ НАЗВА КОНЦЕПЦІЇ" є суто довідковим. Категорично заборонено малювати його на зображенні. На зображенні потрібно писати ТІЛЬКИ ті текстові фрази (хук, заголовок, кнопка), які вказані у блоці "ТЗ ДЛЯ ДИЗАЙНЕРА".'
         : 'ВНИМАНИЕ: Текст из блока "ВНУТРЕННЕЕ НАЗВАНИЕ КОНЦЕПЦИИ" является чисто справочным. Категорически запрещено рисовать его на изображении. На изображении нужно писать ТОЛЬКО те текстовые фразы (хук, заголовок, кнопка), которые указаны в блоке "ТЗ ДЛЯ ДИЗАЙНЕРА".';
 
-      return [
+      const promptParts = [
         langInstructions + cyrillicHint,
         '',
         strictRules,
@@ -166,7 +167,22 @@ export async function POST(req: NextRequest) {
         `=== КІНЕЦЬ ТЗ ===`,
         '',
         `${composLabel}: ${variationHint}`,
-      ].join('\n');
+      ];
+
+      // Add user notes at the VERY END with maximum priority to override default branding colors or compositions
+      if (userNotes && userNotes.trim().length > 0) {
+        const userNotesHeader = lang === 'uk'
+          ? 'КРИТИЧНО ВАЖЛИВА ДИРЕКТИВА ВІД КОРИСТУВАЧА (ЦЕЙ ПРАВИЛО МАЄ НАЙВИЩИЙ ПРІОРИТЕТ ТА СКАСОВУЄ ІНШІ ПРАВИЛА З ТЗ):'
+          : 'КРИТИЧЕСКИ ВАЖНАЯ ДИРЕКТИВА ОТ ПОЛЬЗОВАТЕЛЯ (ЭТО ПРАВИЛО ИМЕЕТ НАИВЫСШИЙ ПРИОРИТЕТ И ОТМЕНЯЕТ ДРУГИЕ ПРАВИЛА ИЗ ТЗ):';
+        promptParts.push(
+          '',
+          `=== ${userNotesHeader} ===`,
+          `СЛІДУЙ СУВОРО: ${sanitize(userNotes.trim())}`,
+          `========================================================================================`
+        );
+      }
+
+      return promptParts.join('\n');
     };
 
 
