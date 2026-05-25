@@ -37,21 +37,29 @@ function detectLang(text: string): 'uk' | 'ru' | 'en' {
   return 'uk'; // default
 }
 
-/**
- * Single system instruction: generate a VISUAL BACKGROUND ONLY.
- * No text anywhere. Text is composited via CSS overlay.
- */
-const VISUAL_BACKGROUND_INSTRUCTION = `You are a professional advertising photographer and art director.
-Generate a PHOTOREALISTIC or CINEMATIC ILLUSTRATION for an advertising background image.
+/** Language-specific instruction snippets */
+const LANG_INSTRUCTIONS = {
+  uk: `ВАЖЛИВО: Весь текст на зображенні має бути виключно УКРАЇНСЬКОЮ мовою.
+ВАЖЛИВО: Використовуй ТОЧНО текстові рядки, вказані у ТЗ нижче. Не перекладай, не змінюй, не перефразовуй жодного слова.
+ВАЖЛИВО: Весь текст повинен повністю вміщуватися всередині зображення без обрізання.
+ВАЖЛИВО: Дотримуйся точного розташування елементів, кольорів та стилю, описаних у ТЗ.`,
 
-ABSOLUTE RULES — follow without any exception:
-1. DO NOT render ANY text, letters, words, numbers, or inscriptions ANYWHERE in the image.
-2. DO NOT write any Cyrillic, Latin, Arabic, or any other script.
-3. DO NOT add logos, watermarks, price tags, badges, or UI elements.
-4. The image MUST be a pure VISUAL SCENE: people, objects, environment, lighting, colors ONLY.
-5. Text and headlines will be added on top separately by the design system.
-6. Focus on: emotional storytelling, cinematic lighting, color palette, visual composition.`;
+  ru: `ВАЖНО: Весь текст на изображении должен быть ТОЛЬКО на РУССКОМ языке.
+ВАЖНО: Используй ТОЧНО текстовые строки, указанные в ТЗ ниже. Не переводи, не меняй, не перефразируй.
+ВАЖНО: Весь текст должен полностью помещаться внутри изображения без обрезания.
+ВАЖНО: Соблюдай точное расположение элементов, цвета и стиль из ТЗ.`,
 
+  en: `IMPORTANT: All text in the image must be in ENGLISH only.
+IMPORTANT: Use EXACTLY the text strings specified in the brief below. Do not translate, alter, or paraphrase any word.
+IMPORTANT: All text must fit completely within the image without clipping.
+IMPORTANT: Follow exactly the element placement, colors, and style from the brief.`,
+};
+
+const CYRILLIC_HINT = {
+  uk: '\nОСОБЛИВО ВАЖЛИВО — ТЕКСТ НА ЗОБРАЖЕННІ: Рендери кожну літеру кирилиці ТОЧНО та ЧІТКО. Жодних нечитабельних символів, жодних замін кириличних букв латиницею або псевдографікою. Весь текст має бути написаний стандартними кириличними літерами українського алфавіту.',
+  ru: '\nОСОБЕННО ВАЖНО — ТЕКСТ НА ИЗОБРАЖЕНИИ: Рендери каждую букву кириллицы ТОЧНО и ЧЁТКО. Никаких нечитаемых символов, никаких замен кириллических букв латиницей или псевдографикой. Весь текст должен быть написан стандартными кириллическими буквами.',
+  en: '\nIMPORTANT — TEXT ON THE IMAGE: Render each letter accurately and clearly. All text must be readable and written in clean typography.',
+};
 
 export async function POST(req: NextRequest) {
   try {
@@ -109,61 +117,41 @@ export async function POST(req: NextRequest) {
       fullBrief = 'Professional advertising image, modern design, premium aesthetic.';
     }
 
-    // ─── Assemble brief from cells with correct labels ────────────────────────
-    if (Array.isArray(cells) && cells.length >= 2) {
-      const parts: string[] = [];
-      const startIdx = /^\d+$/.test((cells[0] || '').trim()) ? 1 : 0;
-      const dataSlice = cells.slice(startIdx);
-      lang = detectLang(dataSlice.join(' '));
-
-      // Cell 0 after skip = concept name → CONTEXT ONLY, not text to render on image
-      // Cell 1 = ad copy text → scene context
-      // Cell 2+ = design brief → layout, colors, exact text to render
-      const cellLabels: Record<number, string> = {
-        0: lang === 'uk' ? 'СУТЬ КОНЦЕПЦІЇ (тільки візуальний сюжет)' : lang === 'ru' ? 'СУТЬ КОНЦЕПЦИИ (только визуальный сюжет)' : 'CONCEPT ESSENCE (visual plot only)',
-        1: lang === 'uk' ? 'СЦЕНАРІЙ (тільки візуальна дія)' : lang === 'ru' ? 'СЦЕНАРИЙ (только визуальная действие)' : 'SCENARIO (visual action only)',
-        2: lang === 'uk' ? 'ВІЗУАЛЬНЕ ТЗ ДЛЯ ДИЗАЙНЕРА (композиція, стиль, кольори - БЕЗ ТЕКСТУ)' : lang === 'ru' ? 'ВИЗУАЛЬНОЕ ТЗ ДЛЯ ДИЗАЙНЕРА (композиция, стиль, цвета - БЕЗ ТЕКСТА)' : 'VISUAL DESIGNER BRIEF (composition, style, colors - NO TEXT)',
-      };
-
-      dataSlice.forEach((cell, i) => {
-        let cleaned = sanitize(cell || '').trim();
-        
-        // CRITICAL: Strip out any text that the model might try to render as letters.
-        // Replace quoted text with a placeholder.
-        cleaned = cleaned.replace(/["«„]([^"»”]+)["»”]/g, '[ТЕКСТ БУДЕ НАКЛАДЕНО ОКРЕМО]');
-        
-        // Strip text hint keywords
-        cleaned = cleaned.replace(/(?:ЗАГОЛОВОК|Хук|CTA|Кнопка|Текст|Напис)[^:]*:/gi, '[ЕЛЕМЕНТ ДИЗАЙНУ]:');
-
-        if (cleaned.length > 3) {
-          const label = cellLabels[i] || `БЛОК ${i + 1}`;
-          parts.push(`[${label}]\n${cleaned}`);
-        }
-      });
-
-      fullBrief = parts.join('\n\n');
-    }
+    const langInstructions = LANG_INSTRUCTIONS[lang];
+    const cyrillicHint = CYRILLIC_HINT[lang];
 
     // ─── Compositional variations ─────────────────────────────────────────────
     const variations = [
-      'Dynamic close-up portrait, cinematic lighting, emotional atmosphere, dark moody background.',
-      'Real environment lifestyle scene, natural lighting, authentic human emotion.',
-      'Graphic advertising scene, strong visual contrast, bold colors, dramatic composition.',
+      lang === 'uk' ? 'Крупний план, кінематографічне освітлення, виразна типографіка.' :
+      lang === 'ru' ? 'Крупный план, кинематографическое освещение, выразительная типографика.' :
+      'Dynamic close-up, cinematic lighting, bold typography.',
+
+      lang === 'uk' ? 'Сцена реального середовища, природне освітлення, автентичний контекст.' :
+      lang === 'ru' ? 'Сцена реальной среды, естественное освещение, аутентичный контекст.' :
+      'Real environment lifestyle scene, natural lighting.',
+
+      lang === 'uk' ? 'Графічний плакат, виразна ієрархія, сміливі кольори.' :
+      lang === 'ru' ? 'Графический плакат, выразительная иерархия, смелые цвета.' :
+      'Graphic poster, strong visual hierarchy, bold colors.',
     ];
 
     const buildPrompt = (variationHint: string): string => {
+      const productLabel = lang === 'uk' ? 'Продукт' : lang === 'ru' ? 'Продукт' : 'Product';
+      const composLabel  = lang === 'uk' ? 'Стиль композиції' : lang === 'ru' ? 'Стиль композиции' : 'Composition style';
+      const briefHeader  = lang === 'uk' ? 'ПОВНЕ ТЗ РЕКЛАМНОГО КРЕАТИВУ' :
+                           lang === 'ru' ? 'ПОЛНОЕ ТЗ РЕКЛАМНОГО КРЕАТИВА' :
+                           'FULL CREATIVE BRIEF';
+
       return [
-        VISUAL_BACKGROUND_INSTRUCTION,
+        langInstructions + cyrillicHint,
         '',
-        `Product: "${sanitize(productName || '')}"`,
+        `${productLabel}: "${sanitize(productName || '')}"`,
         '',
-        '=== VISUAL BRIEF (describe ONLY the scene, people, colors, mood — NO text) ===',
+        `=== ${briefHeader} ===`,
         fullBrief,
-        '=== END BRIEF ===',
+        `=== КІНЕЦЬ ТЗ ===`,
         '',
-        `Composition style: ${variationHint}`,
-        '',
-        'REMINDER: Absolutely NO text, letters, or writing anywhere in this image.',
+        `${composLabel}: ${variationHint}`,
       ].join('\n');
     };
 
