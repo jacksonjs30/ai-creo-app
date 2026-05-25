@@ -120,12 +120,15 @@ export function CreativeCard({
         scale: 2,
         backgroundColor: null,
       });
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const url = URL.createObjectURL(blob);
-          window.open(url, '_blank');
-        }
-      });
+      // Use a hidden <a> link with target=_blank — this reliably opens in a new tab
+      const dataUrl = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     } catch {
       window.open(imageUrl, '_blank');
     } finally {

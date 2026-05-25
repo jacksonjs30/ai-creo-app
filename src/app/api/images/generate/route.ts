@@ -37,30 +37,20 @@ function detectLang(text: string): 'uk' | 'ru' | 'en' {
   return 'uk'; // default
 }
 
-/** Language-specific instruction snippets */
-const LANG_INSTRUCTIONS = {
-  uk: `ВАЖЛИВО: Весь текст на зображенні має бути виключно УКРАЇНСЬКОЮ мовою.
-ВАЖЛИВО: Використовуй ТОЧНО текстові рядки, вказані у ТЗ нижче. Не перекладай, не змінюй, не перефразовуй жодного слова.
-ВАЖЛИВО: Весь текст повинен повністю вміщуватися всередині зображення без обрізання.
-ВАЖЛИВО: Дотримуйся точного розташування елементів, кольорів та стилю, описаних у ТЗ.`,
+/**
+ * Single system instruction: generate a VISUAL BACKGROUND ONLY.
+ * No text anywhere. Text is composited via CSS overlay.
+ */
+const VISUAL_BACKGROUND_INSTRUCTION = `You are a professional advertising photographer and art director.
+Generate a PHOTOREALISTIC or CINEMATIC ILLUSTRATION for an advertising background image.
 
-  ru: `ВАЖНО: Весь текст на изображении должен быть ТОЛЬКО на РУССКОМ языке.
-ВАЖНО: Используй ТОЧНО текстовые строки, указанные в ТЗ ниже. Не переводи, не меняй, не перефразируй.
-ВАЖНО: Весь текст должен полностью помещаться внутри изображения без обрезания.
-ВАЖНО: Соблюдай точное расположение элементов, цвета и стиль из ТЗ.`,
-
-  en: `IMPORTANT: All text in the image must be in ENGLISH only.
-IMPORTANT: Use EXACTLY the text strings specified in the brief below. Do not translate, alter, or paraphrase any word.
-IMPORTANT: All text must fit completely within the image without clipping.
-IMPORTANT: Follow exactly the element placement, colors, and style from the brief.`,
-};
-
-/** Instruction to suppress AI text rendering — we overlay text via CSS */
-const NO_TEXT_INSTRUCTION: Record<'uk' | 'ru' | 'en', string> = {
-  uk: '\nВАЖЛИВО: НЕ малюй жодного тексту, букв, слів або написів на зображенні. Зображення повинно бути ТІЛЬКИ ВІЗУАЛЬНИМ ФОНОМ — без тексту. Текст буде доданий окремо поверх зображення.',
-  ru: '\nВАЖНО: НЕ рисуй никакого текста, букв, слов или надписей на изображении. Изображение должно быть ТОЛЬКО ВИЗУАЛЬНЫМ ФОНОМ — без текста. Текст будет добавлен отдельно поверх изображения.',
-  en: '\nIMPORTANT: Do NOT render any text, letters, words or inscriptions on the image. The image must be a VISUAL BACKGROUND ONLY — no text. Text will be composited on top separately.',
-};
+ABSOLUTE RULES — follow without any exception:
+1. DO NOT render ANY text, letters, words, numbers, or inscriptions ANYWHERE in the image.
+2. DO NOT write any Cyrillic, Latin, Arabic, or any other script.
+3. DO NOT add logos, watermarks, price tags, badges, or UI elements.
+4. The image MUST be a pure VISUAL SCENE: people, objects, environment, lighting, colors ONLY.
+5. Text and headlines will be added on top separately by the design system.
+6. Focus on: emotional storytelling, cinematic lighting, color palette, visual composition.`;
 
 
 export async function POST(req: NextRequest) {
@@ -154,48 +144,26 @@ export async function POST(req: NextRequest) {
       fullBrief = parts.join('\n\n');
     }
 
-    // ─── Language-aware instructions ──────────────────────────────────────────
-    const langInstructions = LANG_INSTRUCTIONS[lang];
-
-    // ─── Cyrillic-specific extra instruction ──────────────────────────────────
-    const cyrillicHint = (lang === 'uk' || lang === 'ru') ? (
-      lang === 'uk'
-        ? '\nОСОБЛИВО ВАЖЛИВО — ТЕКСТ НА ЗОБРАЖЕННІ: Рендери кожну літеру кирилиці ТОЧНО та ЧІТКО. Жодних нечитабельних символів, жодних замін кириличних букв латиницею або псевдографікою. Весь текст має бути написаний стандартними кириличними літерами українського алфавіту.'
-        : '\nОСОБЕННО ВАЖНО — ТЕКСТ НА ИЗОБРАЖЕНИИ: Рендери каждую букву кириллицы ТОЧНО и ЧЁТКО. Никаких нечитаемых символов, никаких замен кириллических букв латиницей или псевдографикой. Весь текст должен быть написан стандартными кириллическими буквами.'
-    ) : '';
-
     // ─── Compositional variations ─────────────────────────────────────────────
     const variations = [
-      lang === 'uk' ? 'Крупний план, кінематографічне освітлення, виразна типографіка.' :
-      lang === 'ru' ? 'Крупный план, кинематографическое освещение, выразительная типографика.' :
-      'Dynamic close-up, cinematic lighting, bold typography.',
-
-      lang === 'uk' ? 'Сцена реального середовища, природне освітлення, автентичний контекст.' :
-      lang === 'ru' ? 'Сцена реальной среды, естественное освещение, аутентичный контекст.' :
-      'Real environment lifestyle scene, natural lighting.',
-
-      lang === 'uk' ? 'Графічний плакат, виразна ієрархія, сміливі кольори.' :
-      lang === 'ru' ? 'Графический плакат, выразительная иерархия, смелые цвета.' :
-      'Graphic poster, strong visual hierarchy, bold colors.',
+      'Dynamic close-up portrait, cinematic lighting, emotional atmosphere, dark moody background.',
+      'Real environment lifestyle scene, natural lighting, authentic human emotion.',
+      'Graphic advertising scene, strong visual contrast, bold colors, dramatic composition.',
     ];
 
     const buildPrompt = (variationHint: string): string => {
-      const productLabel = lang === 'uk' ? 'Продукт' : lang === 'ru' ? 'Продукт' : 'Product';
-      const composLabel  = lang === 'uk' ? 'Стиль композиції' : lang === 'ru' ? 'Стиль композиции' : 'Composition style';
-      const briefHeader  = lang === 'uk' ? 'ПОВНЕ ТЗ РЕКЛАМНОГО КРЕАТИВУ' :
-                           lang === 'ru' ? 'ПОЛНОЕ ТЗ РЕКЛАМНОГО КРЕАТИВА' :
-                           'FULL CREATIVE BRIEF';
-
       return [
-        langInstructions + NO_TEXT_INSTRUCTION[lang],
+        VISUAL_BACKGROUND_INSTRUCTION,
         '',
-        `${productLabel}: "${sanitize(productName || '')}"`,
+        `Product: "${sanitize(productName || '')}"`,
         '',
-        `=== ${briefHeader} ===`,
+        '=== VISUAL BRIEF (describe ONLY the scene, people, colors, mood — NO text) ===',
         fullBrief,
-        `=== КІНЕЦЬ ТЗ ===`,
+        '=== END BRIEF ===',
         '',
-        `${composLabel}: ${variationHint}`,
+        `Composition style: ${variationHint}`,
+        '',
+        'REMINDER: Absolutely NO text, letters, or writing anywhere in this image.',
       ].join('\n');
     };
 
