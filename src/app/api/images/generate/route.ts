@@ -71,7 +71,8 @@ export async function POST(req: NextRequest) {
       productName,
       action,
       oldImageUrl,
-      count = 1
+      count = 1,
+      quality = 'high' // Default to high quality to ensure sharper rendering
     } = await req.json();
 
     const apiKey = process.env.OPENAI_API_KEY;
@@ -92,7 +93,7 @@ export async function POST(req: NextRequest) {
       const startIdx = /^\d+$/.test((cells[0] || '').trim()) ? 1 : 0;
 
       const cellLabels: Record<number, string> = {
-        0: 'НАЗВА КОНЦЕПЦІЇ / ЗАГОЛОВОК',
+        0: 'ВНУТРІШНЯ НАЗВА КОНЦЕПЦІЇ (ДЛЯ ДОВІДКИ — НЕ МАЛЮВАТИ НА КАРТИНЦІ)',
         1: 'ТЕКСТ РЕКЛАМНОГО ОГОЛОШЕННЯ',
         2: 'ТЗ ДЛЯ ДИЗАЙНЕРА (ТОЧНЕ РОЗТАШУВАННЯ ТА ТЕКСТ)',
       };
@@ -102,7 +103,11 @@ export async function POST(req: NextRequest) {
         const cleaned = sanitize(cell || '').trim();
         if (cleaned.length > 3) {
           const label = cellLabels[i] || `БЛОК ${i + 1}`;
-          parts.push(`[${label}]\n${cleaned}`);
+          if (i === 0) {
+            parts.push(`[${label}]\nНЕ МАЛЮВАТИ НА КАРТИНЦІ: ${cleaned}`);
+          } else {
+            parts.push(`[${label}]\n${cleaned}`);
+          }
         }
       });
 
@@ -142,8 +147,14 @@ export async function POST(req: NextRequest) {
                            lang === 'ru' ? 'ПОЛНОЕ ТЗ РЕКЛАМНОГО КРЕАТИВА' :
                            'FULL CREATIVE BRIEF';
 
+      const strictRules = lang === 'uk'
+        ? 'УВАГА: Текст із блоку "ВНУТРІШНЯ НАЗВА КОНЦЕПЦІЇ" є суто довідковим. Категорично заборонено малювати його на зображенні. На зображенні потрібно писати ТІЛЬКИ ті текстові фрази (хук, заголовок, кнопка), які вказані у блоці "ТЗ ДЛЯ ДИЗАЙНЕРА".'
+        : 'ВНИМАНИЕ: Текст из блока "ВНУТРЕННЕЕ НАЗВАНИЕ КОНЦЕПЦИИ" является чисто справочным. Категорически запрещено рисовать его на изображении. На изображении нужно писать ТОЛЬКО те текстовые фразы (хук, заголовок, кнопка), которые указаны в блоке "ТЗ ДЛЯ ДИЗАЙНЕРА".';
+
       return [
         langInstructions + cyrillicHint,
+        '',
+        strictRules,
         '',
         `${productLabel}: "${sanitize(productName || '')}"`,
         '',
@@ -156,7 +167,7 @@ export async function POST(req: NextRequest) {
     };
 
 
-    console.log(`[images/generate] lang=${lang}, count=${count}, script=${scriptId}`);
+    console.log(`[images/generate] lang=${lang}, count=${count}, script=${scriptId}, quality=${quality}`);
     console.log(`[images/generate] Brief (first 300 chars):\n${fullBrief.substring(0, 300)}`);
 
     const supabase = createServerClient(
@@ -177,7 +188,7 @@ export async function POST(req: NextRequest) {
           prompt,
           n: 1,
           size: '1024x1024',
-          quality: 'medium', // low=$0.011 | medium=$0.042 | high=$0.167 per image
+          quality: quality as any, // 'high' | 'medium' | 'low'
         });
 
         const imgData = response.data?.[0];
