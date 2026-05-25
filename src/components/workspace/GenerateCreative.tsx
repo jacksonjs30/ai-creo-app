@@ -120,10 +120,18 @@ export default function GenerateCreative({ id }: { id: string }) {
         throw new Error(data.error || 'Ошибка при генерации сценариев');
       }
       
-      // Сохраняем скрипт локально в массив проекта
+      // Сохраняем скрипт локально в массив проекта, объединяя с данными из БД
       const scriptsKey = `projectScripts_${id}`;
-      const existingScripts = JSON.parse(localStorage.getItem(scriptsKey) || '[]');
-      const updatedScripts = [data.script, ...existingScripts];
+      const localScripts = JSON.parse(localStorage.getItem(scriptsKey) || '[]');
+      
+      const dbScripts = project?.brief?.scripts || [];
+      const allScriptsMap = new Map();
+      [...dbScripts, ...localScripts].forEach((s: any) => allScriptsMap.set(s.id, s));
+      const mergedExistingScripts = Array.from(allScriptsMap.values()).sort((a: any, b: any) => 
+        new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+      );
+
+      const updatedScripts = [data.script, ...mergedExistingScripts];
       localStorage.setItem(scriptsKey, JSON.stringify(updatedScripts));
 
       // Сохраняем также в базу данных для синхронизации

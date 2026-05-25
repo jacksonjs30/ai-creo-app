@@ -8,6 +8,9 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import { CreativeCard, extractOverlay } from './CreativeCard';
 
+const remarkPluginsList = [remarkGfm];
+const rehypePluginsList = [rehypeRaw];
+
 export default function ScriptStudio({ id }: { id: string }) {
   const [project, setProject] = useState<any>(null);
   const [scripts, setScripts] = useState<any[]>([]);
@@ -229,7 +232,7 @@ export default function ScriptStudio({ id }: { id: string }) {
           fetch('/api/projects', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id, scripts: newScripts })
+            body: JSON.stringify({ id, brief: { ...(project?.brief || {}), scripts: newScripts } })
           }).catch(console.error);
         }
       }
@@ -262,7 +265,7 @@ export default function ScriptStudio({ id }: { id: string }) {
           fetch('/api/projects', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id, scripts: newScripts })
+            body: JSON.stringify({ id, brief: { ...(project?.brief || {}), scripts: newScripts } })
           }).catch(console.error);
         }
       }
@@ -519,7 +522,7 @@ export default function ScriptStudio({ id }: { id: string }) {
                     // Fallback: render markdown as-is (no table detected)
                     return (
                       <div className="markdown-content">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+                        <ReactMarkdown remarkPlugins={remarkPluginsList} rehypePlugins={rehypePluginsList}>
                           {script.content.replace(/^```(?:markdown|html)?\n?/i, '').replace(/```$/i, '').trim()}
                         </ReactMarkdown>
                       </div>
@@ -658,7 +661,7 @@ export default function ScriptStudio({ id }: { id: string }) {
                               {row.map((cell, cIdx) => (
                                 <div key={cIdx} style={{ padding: '1rem', fontSize: '0.9rem', color: '#334155', lineHeight: 1.6, borderRight: cIdx < headerRow.length - 1 ? '1px solid #e2e8f0' : 'none', wordBreak: 'break-word', textAlign: (headerRow.length === 4 && cIdx === 0) ? 'center' : 'left' }}>
                                   <div className="markdown-content">
-                                    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+                                    <ReactMarkdown remarkPlugins={remarkPluginsList} rehypePlugins={rehypePluginsList}>
                                       {cell}
                                     </ReactMarkdown>
                                   </div>
