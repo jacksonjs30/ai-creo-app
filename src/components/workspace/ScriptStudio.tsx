@@ -20,6 +20,7 @@ export default function ScriptStudio({ id }: { id: string }) {
   const [editOtherText, setEditOtherText] = useState<{ before: string, after: string }>({ before: '', after: '' });
   const [isRegenerating, setIsRegenerating] = useState<string | null>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState<{ scriptId: string, rowIdx: number, action: 'add' | 'replace', imgIdx?: number } | null>(null);
+  const [rowNotes, setRowNotes] = useState<Record<string, string>>({});
 
   const [filterFormat, setFilterFormat] = useState<string>('Все');
   const [filterProduct, setFilterProduct] = useState<string>('Все');
@@ -180,6 +181,8 @@ export default function ScriptStudio({ id }: { id: string }) {
       // Earlier columns contain hook text which may trigger safety filters
       const designBrief = rowCells[rowCells.length - 1] || '';
       const scriptText = rowCells.join('\n');
+      
+      const userNotes = rowNotes[`${script.id}_row${rowIdx}`] || '';
 
       const res = await fetch('/api/images/generate', {
         method: 'POST',
@@ -194,7 +197,8 @@ export default function ScriptStudio({ id }: { id: string }) {
           productName: script.productName || project?.name,
           action,
           oldImageUrl,
-          count: action === 'replace' ? 1 : genCount
+          count: action === 'replace' ? 1 : genCount,
+          userNotes
         })
       });
 
@@ -551,7 +555,35 @@ export default function ScriptStudio({ id }: { id: string }) {
                             </div>
 
                             {/* Per-row image section */}
-                            <div style={{ padding: '1rem 1.25rem', background: '#f5f3ff', borderTop: '1px dashed #c7d2fe' }}>
+                            <div style={{ padding: '1.25rem', background: '#f5f3ff', borderTop: '1px dashed #c7d2fe' }}>
+                              
+                              {/* Custom prompt/notes input */}
+                              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', alignItems: 'center' }}>
+                                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#4f46e5', minWidth: '110px' }}>
+                                  Уточнения для ИИ:
+                                </span>
+                                <input
+                                  type="text"
+                                  placeholder="Например: светлый фон, минималистичный фон, текст слева, крупный план..."
+                                  value={rowNotes[`${script.id}_row${dataRowIdx}`] || ''}
+                                  onChange={(e) => setRowNotes(prev => ({
+                                    ...prev,
+                                    [`${script.id}_row${dataRowIdx}`]: e.target.value
+                                  }))}
+                                  disabled={isAnyGen}
+                                  style={{
+                                    flex: 1,
+                                    fontSize: '0.78rem',
+                                    padding: '0.4rem 0.75rem',
+                                    borderRadius: '6px',
+                                    border: '1px solid #c7d2fe',
+                                    outline: 'none',
+                                    background: 'white',
+                                    color: '#1e293b',
+                                  }}
+                                />
+                              </div>
+
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: thisRowImgs.length > 0 ? '0.75rem' : '0' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                   <ImageIcon size={15} style={{ color: '#6366f1' }} />
