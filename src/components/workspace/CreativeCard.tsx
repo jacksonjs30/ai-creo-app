@@ -65,110 +65,7 @@ export function extractOverlay(cells: string[]): CreativeOverlay {
   return { headline, body, cta };
 }
 
-// ── Modal component for full-size preview with CSS overlay ──────────────────
-function PreviewModal({
-  imageUrl,
-  overlay,
-  onClose,
-}: {
-  imageUrl: string;
-  overlay: CreativeOverlay;
-  onClose: () => void;
-}) {
-  return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 9999,
-        background: 'rgba(0,0,0,0.85)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        backdropFilter: 'blur(6px)',
-      }}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          position: 'relative',
-          width: 'min(90vw, 600px)',
-          aspectRatio: '1/1',
-          borderRadius: '16px',
-          overflow: 'hidden',
-          boxShadow: '0 24px 80px rgba(0,0,0,0.7)',
-        }}
-      >
-        {/* Background */}
-        <img src={imageUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
 
-        {/* Full-card dim to mask AI text */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: 'rgba(0,0,0,0.28)',
-          pointerEvents: 'none',
-        }} />
-
-        {/* Gradient at bottom */}
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0,
-          height: '75%',
-          background: 'linear-gradient(to top, rgba(0,0,0,0.93) 0%, rgba(0,0,0,0.6) 50%, transparent 100%)',
-          pointerEvents: 'none',
-        }} />
-
-        {/* CSS text overlay */}
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0,
-          padding: '1.5rem 1.5rem 1.8rem',
-          display: 'flex', flexDirection: 'column', gap: '0.5rem',
-          pointerEvents: 'none',
-        }}>
-          <p style={{
-            margin: 0, fontSize: '1.5rem', fontWeight: 800, color: '#fff',
-            lineHeight: 1.15, textShadow: '0 2px 10px rgba(0,0,0,1)',
-            fontFamily: '"Inter","Roboto","Helvetica Neue",Arial,sans-serif',
-          }}>
-            {overlay.headline}
-          </p>
-          {overlay.body && (
-            <p style={{
-              margin: 0, fontSize: '0.95rem', fontWeight: 400, color: 'rgba(255,255,255,0.9)',
-              lineHeight: 1.4, textShadow: '0 1px 6px rgba(0,0,0,1)',
-              fontFamily: '"Inter","Roboto","Helvetica Neue",Arial,sans-serif',
-            }}>
-              {overlay.body}
-            </p>
-          )}
-          {overlay.cta && (
-            <span style={{
-              display: 'inline-block', marginTop: '0.4rem',
-              background: '#f59e0b', color: '#1c1917',
-              fontSize: '0.9rem', fontWeight: 800,
-              padding: '0.4rem 1.2rem', borderRadius: '8px',
-              alignSelf: 'flex-start',
-              fontFamily: '"Inter","Roboto","Helvetica Neue",Arial,sans-serif',
-            }}>
-              {overlay.cta}
-            </span>
-          )}
-        </div>
-
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          style={{
-            position: 'absolute', top: '0.75rem', right: '0.75rem',
-            background: 'rgba(0,0,0,0.6)', border: 'none',
-            color: 'white', borderRadius: '50%',
-            width: '2rem', height: '2rem',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', backdropFilter: 'blur(4px)',
-          }}
-        >
-          <X size={16} />
-        </button>
-      </div>
-    </div>
-  );
-}
 
 // ── Main CreativeCard component ─────────────────────────────────────────────
 export function CreativeCard({
@@ -181,8 +78,8 @@ export function CreativeCard({
 }: CreativeCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [isOpening, setIsOpening] = useState(false);
   const [hovered, setHovered] = useState(false);
-  const [showModal, setShowModal] = useState(false);
 
   const handleDownload = useCallback(async () => {
     if (!cardRef.current || isExporting) return;
@@ -208,16 +105,34 @@ export function CreativeCard({
     }
   }, [imageUrl, index, isExporting]);
 
+  const handleOpenFull = useCallback(async () => {
+    if (!cardRef.current || isOpening) return;
+    setIsOpening(true);
+    setHovered(false);
+    await new Promise(r => setTimeout(r, 80));
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const canvas = await html2canvas(cardRef.current, {
+        useCORS: true,
+        allowTaint: false,
+        scale: 2,
+        backgroundColor: null,
+      });
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          window.open(url, '_blank');
+        }
+      });
+    } catch {
+      window.open(imageUrl, '_blank');
+    } finally {
+      setIsOpening(false);
+    }
+  }, [imageUrl, isOpening]);
+
   return (
     <>
-      {/* Full-size preview modal */}
-      {showModal && (
-        <PreviewModal
-          imageUrl={imageUrl}
-          overlay={overlay}
-          onClose={() => setShowModal(false)}
-        />
-      )}
 
       <div
         ref={cardRef}
@@ -338,16 +253,20 @@ export function CreativeCard({
           }}>
             {/* Preview */}
             <button
-              onClick={() => setShowModal(true)}
+              onClick={handleOpenFull}
+              disabled={isOpening}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem',
                 background: 'white', color: '#4338ca',
                 border: 'none', borderRadius: '7px',
                 padding: '0.42rem 0', fontSize: '0.72rem', fontWeight: 700,
-                cursor: 'pointer', width: '100%',
+                cursor: isOpening ? 'wait' : 'pointer', width: '100%',
               }}
             >
-              <Eye size={13} /> Просмотр
+              {isOpening
+                ? <><Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> Открываю…</>
+                : <><Eye size={13} /> В новой вкладке</>
+              }
             </button>
 
             {/* Download */}

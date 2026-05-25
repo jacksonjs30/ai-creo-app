@@ -251,14 +251,6 @@ export default function ScriptStudio({ id }: { id: string }) {
           <h2 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Сценарии креативов</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Управляйте готовыми ТЗ и отправляйте их в продакшен.</p>
         </div>
-        <button
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="btn btn-primary shadow-sm"
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', border: 'none', cursor: 'pointer', borderRadius: '12px', padding: '0.75rem 1.25rem' }}
-        >
-          <Plus size={18} />
-          Сгенерировать еще
-        </button>
       </div>
 
       {scripts.length > 0 && (
