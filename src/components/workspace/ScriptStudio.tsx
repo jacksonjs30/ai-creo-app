@@ -242,7 +242,7 @@ export default function ScriptStudio({ id }: { id: string }) {
   };
 
   const handleDeleteRowImage = async (script: any, rowIdx: number, imgIdx: number) => {
-    if (!confirm('Видалити цей варіант креативу?')) return;
+    if (!confirm('Вы уверены, что хотите удалить этот вариант креатива?')) return;
     try {
       const newScripts = [...scripts];
       const scriptIndex = newScripts.findIndex(s => s.id === script.id);
@@ -268,7 +268,7 @@ export default function ScriptStudio({ id }: { id: string }) {
       }
     } catch (err: any) {
       console.error(err);
-      alert('Помилка при видаленні картинки: ' + err.message);
+      alert('Ошибка при удалении картинки: ' + err.message);
     }
   };
 
@@ -641,7 +641,11 @@ export default function ScriptStudio({ id }: { id: string }) {
                                       overlay={extractOverlay(row)}
                                       isReplacing={isGenThisRow && isGeneratingImage?.imgIdx === imgIdx}
                                       disabled={isAnyGen}
-                                      onReplace={() => handleGenerateRowImage(script, dataRowIdx, row, 'replace', imgIdx)}
+                                      onReplace={() => {
+                                        if (window.confirm('Перегенерировать это изображение? Текущий вариант будет заменен.')) {
+                                          handleGenerateRowImage(script, dataRowIdx, row, 'replace', imgIdx);
+                                        }
+                                      }}
                                       onDelete={() => handleDeleteRowImage(script, dataRowIdx, imgIdx)}
                                     />
                                   ))}
