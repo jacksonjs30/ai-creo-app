@@ -359,15 +359,33 @@ export default function ScriptStudio({ id }: { id: string }) {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                {/* Action buttons — compact style */}
+                <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', justifyContent: 'flex-end', alignItems: 'center' }}>
                   {editingScriptId === script.id ? (
-                    <button
-                      onClick={() => handleSaveEdit(script.id)}
-                      className="btn btn-primary shadow-sm"
-                      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '10px' }}
-                    >
-                      Сохранить
-                    </button>
+                    <>
+                      <button
+                        onClick={() => handleSaveEdit(script.id)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '0.3rem',
+                          padding: '0.4rem 0.85rem', fontSize: '0.78rem', fontWeight: 700,
+                          background: '#4f46e5', color: 'white', border: 'none',
+                          borderRadius: '8px', cursor: 'pointer',
+                        }}
+                      >
+                        ✓ Сохранить
+                      </button>
+                      <button
+                        onClick={() => { setEditingScriptId(null); setEditTableData([]); }}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '0.3rem',
+                          padding: '0.4rem 0.85rem', fontSize: '0.78rem', fontWeight: 600,
+                          background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0',
+                          borderRadius: '8px', cursor: 'pointer',
+                        }}
+                      >
+                        Отмена
+                      </button>
+                    </>
                   ) : (
                     <button
                       onClick={() => {
@@ -376,52 +394,70 @@ export default function ScriptStudio({ id }: { id: string }) {
                         const tableLines = lines.filter((l: string) => l.trim().startsWith('|'));
                         const firstTableIdx = lines.indexOf(tableLines[0]);
                         const lastTableIdx = lines.indexOf(tableLines[tableLines.length - 1]);
-
                         const before = lines.slice(0, firstTableIdx).join('\n');
                         const after = lines.slice(lastTableIdx + 1).join('\n');
-
                         const parsedData = tableLines.map((line: string) => {
                           const parts = line.split('|');
                           return parts.slice(1, parts.length - 1).map((p: string) => p.trim());
                         });
-
                         setEditTableData(parsedData);
                         setEditOtherText({ before, after });
                       }}
-                      className="btn btn-secondary shadow-sm"
-                      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '10px', background: 'white' }}
+                      title="Редактировать"
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '0.3rem',
+                        padding: '0.4rem 0.85rem', fontSize: '0.78rem', fontWeight: 600,
+                        background: '#f8fafc', color: '#334155', border: '1px solid #e2e8f0',
+                        borderRadius: '8px', cursor: 'pointer',
+                      }}
                     >
-                      🖊️ Редактировать
+                      ✏️ Ред.
                     </button>
                   )}
+
                   <button
                     onClick={() => handleRegenerate(script)}
                     disabled={isRegenerating === script.id}
-                    className="btn btn-secondary shadow-sm"
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '10px', background: 'white' }}
+                    title="Перегенерировать сценарий"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '0.3rem',
+                      padding: '0.4rem 0.85rem', fontSize: '0.78rem', fontWeight: 600,
+                      background: '#f8fafc', color: '#334155', border: '1px solid #e2e8f0',
+                      borderRadius: '8px', cursor: isRegenerating === script.id ? 'not-allowed' : 'pointer',
+                      opacity: isRegenerating === script.id ? 0.6 : 1,
+                    }}
                   >
-                    {isRegenerating === script.id ? <Loader2 size={16} className="animate-spin" /> : '🔄'}
-                    {isRegenerating === script.id ? 'Генерация...' : 'Перегенерировать'}
+                    {isRegenerating === script.id
+                      ? <><Loader2 size={13} className="animate-spin" /> Генерация…</>
+                      : '🔄 Перегенерировать'
+                    }
                   </button>
-                  <Link
-                    href={`/project/${id}/studio/${script.id}`}
-                    className="btn btn-primary shadow-sm"
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', borderRadius: '10px' }}
-                  >
-                    🎨 Мастерская
-                  </Link>
+
                   <button
                     onClick={() => handleCopy(script.id, script.content)}
-                    className="btn btn-secondary shadow-sm"
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '10px', background: 'white' }}
+                    title="Копировать"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '0.3rem',
+                      padding: '0.4rem 0.75rem', fontSize: '0.78rem', fontWeight: 600,
+                      background: copiedId === script.id ? '#ecfdf5' : '#f8fafc',
+                      color: copiedId === script.id ? '#10b981' : '#334155',
+                      border: `1px solid ${copiedId === script.id ? '#a7f3d0' : '#e2e8f0'}`,
+                      borderRadius: '8px', cursor: 'pointer',
+                    }}
                   >
-                    {copiedId === script.id ? <CheckCircle2 size={18} color="#10b981" /> : <Copy size={18} />}
-                    {copiedId === script.id ? 'Скопировано!' : 'Копировать'}
+                    {copiedId === script.id ? <CheckCircle2 size={13} /> : <Copy size={13} />}
+                    {copiedId === script.id ? 'Скопировано' : 'Копировать'}
                   </button>
+
                   <button
                     onClick={() => handleDeleteScript(script.id)}
-                    className="btn btn-secondary shadow-sm hover-red"
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ef4444', borderRadius: '10px', background: 'white' }}
+                    title="Удалить"
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      width: '32px', height: '32px',
+                      background: '#fff0f0', color: '#ef4444', border: '1px solid #fecaca',
+                      borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem',
+                    }}
                   >
                     🗑️
                   </button>
