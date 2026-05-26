@@ -23,6 +23,7 @@ export default function ScriptStudio({ id }: { id: string }) {
   const [editOtherText, setEditOtherText] = useState<{ before: string, after: string }>({ before: '', after: '' });
   const [isRegenerating, setIsRegenerating] = useState<string | null>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState<{ scriptId: string, rowIdx: number, action: 'add' | 'replace', imgIdx?: number } | null>(null);
+  const [isGeneratingVideo, setIsGeneratingVideo] = useState<string | null>(null);
   const [rowNotes, setRowNotes] = useState<Record<string, string>>({});
 
   const [filterFormat, setFilterFormat] = useState<string>('Все');
@@ -151,6 +152,47 @@ export default function ScriptStudio({ id }: { id: string }) {
       alert('Ошибка при регенерации: ' + e.message);
     } finally {
       setIsRegenerating(null);
+    }
+  };
+
+  const handleGenerateVideo = async (script: any) => {
+    setIsGeneratingVideo(script.id);
+    try {
+      const res = await fetch('/api/video/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId: id,
+          scriptId: script.id,
+          scriptText: script.content,
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      // Сохраняем URL видео в скрипт
+      const newScripts = [...scripts];
+      const scriptIndex = newScripts.findIndex(s => s.id === script.id);
+      if (scriptIndex !== -1) {
+        newScripts[scriptIndex] = { ...newScripts[scriptIndex], videoUrl: data.videoUrl };
+        setScripts(newScripts);
+        localStorage.setItem(`projectScripts_${id}`, JSON.stringify(newScripts));
+
+        if (id && id !== 'temp-id') {
+          fetch('/api/projects', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, brief: { ...(project?.brief || {}), scripts: newScripts } })
+          }).catch(console.error);
+        }
+      }
+      
+      alert('Видео успешно сгенерировано!');
+    } catch (err: any) {
+      console.error(err);
+      alert('Ошибка при генерации видео: ' + err.message);
+    } finally {
+      setIsGeneratingVideo(null);
     }
   };
 
@@ -441,6 +483,25 @@ export default function ScriptStudio({ id }: { id: string }) {
                   </button>
 
                   <button
+                    onClick={() => handleGenerateVideo(script)}
+                    disabled={isGeneratingVideo === script.id}
+                    title="Сгенерировать готовое видео"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '0.3rem',
+                      padding: '0.4rem 0.85rem', fontSize: '0.78rem', fontWeight: 600,
+                      background: 'linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)', color: 'white', border: 'none',
+                      borderRadius: '8px', cursor: isGeneratingVideo === script.id ? 'not-allowed' : 'pointer',
+                      opacity: isGeneratingVideo === script.id ? 0.6 : 1,
+                      boxShadow: '0 2px 4px rgba(79, 70, 229, 0.2)'
+                    }}
+                  >
+                    {isGeneratingVideo === script.id
+                      ? <><Loader2 size={13} className="animate-spin" /> Рендеринг видео...</>
+                      : '🎬 Видео'
+                    }
+                  </button>
+
+                  <button
                     onClick={() => handleCopy(script.id, script.content)}
                     title="Копировать"
                     style={{
@@ -471,6 +532,24 @@ export default function ScriptStudio({ id }: { id: string }) {
                 </div>
               </div>
 
+
+              {script.videoUrl && (
+                <div style={{ padding: '0 1.5rem', marginTop: '1rem' }}>
+                  <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <h4 style={{ margin: 0, fontSize: '0.95rem', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
+                      🎬 Сгенерированное видео
+                    </h4>
+                    <video 
+                      src={script.videoUrl} 
+                      controls 
+                      style={{ width: '100%', maxWidth: '320px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#000' }}
+                    />
+                    <a href={script.videoUrl} download target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem', color: '#3b82f6', textDecoration: 'none', fontWeight: 500 }}>
+                      📥 Скачать видео
+                    </a>
+                  </div>
+                </div>
+              )}
 
               {/* Content + per-row image generation */}
               <div style={{ padding: '1.5rem', overflowX: 'auto' }}>
