@@ -159,11 +159,11 @@ export default function GenerateCreative({ id }: { id: string }) {
       }
 
       const dbScripts = project?.brief?.scripts || [];
-      const generatedScripts = data.scripts.map((s: any) => ({
-        ...s,
+      const generatedScript = {
+        ...data.script,
         id: `script_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
         createdAt: new Date().toISOString()
-      }));
+      };
 
       const newBrief = {
         ...project?.brief,
@@ -176,8 +176,8 @@ export default function GenerateCreative({ id }: { id: string }) {
         secondColor,
         accentColor,
         scripts: [
-          ...(project?.brief?.scripts || []),
-          ...generatedScripts
+          generatedScript,
+          ...dbScripts
         ]
       };
 
