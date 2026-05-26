@@ -483,25 +483,6 @@ export default function ScriptStudio({ id }: { id: string }) {
                   </button>
 
                   <button
-                    onClick={() => handleGenerateVideo(script)}
-                    disabled={isGeneratingVideo === script.id}
-                    title="Сгенерировать готовое видео"
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '0.3rem',
-                      padding: '0.4rem 0.85rem', fontSize: '0.78rem', fontWeight: 600,
-                      background: 'linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)', color: 'white', border: 'none',
-                      borderRadius: '8px', cursor: isGeneratingVideo === script.id ? 'not-allowed' : 'pointer',
-                      opacity: isGeneratingVideo === script.id ? 0.6 : 1,
-                      boxShadow: '0 2px 4px rgba(79, 70, 229, 0.2)'
-                    }}
-                  >
-                    {isGeneratingVideo === script.id
-                      ? <><Loader2 size={13} className="animate-spin" /> Рендеринг видео...</>
-                      : '🎬 Видео'
-                    }
-                  </button>
-
-                  <button
                     onClick={() => handleCopy(script.id, script.content)}
                     title="Копировать"
                     style={{
@@ -533,23 +514,8 @@ export default function ScriptStudio({ id }: { id: string }) {
               </div>
 
 
-              {script.videoUrl && (
-                <div style={{ padding: '0 1.5rem', marginTop: '1rem' }}>
-                  <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    <h4 style={{ margin: 0, fontSize: '0.95rem', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
-                      🎬 Сгенерированное видео
-                    </h4>
-                    <video 
-                      src={script.videoUrl} 
-                      controls 
-                      style={{ width: '100%', maxWidth: '320px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#000' }}
-                    />
-                    <a href={script.videoUrl} download target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem', color: '#3b82f6', textDecoration: 'none', fontWeight: 500 }}>
-                      📥 Скачать видео
-                    </a>
-                  </div>
-                </div>
-              )}
+
+
 
               {/* Content + per-row image generation */}
               <div style={{ padding: '1.5rem', overflowX: 'auto' }}>
@@ -625,9 +591,57 @@ export default function ScriptStudio({ id }: { id: string }) {
                         const isGenThisRow = isGeneratingImage?.scriptId === script.id && isGeneratingImage?.rowIdx === dataRowIdx;
                         const isAnyGen = isGeneratingImage !== null;
 
+                        const isVideoFormat = /відео|видео|video/i.test(script.format || '');
+
                         return (
                           <div key={dataRowIdx} style={{ border: '1px solid #e2e8f0', borderTop: dataRowIdx === 0 ? '1px solid #e2e8f0' : 'none', borderRadius: dataRowIdx === dataRows.length - 1 ? '0 0 10px 10px' : '0', overflow: 'hidden' }}>
-                            {/* Per-row image section (rendered above) */}
+                            {/* Per-row generation section */}
+                            {isVideoFormat ? (
+                              /* ---- VIDEO FORMAT: показываем блок генерации видео только в первой строке ---- */
+                              dataRowIdx === 0 ? (
+                                <div style={{ padding: '1.25rem', background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)', borderBottom: '1px solid #312e81' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                      <span style={{ fontSize: '1.1rem' }}>🎬</span>
+                                      <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#a5b4fc' }}>Видео-Креатив</span>
+                                      {script.videoUrl && (
+                                        <span style={{ background: '#16a34a', color: 'white', fontSize: '0.68rem', padding: '0.15rem 0.5rem', borderRadius: '99px', fontWeight: 700 }}>✓ Готово</span>
+                                      )}
+                                    </div>
+                                    <button
+                                      onClick={() => handleGenerateVideo(script)}
+                                      disabled={isGeneratingVideo === script.id}
+                                      style={{
+                                        display: 'flex', alignItems: 'center', gap: '0.4rem',
+                                        padding: '0.5rem 1.1rem', fontSize: '0.82rem', fontWeight: 700,
+                                        background: isGeneratingVideo === script.id ? '#312e81' : 'linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)',
+                                        color: 'white', border: 'none', borderRadius: '8px',
+                                        cursor: isGeneratingVideo === script.id ? 'not-allowed' : 'pointer',
+                                        boxShadow: '0 4px 15px rgba(79,70,229,0.4)',
+                                        transition: 'all 0.2s'
+                                      }}
+                                    >
+                                      {isGeneratingVideo === script.id
+                                        ? <><Loader2 size={14} className="animate-spin" /> Рендеринг видео (~1-2 мин)...</>
+                                        : <>{script.videoUrl ? '🔄 Перегенерировать видео' : '🎬 Сгенерировать видео'}</>}
+                                    </button>
+                                  </div>
+                                  {script.videoUrl && (
+                                    <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                                      <video
+                                        src={script.videoUrl}
+                                        controls
+                                        style={{ width: '200px', borderRadius: '10px', border: '2px solid #4f46e5', backgroundColor: '#000' }}
+                                      />
+                                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', justifyContent: 'center' }}>
+                                        <a href={script.videoUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.82rem', color: '#a5b4fc', textDecoration: 'none', fontWeight: 600 }}>🔗 Открыть в новой вкладке</a>
+                                        <a href={script.videoUrl} download style={{ fontSize: '0.82rem', color: '#6ee7b7', textDecoration: 'none', fontWeight: 600 }}>📥 Скачать MP4</a>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              ) : null
+                            ) : (
                             <div style={{ padding: '1.25rem', background: '#f5f3ff', borderBottom: '1px dashed #c7d2fe' }}>
                               
                               {/* Custom prompt/notes input */}
@@ -734,6 +748,7 @@ export default function ScriptStudio({ id }: { id: string }) {
                                 </div>
                               )}
                             </div>
+                            )}
 
                             {/* Row cells (rendered below) */}
                             <div style={{ display: 'grid', gridTemplateColumns: headerRow.length === 4 ? '60px 1.25fr 2fr 3.5fr' : headerRow.length === 3 ? '1.25fr 2fr 3.5fr' : `repeat(${headerRow.length}, 1fr)`, background: dataRowIdx % 2 === 0 ? 'white' : '#fafbff' }}>

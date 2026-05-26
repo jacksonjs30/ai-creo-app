@@ -115,11 +115,19 @@ export function CreativeCard({
         transition: 'transform 0.2s, box-shadow 0.2s',
       }}
     >
-      {/* Generated image containing embedded text */}
-      <img
-        src={imageUrl} alt={`Креатив #${index}`} crossOrigin="anonymous"
-        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-      />
+      {/* Generated image or video */}
+      {imageUrl.endsWith('.mp4') ? (
+        <video
+          src={imageUrl} crossOrigin="anonymous"
+          autoPlay loop muted playsInline
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
+      ) : (
+        <img
+          src={imageUrl} alt={`Креатив #${index}`} crossOrigin="anonymous"
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
+      )}
 
       {/* Index badge */}
       <div style={{
@@ -161,7 +169,7 @@ export function CreativeCard({
               cursor: 'pointer', width: '100%',
             }}
           >
-            <Download size={13} /> Скачать PNG
+            <Download size={13} /> Скачать {imageUrl.endsWith('.mp4') ? 'MP4' : 'PNG'}
           </button>
 
           {onReplace && (
