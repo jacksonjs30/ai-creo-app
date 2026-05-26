@@ -199,6 +199,12 @@ export default function GenerateCreative({ id }: { id: string }) {
         }
       }
 
+      // ВАЖНО: сохраняем локально, чтобы ScriptStudio сразу нашёл скрипты
+      const localStorageKey = `projectScripts_${id}`;
+      const existingLocal = JSON.parse(localStorage.getItem(localStorageKey) || '[]');
+      const allScripts = [generatedScript, ...existingLocal.filter((s: any) => s.id !== generatedScript.id)];
+      localStorage.setItem(localStorageKey, JSON.stringify(allScripts));
+
       router.push(`/project/${id}?tab=studio&view=scripts`);
     } catch (e: any) {
       console.error(e);
