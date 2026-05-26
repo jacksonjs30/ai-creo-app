@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
-    const { scriptText, scriptId, projectId } = await req.json();
+    const { scriptText, scriptId, projectId, logoUrl, logoPosition } = await req.json();
 
     if (!scriptText) {
       return NextResponse.json({ error: 'scriptText is required' }, { status: 400 });
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     console.log(`Starting video generation for script ${scriptId}...`);
     
     // Запускаем пайплайн
-    const videoUrl = await generateVideo(scriptText);
+    const videoUrl = await generateVideo(scriptText, logoUrl, logoPosition);
     
     return NextResponse.json({ success: true, videoUrl });
     

@@ -149,30 +149,79 @@ async function downloadPexelsVideo(queries: string[], outputPath: string): Promi
 }
 
 // Утилита для рендеринга одной сцены (Сборка Видео + Аудио + Текст)
-async function renderScene(videoPath: string, audioPath: string, overlayText: string, outputPath: string): Promise<void> {
+async function renderScene(videoPath: string, audioPath: string, overlayText: string, outputPath: string, logoPath?: string, logoPos?: string): Promise<void> {
   const fontPath = path.join(process.cwd(), 'public', 'fonts', 'Inter-Bold.ttf');
   
+  // Получаем точную длину аудио, чтобы избежать бесконечного цикла ffmpeg при -stream_loop -1
+  const audioDuration = await new Promise<number>((resolve) => {
+    ffmpeg.ffprobe(audioPath, (err, metadata) => {
+      resolve(metadata?.format?.duration || 0);
+    });
+  });
+
   return new Promise((resolve, reject) => {
     let command = ffmpeg()
       .input(videoPath)
       .inputOptions(['-stream_loop', '-1']) // Зацикливаем видео, если аудио длиннее
       .input(audioPath);
 
+    
     // Добавляем текст, если есть
     let filterGraph = '';
+    const filters: string[] = [];
+    
     if (overlayText && fs.existsSync(fontPath)) {
-      // Эскейпим символы для drawtext
-      const safeText = overlayText.replace(/'/g, "\\'").replace(/:/g, '\\:');
-      filterGraph = `drawtext=fontfile='${fontPath}':text='${safeText}':fontcolor=white:fontsize=48:box=1:boxcolor=black@0.5:boxborderw=15:x=(w-text_w)/2:y=h-(h/4)`;
+      const safeText = overlayText.replace(/'/g, "\\\'").replace(/:/g, '\\:');
+      filters.push(`drawtext=fontfile='${fontPath}':text='${safeText}':fontcolor=white:fontsize=48:box=1:boxcolor=black@0.5:boxborderw=15:x=(w-text_w)/2:y=h-(h/4)`);
     }
 
-    if (filterGraph) {
+    if (logoPath && fs.existsSync(logoPath)) {
+      command = command.input(logoPath); // 2nd input
+      const padding = 40;
+      let overlayCoord = 'x=W-w-40:y=H-h-40'; // BR
+      if (logoPos === 'TL') overlayCoord = 'x=40:y=40';
+      if (logoPos === 'TR') overlayCoord = 'x=W-w-40:y=40';
+      if (logoPos === 'BL') overlayCoord = 'x=40:y=H-h-40';
+      
+      // scale logo to max 150px
+      filters.push(`[1:v]scale=150:-1[logo];[0:v][logo]overlay=${overlayCoord}`);
+    } else {
+       if (filters.length > 0) {
+          // If only drawtext, we just apply it to video stream
+          filterGraph = filters[0];
+       }
+    }
+
+    if (logoPath && fs.existsSync(logoPath)) {
+      if (overlayText) {
+        // Complex filter with both
+        const safeText = overlayText.replace(/'/g, "\\\'").replace(/:/g, '\\:');
+        command = command.complexFilter([
+          `[1:v]scale=150:-1[logo]`,
+          `[0:v][logo]overlay=${logoPos === 'TL' ? '40:40' : logoPos === 'TR' ? 'W-w-40:40' : logoPos === 'BL' ? '40:H-h-40' : 'W-w-40:H-h-40'}[v1]`,
+          `[v1]drawtext=fontfile='${fontPath}':text='${safeText}':fontcolor=white:fontsize=48:box=1:boxcolor=black@0.5:boxborderw=15:x=(w-text_w)/2:y=h-(h/4)[v2]`
+        ], 'v2');
+      } else {
+        // Only logo
+        command = command.complexFilter([
+          `[1:v]scale=150:-1[logo]`,
+          `[0:v][logo]overlay=${logoPos === 'TL' ? '40:40' : logoPos === 'TR' ? 'W-w-40:40' : logoPos === 'BL' ? '40:H-h-40' : 'W-w-40:H-h-40'}[v1]`
+        ], 'v1');
+      }
+    } else if (filters.length > 0) {
+      // Only text
       command = command.videoFilters(filterGraph);
+    }
+
+
+    // Если удалось получить длительность аудио, жестко ограничиваем длину видео
+    if (audioDuration > 0) {
+      command = command.duration(audioDuration);
     }
 
     command
       .outputOptions([
-        '-shortest',        // Останавливаем рендер, когда заканчивается аудио
+        '-shortest',        // Останавливаем рендер, когда заканчивается аудио (как фоллбэк)
         '-c:v', 'libx264',
         '-c:a', 'aac',
         '-pix_fmt', 'yuv420p',
@@ -208,6 +257,14 @@ async function concatScenesAndAddBgm(sceneFiles: string[], bgmPath: string, fina
 
   // Шаг 2: Наложение фоновой музыки с ducking (снижение громкости музыки)
   return new Promise<void>((resolve, reject) => {
+    if (!bgmPath || !fs.existsSync(bgmPath)) {
+      console.warn('No valid BGM file provided, skipping music overlay.');
+      fs.copyFileSync(mergedVideoPath, finalPath);
+      if (fs.existsSync(mergedVideoPath)) fs.unlinkSync(mergedVideoPath);
+      if (fs.existsSync(listPath)) fs.unlinkSync(listPath);
+      return resolve();
+    }
+
     ffmpeg()
       .input(mergedVideoPath)
       .input(bgmPath)
@@ -227,7 +284,7 @@ async function concatScenesAndAddBgm(sceneFiles: string[], bgmPath: string, fina
 }
 
 // Главная функция-оркестратор
-export async function generateVideo(scriptText: string): Promise<string> {
+export async function generateVideo(scriptText: string, logoUrl?: string, logoPosition?: string): Promise<string> {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'video-gen-'));
   const scenes = await extractScenesFromScript(scriptText);
   
@@ -259,12 +316,16 @@ export async function generateVideo(scriptText: string): Promise<string> {
 
   const finalOutput = path.join(tmpDir, `final_output_${Date.now()}.mp4`);
   
-  // Выбираем случайный трек из папки BGM
-  const bgmFiles = ['lofi1.mp3', 'lofi2.mp3', 'lofi3.mp3', 'lofi4.mp3', 'lofi5.mp3', 'lofi6.mp3'];
-  const randomBgm = bgmFiles[Math.floor(Math.random() * bgmFiles.length)];
-  const bgmPath = path.join(process.cwd(), 'public', 'audio', 'bgm', randomBgm);
+  // Выбираем случайный трек из папки BGM (читаем реально существующие файлы)
+  const bgmDir = path.join(process.cwd(), 'public', 'audio', 'bgm');
+  let bgmFiles: string[] = [];
+  if (fs.existsSync(bgmDir)) {
+    bgmFiles = fs.readdirSync(bgmDir).filter(f => f.endsWith('.mp3'));
+  }
+  
+  const bgmPath = bgmFiles.length > 0 ? path.join(bgmDir, bgmFiles[Math.floor(Math.random() * bgmFiles.length)]) : '';
 
-  console.log(`Concatting scenes and adding BGM (${randomBgm})...`);
+  console.log(`Concatting scenes and adding BGM...`);
   await concatScenesAndAddBgm(renderedScenePaths, bgmPath, finalOutput);
 
   // Загружаем в Supabase

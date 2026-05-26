@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import sharp from 'sharp';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
@@ -76,7 +77,9 @@ export async function POST(req: NextRequest) {
       oldImageUrl,
       count = 1,
       quality = 'high', // Default to high quality to ensure sharper rendering
-      userNotes
+      userNotes,
+      logoUrl,
+      logoPosition = 'BR'
     } = await req.json();
 
     const apiKey = process.env.OPENAI_API_KEY;
@@ -232,7 +235,51 @@ export async function POST(req: NextRequest) {
         throw openAiError;
       }
 
-      const buffer = Buffer.from(b64ImageData, 'base64');
+      
+      let buffer = Buffer.from(b64ImageData, 'base64');
+
+      if (logoUrl) {
+        try {
+          const logoRes = await fetch(logoUrl);
+          if (logoRes.ok) {
+            const logoArrayBuffer = await logoRes.arrayBuffer();
+            const logoBuffer = Buffer.from(logoArrayBuffer);
+            
+            // Resize logo
+            const resizedLogo = await sharp(logoBuffer)
+              .resize({ width: 180, height: 180, fit: 'inside' })
+              .toBuffer();
+
+            const imageMeta = await sharp(buffer).metadata();
+            const { width = 1024, height = 1024 } = imageMeta;
+            
+            const padding = 40;
+            const logoMeta = await sharp(resizedLogo).metadata();
+            const lw = logoMeta.width || 180;
+            const lh = logoMeta.height || 180;
+
+            let top = padding;
+            let left = padding;
+            
+            if (logoPosition === 'TR') {
+               left = width - lw - padding;
+            } else if (logoPosition === 'BL') {
+               top = height - lh - padding;
+            } else if (logoPosition === 'BR') {
+               top = height - lh - padding;
+               left = width - lw - padding;
+            }
+
+            buffer = await sharp(buffer)
+              .composite([{ input: resizedLogo, top: Math.round(top), left: Math.round(left) }])
+              .png()
+              .toBuffer();
+          }
+        } catch (logoErr) {
+          console.error('Failed to overlay logo:', logoErr);
+        }
+      }
+
       const fileName = `${projectId}/${scriptId}/${Date.now()}_${index}.png`;
 
       const { error: uploadError } = await supabase.storage

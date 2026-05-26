@@ -3,7 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Image as ImageIcon, Video, Smile, LayoutTemplate, Palette, Mic, CheckCircle2, Lock, Loader2, PlayCircle, FileText, Camera, User } from 'lucide-react';
+import { Image as ImageIcon, Video, Smile, LayoutTemplate, Palette, Mic, CheckCircle2, Lock, Loader2, PlayCircle, FileText, Camera, User, Upload, X } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+);
 
 const CREATIVE_TYPES = [
   { id: 'Відео-крео на основі JTBD + CJM', name: 'Відео-крео (JTBD + CJM)', icon: PlayCircle },
@@ -42,6 +48,12 @@ export default function GenerateCreative({ id }: { id: string }) {
   const [secondColor, setSecondColor] = useState('#1e293b');
   const [accentColor, setAccentColor] = useState('#f59e0b');
 
+  // Logo States
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
+  const [logoPosition, setLogoPosition] = useState<'TL' | 'TR' | 'BL' | 'BR'>('TR');
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+
   useEffect(() => {
     async function loadProject() {
       try {
@@ -74,6 +86,8 @@ export default function GenerateCreative({ id }: { id: string }) {
         if (loadedProject) {
            setProject(loadedProject);
            setProductName(loadedProject.name || loadedProject.productName || '');
+           if (loadedProject.logoUrl) setLogoPreviewUrl(loadedProject.logoUrl);
+           if (loadedProject.logoPosition) setLogoPosition(loadedProject.logoPosition);
         }
         if (loadedAvatars) setAvatars(loadedAvatars);
 
@@ -125,29 +139,39 @@ export default function GenerateCreative({ id }: { id: string }) {
       const localScripts = JSON.parse(localStorage.getItem(scriptsKey) || '[]');
       
       const dbScripts = project?.brief?.scripts || [];
-      const allScriptsMap = new Map();
-      [...dbScripts, ...localScripts].forEach((s: any) => allScriptsMap.set(s.id, s));
-      const mergedExistingScripts = Array.from(allScriptsMap.values()).sort((a: any, b: any) => 
-        new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
-      );
+      const generatedScripts = data.scripts.map((s: any) => ({
+        ...s,
+        id: `script_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+        createdAt: new Date().toISOString()
+      }));
 
-      const updatedScripts = [data.script, ...mergedExistingScripts];
-      localStorage.setItem(scriptsKey, JSON.stringify(updatedScripts));
+      const newBrief = {
+        ...project?.brief,
+        productName,
+        toneOfVoice,
+        language,
+        focusDirection,
+        useColors,
+        mainColor,
+        secondColor,
+        accentColor,
+        scripts: [
+          ...(project?.brief?.scripts || []),
+          ...generatedScripts
+        ]
+      };
 
-      // Сохраняем также в базу данных для синхронизации
-      if (id && id !== 'temp-id' && project) {
+      // Збереження в Supabase
+      if (id && id !== 'temp-id') {
         try {
-          const updatedBrief = {
-            ...(project.brief || {}),
-            scripts: updatedScripts
-          };
-          
           await fetch('/api/projects', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              id,
-              brief: updatedBrief
+            body: JSON.stringify({ 
+              id, 
+              brief: newBrief,
+              logoUrl: finalLogoUrl,
+              logoPosition: logoPosition
             })
           });
         } catch (dbErr) {
@@ -155,7 +179,6 @@ export default function GenerateCreative({ id }: { id: string }) {
         }
       }
 
-      // Оновлюємо сторінку, щоб компонент ScriptStudio завантажив нові скрипти, і перемикаємо на вкладку зі скриптами
       router.push(`/project/${id}?tab=studio&view=scripts`);
     } catch (e: any) {
       console.error(e);
@@ -174,7 +197,6 @@ export default function GenerateCreative({ id }: { id: string }) {
 
       <form onSubmit={handleGenerate} className="grid-layout">
         
-        {/* Шаг 1: Аватар */}
         <section className="card shadow-sm" style={{ gridColumn: '1 / -1', borderRadius: '16px', padding: '2rem' }}>
           <h3 className="card-title mb-4" style={{ fontSize: '1.25rem' }}>1. Выберите целевой аватар (сегмент)</h3>
           {avatars.length === 0 ? (
@@ -207,7 +229,6 @@ export default function GenerateCreative({ id }: { id: string }) {
           )}
         </section>
 
-        {/* Шаг 2: Формат креатива */}
         <section className="card shadow-sm" style={{ borderRadius: '16px', padding: '2rem' }}>
           <h3 className="card-title mb-6" style={{ fontSize: '1.25rem' }}>2. Формат креатива (один за сессию)</h3>
           
@@ -236,7 +257,6 @@ export default function GenerateCreative({ id }: { id: string }) {
           </div>
         </section>
 
-        {/* Шаг 3: Настройки */}
         <section className="card shadow-sm" style={{ borderRadius: '16px', padding: '2rem' }}>
           <h3 className="card-title mb-6" style={{ fontSize: '1.25rem' }}>3. Параметры генерации</h3>
           
@@ -292,22 +312,24 @@ export default function GenerateCreative({ id }: { id: string }) {
               />
             </div>
 
-            <div className="form-group mt-4">
-              <label>Количество вариантов</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <label style={{ margin: 0 }}>Количество вариантов для каждого ТЗ</label>
+                  <span style={{ fontWeight: 800, color: '#3b82f6', fontSize: '1.25rem' }}>{variantsCount} шт.</span>
+                </div>
                 <input 
                   type="range" 
-                  min="1" max="5" 
+                  min="1" 
+                  max="10" 
                   disabled={isGenerating}
                   value={variantsCount} 
-                  onChange={(e) => setVariantsCount(parseInt(e.target.value))} 
-                  style={{ flex: 1, accentColor: 'var(--primary)' }}
+                  onChange={e => setVariantsCount(parseInt(e.target.value))}
+                  style={{ width: '100%', cursor: 'pointer', height: '6px', background: '#e2e8f0', borderRadius: '8px', appearance: 'none' }}
                 />
-                <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e293b', minWidth: '20px' }}>{variantsCount}</span>
               </div>
             </div>
 
-            {/* Цвета */}
             <div className="form-group mt-6" style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', marginBottom: useColors ? '1rem' : 0 }}>
                 <input 
@@ -345,28 +367,116 @@ export default function GenerateCreative({ id }: { id: string }) {
                 </div>
               )}
             </div>
+            
+            <hr style={{ margin: '2rem 0', borderColor: '#e2e8f0' }} />
 
+            <div className="form-group">
+              <label>Водяной знак / Логотип (опционально)</label>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+                Загрузите логотип (PNG/JPG), который ИИ автоматически наложит на готовые креативы в выбранном углу.
+              </p>
+              
+              <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: '250px' }}>
+                  <div style={{
+                    border: '2px dashed #cbd5e1',
+                    borderRadius: '12px',
+                    padding: '2rem',
+                    textAlign: 'center',
+                    background: '#f8fafc',
+                    cursor: 'pointer',
+                    position: 'relative'
+                  }}>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      disabled={isGenerating || isUploadingLogo}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setLogoFile(file);
+                          setLogoPreviewUrl(URL.createObjectURL(file));
+                        }
+                      }}
+                      style={{
+                        position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%', height: '100%'
+                      }}
+                    />
+                    
+                    {logoPreviewUrl ? (
+                      <div style={{ position: 'relative', display: 'inline-block' }}>
+                        <img src={logoPreviewUrl} alt="Logo preview" style={{ maxHeight: '100px', maxWidth: '100%', objectFit: 'contain' }} />
+                        <button 
+                          type="button"
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLogoFile(null); setLogoPreviewUrl(null); }}
+                          style={{ position: 'absolute', top: -10, right: -10, background: '#ef4444', color: 'white', borderRadius: '50%', padding: '4px', border: 'none' }}
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ color: '#64748b' }}>
+                        <Upload size={32} style={{ margin: '0 auto 10px', opacity: 0.5 }} />
+                        <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600 }}>Нажмите или перетащите файл</p>
+                        <p style={{ margin: 0, fontSize: '0.8rem' }}>PNG, JPG до 5 MB</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {logoPreviewUrl && (
+                  <div style={{ flex: 1, minWidth: '250px' }}>
+                    <label style={{ fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>Выберите угол для логотипа:</label>
+                    <div style={{ 
+                      width: '160px', height: '120px', 
+                      background: '#e2e8f0', borderRadius: '8px', 
+                      position: 'relative', padding: '8px',
+                      border: '2px solid #cbd5e1'
+                    }}>
+                      {/* TL */}
+                      <div 
+                        onClick={() => setLogoPosition('TL')}
+                        style={{ position: 'absolute', top: '8px', left: '8px', width: '30px', height: '30px', background: logoPosition === 'TL' ? '#3b82f6' : 'rgba(255,255,255,0.7)', borderRadius: '4px', cursor: 'pointer', border: logoPosition === 'TL' ? '2px solid #2563eb' : '2px dashed #94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >
+                        {logoPosition === 'TL' && <ImageIcon size={14} color="white" />}
+                      </div>
+                      {/* TR */}
+                      <div 
+                        onClick={() => setLogoPosition('TR')}
+                        style={{ position: 'absolute', top: '8px', right: '8px', width: '30px', height: '30px', background: logoPosition === 'TR' ? '#3b82f6' : 'rgba(255,255,255,0.7)', borderRadius: '4px', cursor: 'pointer', border: logoPosition === 'TR' ? '2px solid #2563eb' : '2px dashed #94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >
+                        {logoPosition === 'TR' && <ImageIcon size={14} color="white" />}
+                      </div>
+                      {/* BL */}
+                      <div 
+                        onClick={() => setLogoPosition('BL')}
+                        style={{ position: 'absolute', bottom: '8px', left: '8px', width: '30px', height: '30px', background: logoPosition === 'BL' ? '#3b82f6' : 'rgba(255,255,255,0.7)', borderRadius: '4px', cursor: 'pointer', border: logoPosition === 'BL' ? '2px solid #2563eb' : '2px dashed #94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >
+                        {logoPosition === 'BL' && <ImageIcon size={14} color="white" />}
+                      </div>
+                      {/* BR */}
+                      <div 
+                        onClick={() => setLogoPosition('BR')}
+                        style={{ position: 'absolute', bottom: '8px', right: '8px', width: '30px', height: '30px', background: logoPosition === 'BR' ? '#3b82f6' : 'rgba(255,255,255,0.7)', borderRadius: '4px', cursor: 'pointer', border: logoPosition === 'BR' ? '2px solid #2563eb' : '2px dashed #94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >
+                        {logoPosition === 'BR' && <ImageIcon size={14} color="white" />}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            
           </div>
         </section>
 
-        <div style={{ gridColumn: '1 / -1', marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ gridColumn: '1 / -1', marginTop: '2rem' }}>
           <button 
             type="submit" 
-            className="btn btn-primary" 
-            disabled={selectedAvatarIdx === null || !selectedType || !productName || !productName.trim() || isGenerating}
-            style={{ 
-              padding: '1.25rem 3rem', 
-              fontSize: '1.125rem', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.75rem', 
-              borderRadius: '16px',
-              boxShadow: '0 4px 14px rgba(59, 130, 246, 0.4)',
-              transition: 'all 0.2s',
-              opacity: (selectedAvatarIdx === null || !selectedType || !productName || !productName.trim() || isGenerating) ? 0.7 : 1
-            }}
+            className="btn-primary" 
+            disabled={isGenerating || isUploadingLogo}
+            style={{ width: '100%', padding: '1.25rem', fontSize: '1.15rem', borderRadius: '12px' }}
           >
-            {isGenerating ? <Loader2 size={24} className="animate-spin" /> : <Palette size={24} />}
             {isGenerating ? 'Продумываем сценарии...' : 'Сгенерировать ТЗ и Сценарии'}
           </button>
         </div>

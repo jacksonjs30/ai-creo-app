@@ -26,6 +26,16 @@ export default function ScriptStudio({ id }: { id: string }) {
   const [isGeneratingVideo, setIsGeneratingVideo] = useState<string | null>(null);
   const [rowNotes, setRowNotes] = useState<Record<string, string>>({});
 
+  const [selectedRows, setSelectedRows] = useState<string[]>([]);
+  const [generationModal, setGenerationModal] = useState<{
+    isOpen: boolean;
+    selectedIds: {script: any, rowIdx: number, cells: string[]}[];
+    quantity: number;
+    useBrandColors: boolean;
+    userNotes: string;
+  } | null>(null);
+
+
   const [filterFormat, setFilterFormat] = useState<string>('Все');
   const [filterProduct, setFilterProduct] = useState<string>('Все');
   const [filterAvatar, setFilterAvatar] = useState<string>('Все');
@@ -165,6 +175,8 @@ export default function ScriptStudio({ id }: { id: string }) {
           projectId: id,
           scriptId: script.id,
           scriptText: script.content,
+          logoUrl: project?.logoUrl,
+          logoPosition: project?.logoPosition
         })
       });
       const data = await res.json();
@@ -197,6 +209,100 @@ export default function ScriptStudio({ id }: { id: string }) {
   };
 
   // Parse markdown table into rows (returns array of cell arrays, skipping separator row)
+  
+  const handleOpenGenModal = (script: any, rowIdx: number, cells: string[]) => {
+    setGenerationModal({
+      isOpen: true,
+      selectedIds: [{script, rowIdx, cells}],
+      quantity: 1,
+      useBrandColors: false,
+      userNotes: ''
+    });
+  };
+
+  const handleOpenMassGenModal = () => {
+    // Find all selected rows
+    const selectedData: {script: any, rowIdx: number, cells: string[]}[] = [];
+    filteredScripts.forEach(s => {
+      const parsed = parseTableRows(s.content);
+      parsed.forEach((row, rIdx) => {
+        if (selectedRows.includes(`${s.id}_row${rIdx}`)) {
+          selectedData.push({ script: s, rowIdx: rIdx, cells: row });
+        }
+      });
+    });
+    if (selectedData.length === 0) return;
+    setGenerationModal({
+      isOpen: true,
+      selectedIds: selectedData,
+      quantity: 1,
+      useBrandColors: false,
+      userNotes: ''
+    });
+  };
+
+  const confirmGeneration = async () => {
+    if (!generationModal) return;
+    setGenerationModal({...generationModal, isOpen: false});
+    const { selectedIds, quantity, useBrandColors, userNotes } = generationModal;
+
+    for (const item of selectedIds) {
+      // Small delay to prevent rate limit
+      await new Promise(r => setTimeout(r, 1000));
+      
+      const finalNotes = (useBrandColors ? "Используй брендовые цвета. " : "") + userNotes;
+      const prevNotes = rowNotes[`${item.script.id}_row${item.rowIdx}`] || '';
+      
+      const combinedNotes = finalNotes ? `${prevNotes}\n${finalNotes}`.trim() : prevNotes;
+
+      setIsGeneratingImage({ scriptId: item.script.id, rowIdx: item.rowIdx, action: 'add' });
+      try {
+        const designBrief = item.cells[item.cells.length - 1] || '';
+        const scriptText = item.cells.join('\n');
+        
+        const res = await fetch('/api/images/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            projectId: id,
+            scriptId: `${item.script.id}_row${item.rowIdx}`,
+            cells: item.cells,
+            scriptText,
+            designBrief,
+            avatarName: item.script.avatarName,
+            productName: item.script.productName || project?.name,
+            action: 'add',
+            count: quantity,
+            userNotes: combinedNotes,
+            logoUrl: project?.logoUrl,
+            logoPosition: project?.logoPosition
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          alert('Ошибка для строки: ' + data.error);
+          continue;
+        }
+
+        const newRowImages = item.script.rowImages || {};
+        newRowImages[item.rowIdx] = [...(newRowImages[item.rowIdx] || []), ...data.urls];
+
+        const newScripts = [...scripts];
+        const sIdx = newScripts.findIndex(s => s.id === item.script.id);
+        if (sIdx !== -1) {
+          newScripts[sIdx] = { ...newScripts[sIdx], rowImages: newRowImages };
+          setScripts(newScripts);
+          localStorage.setItem(`projectScripts_${id}`, JSON.stringify(newScripts));
+        }
+      } catch (err: any) {
+        console.error(err);
+      }
+    }
+    setIsGeneratingImage(null);
+    setSelectedRows([]); // clear selection
+  };
+
   const parseTableRows = (content: string): string[][] => {
     const cleaned = content
       .replace(/^```(?:markdown|html)?\n?/i, '')
@@ -577,8 +683,23 @@ export default function ScriptStudio({ id }: { id: string }) {
                   return (
                     <div>
                       {/* Header row */}
-                      <div style={{ display: 'grid', gridTemplateColumns: headerRow.length === 4 ? '60px 1.25fr 2fr 3.5fr' : headerRow.length === 3 ? '1.25fr 2fr 3.5fr' : `repeat(${headerRow.length}, 1fr)`, background: '#f8fafc', borderRadius: '10px 10px 0 0', border: '1px solid #e2e8f0', borderBottom: 'none' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: headerRow.length === 4 ? '40px 60px 1.25fr 2fr 3.5fr' : headerRow.length === 3 ? '40px 1.25fr 2fr 3.5fr' : `40px repeat(${headerRow.length}, 1fr)`, background: '#f8fafc', borderRadius: '10px 10px 0 0', border: '1px solid #e2e8f0', borderBottom: 'none' }}>
                         {headerRow.map((cell, cIdx) => (
+                          
+  <div style={{ padding: '0.75rem 1rem', borderRight: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <input type="checkbox" style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+      onChange={(e) => {
+        const rowIds = dataRows.map((_, i) => `${script.id}_row${i}`);
+        if (e.target.checked) {
+          setSelectedRows(prev => Array.from(new Set([...prev, ...rowIds])));
+        } else {
+          setSelectedRows(prev => prev.filter(id => !rowIds.includes(id)));
+        }
+      }}
+      checked={dataRows.length > 0 && dataRows.every((_, i) => selectedRows.includes(`${script.id}_row${i}`))}
+    />
+  </div>
+
                           <div key={cIdx} style={{ padding: '0.75rem 1rem', fontWeight: 700, fontSize: '0.85rem', color: '#475569', borderRight: cIdx < headerRow.length - 1 ? '1px solid #e2e8f0' : 'none', textAlign: (headerRow.length === 4 && cIdx === 0) ? 'center' : 'left' }}>
                             {cell}
                           </div>
@@ -752,8 +873,20 @@ export default function ScriptStudio({ id }: { id: string }) {
                             )}
 
                             {/* Row cells (rendered below) */}
-                            <div style={{ display: 'grid', gridTemplateColumns: headerRow.length === 4 ? '60px 1.25fr 2fr 3.5fr' : headerRow.length === 3 ? '1.25fr 2fr 3.5fr' : `repeat(${headerRow.length}, 1fr)`, background: dataRowIdx % 2 === 0 ? 'white' : '#fafbff' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: headerRow.length === 4 ? '40px 60px 1.25fr 2fr 3.5fr' : headerRow.length === 3 ? '40px 1.25fr 2fr 3.5fr' : `40px repeat(${headerRow.length}, 1fr)`, background: dataRowIdx % 2 === 0 ? 'white' : '#fafbff' }}>
                               {row.map((cell, cIdx) => (
+                                
+  <div style={{ padding: '1rem', borderRight: '1px solid #e2e8f0', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
+    <input type="checkbox" style={{ cursor: 'pointer', width: '16px', height: '16px', marginTop: '4px' }}
+      checked={selectedRows.includes(`${script.id}_row${dataRowIdx}`)}
+      onChange={(e) => {
+        const id = `${script.id}_row${dataRowIdx}`;
+        if (e.target.checked) setSelectedRows(prev => [...prev, id]);
+        else setSelectedRows(prev => prev.filter(r => r !== id));
+      }}
+    />
+  </div>
+
                                 <div key={cIdx} style={{ padding: '1rem', fontSize: '0.9rem', color: '#334155', lineHeight: 1.6, borderRight: cIdx < headerRow.length - 1 ? '1px solid #e2e8f0' : 'none', wordBreak: 'break-word', textAlign: (headerRow.length === 4 && cIdx === 0) ? 'center' : 'left' }}>
                                   <div className="markdown-content">
                                     <ReactMarkdown remarkPlugins={remarkPluginsList} rehypePlugins={rehypePluginsList}>
@@ -773,6 +906,81 @@ export default function ScriptStudio({ id }: { id: string }) {
             </div>
 
           ))}
+        </div>
+      )}
+
+      
+      {/* Floating Action Bar */}
+      {selectedRows.length > 0 && (
+        <div style={{ position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', background: '#1e293b', color: 'white', padding: '1rem 2rem', borderRadius: '99px', display: 'flex', alignItems: 'center', gap: '2rem', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', zIndex: 50 }}>
+          <span style={{ fontWeight: 600 }}>Выбрано креативов: {selectedRows.length}</span>
+          <button onClick={handleOpenMassGenModal} style={{ background: '#3b82f6', color: 'white', padding: '0.6rem 1.5rem', borderRadius: '99px', fontWeight: 700, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <ImageIcon size={18} />
+            Сгенерировать выбранные
+          </button>
+        </div>
+      )}
+
+      {/* Generation Modal */}
+      {generationModal?.isOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.7)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
+          <div style={{ background: 'white', width: '90%', maxWidth: '500px', borderRadius: '16px', padding: '2rem', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', color: '#1e293b' }}>
+              Настройки генерации ({generationModal.selectedIds.length} шт.)
+            </h3>
+            
+            <div style={{ marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <label style={{ fontWeight: 600, fontSize: '0.95rem' }}>Количество вариантов (каждого)</label>
+                <span style={{ fontWeight: 800, color: '#3b82f6' }}>{generationModal.quantity}</span>
+              </div>
+              <input 
+                type="range" min="1" max="4" 
+                value={generationModal.quantity} 
+                onChange={e => setGenerationModal({...generationModal, quantity: parseInt(e.target.value)})}
+                style={{ width: '100%', cursor: 'pointer' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem' }}>
+                <input 
+                  type="checkbox" 
+                  checked={generationModal.useBrandColors}
+                  onChange={e => setGenerationModal({...generationModal, useBrandColors: e.target.checked})}
+                />
+                Использовать брендовые цвета (из параметров)
+              </label>
+            </div>
+
+            <div style={{ marginBottom: '2rem' }}>
+              <label style={{ display: 'block', fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.5rem' }}>
+                Уточнения для ИИ (опционально)
+              </label>
+              <textarea 
+                placeholder="Например: светлый фон, минималистичный стиль, фотореализм..."
+                value={generationModal.userNotes}
+                onChange={e => setGenerationModal({...generationModal, userNotes: e.target.value})}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1', resize: 'vertical', minHeight: '80px', fontSize: '0.9rem' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+              <button 
+                onClick={() => setGenerationModal(null)}
+                style={{ padding: '0.75rem 1.5rem', background: '#e2e8f0', color: '#475569', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Отмена
+              </button>
+              <button 
+                onClick={confirmGeneration}
+                style={{ padding: '0.75rem 1.5rem', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+              >
+                <ImageIcon size={18} />
+                Начать генерацию
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
