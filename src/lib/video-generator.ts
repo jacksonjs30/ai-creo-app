@@ -11,17 +11,43 @@ import os from 'os';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-// Настройка FFmpeg
-if (ffmpegStatic) {
-  ffmpeg.setFfmpegPath(ffmpegStatic);
-}
-if (ffprobeStatic.path) {
-  ffmpeg.setFfprobePath(ffprobeStatic.path);
+// Настройка FFmpeg (lazy, safe for build-time)
+try {
+  if (ffmpegStatic) {
+    ffmpeg.setFfmpegPath(ffmpegStatic);
+  }
+  if (ffprobeStatic?.path) {
+    ffmpeg.setFfprobePath(ffprobeStatic.path);
+  }
+} catch (e) {
+  // Ignore during build time
 }
 
-const pexelsClient = createClient(process.env.PEXELS_API_KEY!);
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY!);
+// Lazy initialization to avoid build-time crashes when env vars are unavailable
+let _pexelsClient: ReturnType<typeof createClient> | null = null;
+let _openai: OpenAI | null = null;
+let _genAI: GoogleGenerativeAI | null = null;
+
+function getPexelsClient() {
+  if (!_pexelsClient) {
+    _pexelsClient = createClient(process.env.PEXELS_API_KEY || '');
+  }
+  return _pexelsClient;
+}
+
+function getOpenAI() {
+  if (!_openai) {
+    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || '' });
+  }
+  return _openai;
+}
+
+function getGenAI() {
+  if (!_genAI) {
+    _genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY || '');
+  }
+  return _genAI;
+}
 
 export interface VideoScene {
   scene_id: number;
@@ -53,7 +79,7 @@ ${scriptText}
 ]
 `;
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash', generationConfig: { temperature: 0.2 } });
+  const model = getGenAI().getGenerativeModel({ model: 'gemini-2.5-flash', generationConfig: { temperature: 0.2 } });
   const result = await model.generateContent(prompt);
   let text = result.response.text();
   text = text.replace(/^```json/, '').replace(/```$/, '').trim();
@@ -71,7 +97,7 @@ async function generateSceneAudio(text: string, outputPath: string): Promise<voi
     return;
   }
 
-  const mp3 = await openai.audio.speech.create({
+  const mp3 = await getOpenAI().audio.speech.create({
     model: 'tts-1',
     voice: 'alloy',
     input: text,
@@ -101,7 +127,7 @@ async function generateSceneAudio(text: string, outputPath: string): Promise<voi
 async function downloadPexelsVideo(queries: string[], outputPath: string): Promise<boolean> {
   for (const query of queries) {
     try {
-      const response = await pexelsClient.videos.search({ query, orientation: 'portrait', per_page: 5 });
+      const response = await getPexelsClient().videos.search({ query, orientation: 'portrait', per_page: 5 });
       if ('videos' in response && response.videos.length > 0) {
         // Берем первое видео, ищем HD mp4
         const video = response.videos[0];
