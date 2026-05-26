@@ -592,6 +592,7 @@ export default function ScriptStudio({ id }: { id: string }) {
                         const isAnyGen = isGeneratingImage !== null;
 
                         const isVideoFormat = /відео|видео|video/i.test(script.format || '');
+                        console.log('[DEBUG] script.format:', JSON.stringify(script.format), 'isVideoFormat:', isVideoFormat);
 
                         return (
                           <div key={dataRowIdx} style={{ border: '1px solid #e2e8f0', borderTop: dataRowIdx === 0 ? '1px solid #e2e8f0' : 'none', borderRadius: dataRowIdx === dataRows.length - 1 ? '0 0 10px 10px' : '0', overflow: 'hidden' }}>
