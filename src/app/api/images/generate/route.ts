@@ -236,7 +236,7 @@ export async function POST(req: NextRequest) {
       }
 
       
-      let buffer = Buffer.from(b64ImageData, 'base64');
+      let buffer: any = Buffer.from(b64ImageData, 'base64');
 
       if (logoUrl) {
         try {
@@ -270,10 +270,10 @@ export async function POST(req: NextRequest) {
                left = width - lw - padding;
             }
 
-            buffer = await sharp(buffer)
+            buffer = (await sharp(buffer)
               .composite([{ input: resizedLogo, top: Math.round(top), left: Math.round(left) }])
               .png()
-              .toBuffer();
+              .toBuffer()) as unknown as Buffer;
           }
         } catch (logoErr) {
           console.error('Failed to overlay logo:', logoErr);

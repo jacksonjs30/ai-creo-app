@@ -138,6 +138,26 @@ export default function GenerateCreative({ id }: { id: string }) {
       const scriptsKey = `projectScripts_${id}`;
       const localScripts = JSON.parse(localStorage.getItem(scriptsKey) || '[]');
       
+      // Upload Logo if new one selected
+      let finalLogoUrl = logoPreviewUrl;
+      if (logoFile) {
+        setIsUploadingLogo(true);
+        const fileExt = logoFile.name.split('.').pop();
+        const fileName = `${id}/${Date.now()}_logo.${fileExt}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('creatives')
+          .upload(`logos/${fileName}`, logoFile, { upsert: true });
+        
+        if (uploadError) {
+          console.error('Logo upload error:', uploadError);
+          alert('Ошибка загрузки логотипа: ' + uploadError.message);
+        } else {
+          const { data: { publicUrl } } = supabase.storage.from('creatives').getPublicUrl(`logos/${fileName}`);
+          finalLogoUrl = publicUrl;
+        }
+        setIsUploadingLogo(false);
+      }
+
       const dbScripts = project?.brief?.scripts || [];
       const generatedScripts = data.scripts.map((s: any) => ({
         ...s,
