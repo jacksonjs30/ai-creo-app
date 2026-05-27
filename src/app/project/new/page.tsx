@@ -16,6 +16,7 @@ const COUNTRIES = [
   { code: 'PL', name: 'Польша' },
   { code: 'DE', name: 'Германия' },
   { code: 'US', name: 'США' },
+  { code: 'EU', name: 'Европа' },
   { code: 'Other', name: 'Другое' }
 ];
 
