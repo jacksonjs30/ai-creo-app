@@ -88,6 +88,7 @@ export async function POST(req: NextRequest) {
 
     // Gemini Vision step removed by user request
     let finalDocument = document;
+    finalDocument.blocks = []; // User requested NO HTML layers, just pure DALL-E image with baked-in text
 
     // 4. Upload Background to Supabase
     console.log('[layout-v1] Uploading image to Supabase...');
