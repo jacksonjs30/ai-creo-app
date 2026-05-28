@@ -79,7 +79,8 @@ export async function POST(req: NextRequest) {
       model: 'gpt-image-1',
       prompt: bgPrompt,
       n: 1,
-      size: '1024x1024'
+      size: '1024x1024',
+      quality: 'medium' as any, // Use medium quality since background doesn't need text
     });
 
     const imgData = imageRes.data?.[0];
