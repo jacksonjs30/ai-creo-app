@@ -33,8 +33,21 @@ export type Area =
 export interface StyleHints {
   uppercase?: boolean;
   shadow?: boolean;
+  outline?: boolean;
   bold?: boolean;
   italic?: boolean;
+}
+
+export interface Rect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface ContentAwareHints {
+  safeRegions: Rect[];
+  avoidRegions: Rect[];
 }
 
 export interface BaseBlockSpec {
@@ -44,7 +57,9 @@ export interface BaseBlockSpec {
   area: Area;
   zIndex: number;
   parent?: string;
-  // Runtime pixel coords (set by frontend after area → px conversion)
+  // Runtime pixel coords or exact vision layout coords
+  frame?: Rect;
+  anchor?: 'top_left' | 'top_center' | 'top_right' | 'center_left' | 'center' | 'center_right' | 'bottom_left' | 'bottom_center' | 'bottom_right' | string;
   x?: number;
   y?: number;
   w?: number;
@@ -56,6 +71,7 @@ export interface TextBlock extends BaseBlockSpec {
   text: string;
   fontRole: FontRole;
   colorRole: ColorRole;
+  explicitColor?: string;
   align: 'left' | 'center' | 'right';
   maxWidth?: number;
   maxLines?: number;
@@ -77,6 +93,7 @@ export interface ButtonBlock extends BaseBlockSpec {
   text: string;
   bgColorRole: ColorRole;
   textColorRole: ColorRole;
+  explicitColor?: string;
   fontRole: FontRole;
   styleHints?: StyleHints;
 }
@@ -96,6 +113,7 @@ export interface CreativeDocument {
   size: { width: number; height: number };
   brandPalette?: BrandPalette;
   backgroundHint?: string;
+  contentAware?: ContentAwareHints;
   blocks: BlockSpec[];
   meta?: {
     sourceBrief?: string;

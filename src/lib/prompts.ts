@@ -616,5 +616,66 @@ Return ONLY the raw JSON object. No markdown wrapping. No conversational text.
 RAW BRIEF TO PARSE:
 ${brief}
 `;
+  },
+
+  VISION_LAYOUT_PROMPT: (draftJson: string, briefText: string) => {
+    return `
+You are an expert AI layout designer with advanced vision capabilities.
+I will provide:
+1. A draft JSON layout containing the copy (text blocks), roles, rough areas, and brand palette.
+2. The original advertising brief.
+3. An image (the generated background).
+
+Your objective is to analyze the background image and produce a FINAL V2 JSON layout document.
+
+### INSTRUCTIONS:
+1. Identify "avoidRegions": regions containing human faces, bodies, or main critical objects that must NOT be covered by text. Return an array of Rects (x, y, width, height as 0.0 to 1.0 relative to image size).
+2. Identify "safeRegions": 1-3 empty, clean areas where text can be placed clearly. Return an array of Rects (0.0 to 1.0).
+3. For EVERY block in the draft JSON, assign a precise "frame" (x, y, width, height) relative to the image size (0.0 to 1.0).
+4. Frame rules:
+   - Must be fully inside a safeRegion.
+   - Must NOT intersect any avoidRegion.
+   - Must not overlap other blocks (maintain 3-5% margin).
+   - Hook/Header should go in the top safe area; CTA/Discount should go in the bottom safe area.
+5. Analyze the background brightness/color precisely under each block's frame:
+   - If the background is light, set "explicitColor" to a dark color from the brand palette.
+   - If the background is dark, set "explicitColor" to a light color.
+   - If the background is noisy or patterned, add styleHints { "shadow": true, "outline": true }.
+   - If extremely noisy, you may recommend adding a shape behind the text by creating a new ShapeBlock and setting it as the parent of the TextBlock.
+
+### FULL JSON SCHEMA FOR V2:
+{
+  ... // keep all root properties from draft (id, type, size, brandPalette, meta)
+  "contentAware": {
+    "safeRegions": [{"x": 0.1, "y": 0.1, "width": 0.8, "height": 0.3}],
+    "avoidRegions": [{"x": 0.4, "y": 0.4, "width": 0.2, "height": 0.4}]
+  },
+  "blocks": [
+    {
+      "id": "hook",
+      "type": "text",
+      "text": "...", // keep text
+      "role": "hook",
+      "fontRole": "display",
+      "colorRole": "text_primary",
+      // ... keep other properties
+      "frame": {"x": 0.1, "y": 0.1, "width": 0.8, "height": 0.2},
+      "anchor": "top_center",
+      "explicitColor": "#000000" // determined based on background
+    }
+  ]
+}
+
+### CRITICAL RULES:
+1. Return ONLY the final V2 JSON object. No markdown formatting, no explanations, no wrapping blocks. Start directly with { and end with }.
+2. Ensure you output valid JSON.
+3. Keep all text strings exactly as they are in the draft JSON.
+
+=== DRAFT JSON ===
+${draftJson}
+
+=== ORIGINAL BRIEF ===
+${briefText}
+`;
   }
 };

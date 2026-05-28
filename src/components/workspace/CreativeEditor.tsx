@@ -124,21 +124,33 @@ export function CreativeEditor({ layout, onClose, onSave }: CreativeEditorProps)
   const [scale, setScale] = useState(0.55);
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  // Compute scale to fit canvas
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Compute scale based on actual container size
   useEffect(() => {
-    const compute = () => {
-      const h = window.innerHeight - 60 - 48;
-      const w = window.innerWidth - 320 - 64;
+    const compute = (width: number, height: number) => {
+      const h = height - 48; // padding
+      const w = width - 48;
       let s = Math.min(h / CANVAS_SIZE, w / CANVAS_SIZE, 0.72);
       if (!s || isNaN(s) || s <= 0) s = 0.55;
       setScale(Math.max(s, 0.25));
     };
-    compute();
-    window.addEventListener('resize', compute);
-    return () => window.removeEventListener('resize', compute);
+
+    if (containerRef.current) {
+      compute(containerRef.current.clientWidth, containerRef.current.clientHeight);
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        compute(entry.contentRect.width, entry.contentRect.height);
+      }
+    });
+
+    if (containerRef.current) observer.observe(containerRef.current);
+    return () => observer.disconnect();
   }, []);
 
-  // Init block positions from area → pixel coords
+  // Init block positions from area → pixel coords or frame
   useEffect(() => {
     if (!doc?.blocks) return;
     let changed = false;
@@ -146,6 +158,19 @@ export function CreativeEditor({ layout, onClose, onSave }: CreativeEditorProps)
       const bx = b as any;
       if (bx.x !== undefined && bx.y !== undefined && bx.w !== undefined && bx.h !== undefined) return b;
       changed = true;
+
+      // If Vision AI provided exact relative frames
+      if (b.frame) {
+        return {
+          ...b,
+          w: b.frame.width * CANVAS_SIZE,
+          h: b.frame.height * CANVAS_SIZE,
+          x: (b.frame.x + b.frame.width / 2) * CANVAS_SIZE,
+          y: (b.frame.y + b.frame.height / 2) * CANVAS_SIZE,
+        };
+      }
+
+      // Fallback to rough area matching
       const area = b.area || 'middle_center';
       const coords = areaToCoords(area, b.type, (b as any).fontRole || '');
       const dims = getDefaultDimensions(b);
@@ -208,6 +233,7 @@ export function CreativeEditor({ layout, onClose, onSave }: CreativeEditorProps)
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         {/* Canvas area */}
         <div
+          ref={containerRef}
           onClick={() => setSelectedId(null)}
           style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0d1117', overflow: 'hidden', padding: '24px' }}
         >
@@ -243,9 +269,9 @@ export function CreativeEditor({ layout, onClose, onSave }: CreativeEditorProps)
                 const isSelected = block.id === selectedId && !isExporting;
 
                 // Resolve colors
-                const textColor = resolveColor(b.colorRole, palette, '#ffffff');
+                const textColor = b.explicitColor || resolveColor(b.colorRole, palette, '#ffffff');
                 const bgColor = resolveColor(b.bgColorRole, palette, 'transparent');
-                const btnTextColor = resolveColor(b.textColorRole, palette, '#ffffff');
+                const btnTextColor = b.explicitColor || resolveColor(b.textColorRole, palette, '#ffffff');
 
                 const fs = getFontSize(b);
                 const fw = getFontWeight(b);

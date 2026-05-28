@@ -86,7 +86,45 @@ export async function POST(req: NextRequest) {
     const imgData = imageRes.data?.[0];
     if (!imgData?.b64_json) throw new Error('gpt-image-1 did not return b64_json.');
 
-    // 3. Upload Background to Supabase
+    // 3. Vision Layer: Refine layout based on background
+    let finalDocument = document;
+    try {
+      console.log('[layout-v1] Requesting vision layout refinement...');
+      const visionPrompt = PROMPTS.VISION_LAYOUT_PROMPT(JSON.stringify(document), brief);
+      
+      const visionRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            role: 'user',
+            parts: [
+              { inlineData: { mimeType: 'image/png', data: imgData.b64_json } },
+              { text: visionPrompt }
+            ]
+          }],
+          generationConfig: {
+            temperature: 0.1,
+          }
+        })
+      });
+
+      if (visionRes.ok) {
+        const visionData = await visionRes.json();
+        const rawVisionText = visionData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const visionJsonStr = rawVisionText.replace(/^```json\s*/, '').replace(/\s*```$/, '').trim();
+        finalDocument = JSON.parse(visionJsonStr);
+        console.log('[layout-v1] Vision layout applied successfully');
+      } else {
+        const errText = await visionRes.text();
+        console.warn('[layout-v1] Vision layer failed, falling back to draft:', visionRes.status, errText);
+      }
+    } catch (visionErr) {
+      console.warn('[layout-v1] Vision layer threw error, falling back to draft:', visionErr);
+    }
+
+    // 4. Upload Background to Supabase
+    console.log('[layout-v1] Uploading image to Supabase...');
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -107,7 +145,7 @@ export async function POST(req: NextRequest) {
     const { data: pub } = supabase.storage.from('creatives').getPublicUrl(fileName);
     const imageUrl = pub.publicUrl;
 
-    // 4. Return Final Structure
+    // 5. Return Final Structure
     return NextResponse.json({
       background: {
         kind: 'gpt_image',
@@ -115,7 +153,7 @@ export async function POST(req: NextRequest) {
         prompt: bgPrompt,
         size: document.size || { width: 1080, height: 1080 }
       },
-      document: document
+      document: finalDocument
     });
 
   } catch (error: any) {

@@ -151,19 +151,28 @@ export function CreativeCard({
             const b = block as any;
             if (block.type === 'image') return null;
 
-            const textColor = resolveColor(b.colorRole, palette, '#ffffff');
+            const textColor = b.explicitColor || resolveColor(b.colorRole, palette, '#ffffff');
             const bgColor = resolveColor(b.bgColorRole, palette, 'transparent');
-            const btnTextColor = resolveColor(b.textColorRole, palette, '#ffffff');
+            const btnTextColor = b.explicitColor || resolveColor(b.textColorRole, palette, '#ffffff');
             const hints = b.styleHints || {};
 
             const defaults = getDefaultDims(b);
-            const bw = safeNum(b.w, defaults.w);
-            const bh = safeNum(b.h, defaults.h);
-            // Use stored coords or fall back to area-based coords
-            const area = b.area || 'middle_center';
-            const areaCoords = areaToCoords(area);
-            const bx = safeNum(b.x, areaCoords.x) - bw / 2;
-            const by = safeNum(b.y, areaCoords.y) - bh / 2;
+            let bw = safeNum(b.w, defaults.w);
+            let bh = safeNum(b.h, defaults.h);
+            let bx, by;
+
+            if (b.frame) {
+              bw = b.frame.width * CANVAS;
+              bh = b.frame.height * CANVAS;
+              bx = b.frame.x * CANVAS;
+              by = b.frame.y * CANVAS;
+            } else {
+              // Use stored coords or fall back to area-based coords
+              const area = b.area || 'middle_center';
+              const areaCoords = areaToCoords(area);
+              bx = safeNum(b.x, areaCoords.x) - bw / 2;
+              by = safeNum(b.y, areaCoords.y) - bh / 2;
+            }
 
             const fs = getFontSize(b);
             const fw = getFontWeight(b);
