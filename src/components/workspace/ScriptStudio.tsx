@@ -854,12 +854,14 @@ export default function ScriptStudio({ id }: { id: string }) {
 
                               {thisRowImgs.length > 0 && (
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.75rem' }}>
-                                  {thisRowImgs.map((imgUrl: string, imgIdx: number) => (
-                                    <CreativeCard
-                                      key={imgIdx}
-                                      index={imgIdx + 1}
-                                      imageUrl={imgUrl}
-                                      overlay={extractOverlay(row)}
+                                  {thisRowImgs.map((imgData: any, imgIdx: number) => {
+                                    const finalImageUrl = typeof imgData === 'string' ? imgData : (imgData?.backgroundUrl || imgData?.background?.imageUrl || '');
+                                    return (
+                                      <CreativeCard
+                                        key={imgIdx}
+                                        index={imgIdx + 1}
+                                        imageUrl={finalImageUrl}
+                                        overlay={extractOverlay(row)}
                                       isReplacing={isGenThisRow && isGeneratingImage?.imgIdx === imgIdx}
                                       disabled={isAnyGen}
                                       onReplace={() => {
@@ -868,8 +870,9 @@ export default function ScriptStudio({ id }: { id: string }) {
                                         }
                                       }}
                                       onDelete={() => handleDeleteRowImage(script, dataRowIdx, imgIdx)}
-                                    />
-                                  ))}
+                                      />
+                                    );
+                                  })}
                                 </div>
                               )}
                             </div>
