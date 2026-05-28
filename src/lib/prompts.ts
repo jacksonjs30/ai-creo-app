@@ -588,10 +588,9 @@ Allowed area values: top_left, top_center, top_right, under_headline, middle_lef
 === BACKGROUND HINT RULES ===
 
 The backgroundHint field describes the SCENE for GPT Image to generate. It MUST:
-1. Describe only the visual scene (characters, objects, setting, mood, lighting)
-2. Explicitly state: "DO NOT render any text, letters, words, logos, or UI elements on this image."
-3. Specify where to leave empty space: "Leave clean empty space in the TOP portion and BOTTOM portion of the image for text overlay."
-4. Use colors from brandPalette for the scene atmosphere.
+1. Describe the visual scene (characters, objects, setting, mood, lighting, style).
+2. Explicitly include instructions to render the exact text from the brief on the image (e.g. "Include the text 'ЗНИЖКА -30%' in bold letters").
+3. Use colors from brandPalette for the scene atmosphere.
 
 === PALETTE EXTRACTION ===
 
