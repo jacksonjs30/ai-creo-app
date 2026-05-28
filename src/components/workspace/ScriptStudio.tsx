@@ -7,7 +7,6 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import { CreativeCard, extractOverlay } from './CreativeCard';
-import { CreativeEditor } from './CreativeEditor';
 
 const remarkPluginsList = [remarkGfm];
 const rehypePluginsList = [rehypeRaw];
@@ -26,7 +25,6 @@ export default function ScriptStudio({ id }: { id: string }) {
   const [isGeneratingImage, setIsGeneratingImage] = useState<{ scriptId: string, rowIdx: number, action: 'add' | 'replace', imgIdx?: number } | null>(null);
   const [isGeneratingVideo, setIsGeneratingVideo] = useState<string | null>(null);
   const [rowNotes, setRowNotes] = useState<Record<string, string>>({});
-  const [editingLayout, setEditingLayout] = useState<{ scriptId: string, rowIdx: number, imgIdx: number, layout: any } | null>(null);
 
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [generationModal, setGenerationModal] = useState<{
@@ -261,23 +259,34 @@ export default function ScriptStudio({ id }: { id: string }) {
       try {
         const designBrief = item.cells[item.cells.length - 1] || '';
         const scriptText = item.cells.join('\n');
-        const layouts = [];
-        for (let i = 0; i < quantity; i++) {
-          const res = await fetch('/api/creative/layout-v1', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              brief: `${scriptText}\n\n${designBrief}\n${combinedNotes}`,
-              language: project?.language || 'uk',
-              format: 'square'
-            })
-          });
-          const data = await res.json();
-          if (res.ok) layouts.push(data);
+        
+        const res = await fetch('/api/images/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            projectId: id,
+            scriptId: `${item.script.id}_row${item.rowIdx}`,
+            cells: item.cells,
+            scriptText,
+            designBrief,
+            avatarName: item.script.avatarName,
+            productName: item.script.productName || project?.name,
+            action: 'add',
+            count: quantity,
+            userNotes: combinedNotes,
+            logoUrl: project?.logoUrl,
+            logoPosition: project?.logoPosition
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          alert('Ошибка для строки: ' + data.error);
+          continue;
         }
 
         const newRowImages = item.script.rowImages || {};
-        newRowImages[item.rowIdx] = [...(newRowImages[item.rowIdx] || []), ...layouts];
+        newRowImages[item.rowIdx] = [...(newRowImages[item.rowIdx] || []), ...data.urls];
 
         const newScripts = [...scripts];
         const sIdx = newScripts.findIndex(s => s.id === item.script.id);
@@ -326,27 +335,26 @@ export default function ScriptStudio({ id }: { id: string }) {
       
       const userNotes = rowNotes[`${script.id}_row${rowIdx}`] || '';
 
-      // We fetch layout-v1 for each requested count (if genCount > 1, loop it)
-      const fetchLayout = async () => {
-        const res = await fetch('/api/creative/layout-v1', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            brief: `${scriptText}\n\n${designBrief}\n${userNotes}`,
-            language: script.language || 'uk',
-            format: 'square'
-          })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to generate layout');
-        return data;
-      };
+      const res = await fetch('/api/images/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId: id,
+          scriptId: `${script.id}_row${rowIdx}`,
+          cells: rowCells,        // Full row: [№, conceptTitle, adCopy, designBrief]
+          scriptText,
+          designBrief,
+          avatarName: script.avatarName,
+          productName: script.productName || project?.name,
+          action,
+          oldImageUrl,
+          count: action === 'replace' ? 1 : genCount,
+          userNotes
+        })
+      });
 
-      const newLayouts = [];
-      const actualCount = action === 'replace' ? 1 : genCount;
-      for (let i = 0; i < actualCount; i++) {
-        newLayouts.push(await fetchLayout());
-      }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to generate image');
 
       const newScripts = [...scripts];
       const scriptIndex = newScripts.findIndex(s => s.id === script.id);
@@ -356,9 +364,10 @@ export default function ScriptStudio({ id }: { id: string }) {
         const existingRowImgs = [...(newRowImages[rowIdx] || [])];
 
         if (action === 'add') {
-          existingRowImgs.push(...newLayouts);
+          if (data.urls?.length > 0) existingRowImgs.push(...data.urls);
+          else if (data.url) existingRowImgs.push(data.url);
         } else if (action === 'replace' && imgIdx !== undefined) {
-          existingRowImgs[imgIdx] = newLayouts[0];
+          existingRowImgs[imgIdx] = data.urls?.[0] || data.url;
         }
 
         newRowImages[rowIdx] = existingRowImgs;
@@ -845,11 +854,11 @@ export default function ScriptStudio({ id }: { id: string }) {
 
                               {thisRowImgs.length > 0 && (
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.75rem' }}>
-                                  {thisRowImgs.map((imgData: any, imgIdx: number) => (
+                                  {thisRowImgs.map((imgUrl: string, imgIdx: number) => (
                                     <CreativeCard
                                       key={imgIdx}
                                       index={imgIdx + 1}
-                                      data={imgData}
+                                      imageUrl={imgUrl}
                                       overlay={extractOverlay(row)}
                                       isReplacing={isGenThisRow && isGeneratingImage?.imgIdx === imgIdx}
                                       disabled={isAnyGen}
@@ -859,9 +868,6 @@ export default function ScriptStudio({ id }: { id: string }) {
                                         }
                                       }}
                                       onDelete={() => handleDeleteRowImage(script, dataRowIdx, imgIdx)}
-                                      onEdit={() => {
-                                        setEditingLayout({ scriptId: script.id, rowIdx: dataRowIdx, imgIdx, layout: imgData });
-                                      }}
                                     />
                                   ))}
                                 </div>
@@ -1035,28 +1041,6 @@ export default function ScriptStudio({ id }: { id: string }) {
           to { transform: rotate(360deg); }
         }
       `}</style>
-      {editingLayout && (
-        <CreativeEditor
-          layout={editingLayout.layout}
-          onClose={() => setEditingLayout(null)}
-          onSave={(newLayout) => {
-            const newScripts = [...scripts];
-            const sIdx = newScripts.findIndex(s => s.id === editingLayout.scriptId);
-            if (sIdx !== -1) {
-              const s = { ...newScripts[sIdx] };
-              const newRowImgs = { ...s.rowImages };
-              const rImgs = [...(newRowImgs[editingLayout.rowIdx] || [])];
-              rImgs[editingLayout.imgIdx] = newLayout;
-              newRowImgs[editingLayout.rowIdx] = rImgs;
-              s.rowImages = newRowImgs;
-              newScripts[sIdx] = s;
-              setScripts(newScripts);
-              localStorage.setItem(`projectScripts_${id}`, JSON.stringify(newScripts));
-            }
-            setEditingLayout(null);
-          }}
-        />
-      )}
     </div>
   );
 }
