@@ -164,18 +164,18 @@ export function CreativeEditor({ layout, onClose, onSave }: CreativeEditorProps)
               )}
 
               {/* Text/shape blocks */}
-              {doc?.blocks.map((block) => {
+              {(doc?.blocks || []).map((block) => {
                 const b = block as any;
                 const isSelected = block.id === selectedId && !isExporting;
 
                 let color = b.colorRole || '#ffffff';
-                if (color === 'textPrimary') color = doc.brandPalette?.textPrimary || '#1e293b';
-                else if (color === 'accentPrimary') color = doc.brandPalette?.accentPrimary || '#f59e0b';
+                if (color === 'textPrimary') color = doc?.brandPalette?.textPrimary || '#1e293b';
+                else if (color === 'accentPrimary') color = doc?.brandPalette?.accentPrimary || '#f59e0b';
                 else if (!color.startsWith('#')) color = '#ffffff';
 
                 let bgColor = b.bgColorRole || 'transparent';
-                if (bgColor === 'accentPrimary') bgColor = doc.brandPalette?.accentPrimary || '#f59e0b';
-                else if (bgColor === 'primary') bgColor = doc.brandPalette?.accentPrimary || '#6366f1';
+                if (bgColor === 'accentPrimary') bgColor = doc?.brandPalette?.accentPrimary || '#f59e0b';
+                else if (bgColor === 'primary') bgColor = doc?.brandPalette?.accentPrimary || '#6366f1';
 
                 const fs = getFontSize(b);
                 const ff = b.fontFamily || 'Inter';
@@ -190,6 +190,7 @@ export function CreativeEditor({ layout, onClose, onSave }: CreativeEditorProps)
                 return (
                   <Rnd
                     key={block.id}
+                    scale={scale}
                     position={{ x: bx, y: by }}
                     size={{ width: bw, height: bh }}
                     onDragStop={(_e, d) => updateBlock(block.id, { x: d.x + bw / 2, y: d.y + bh / 2 })}
