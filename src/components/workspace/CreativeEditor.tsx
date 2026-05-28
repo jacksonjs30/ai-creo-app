@@ -7,17 +7,19 @@ import * as htmlToImage from 'html-to-image';
 import { CreativeDocument, BlockSpec, TextBlock } from '@/types/creative-layout';
 
 interface CreativeEditorProps {
-  layout: { backgroundUrl: string; document: CreativeDocument };
+  layout: any; // { background: { imageUrl: string }, document: CreativeDocument } or { backgroundUrl: string, document: CreativeDocument }
   onClose: () => void;
-  onSave: (newLayout: { backgroundUrl: string; document: CreativeDocument }) => void;
+  onSave: (newLayout: any) => void;
 }
 
 const FONTS = ['Inter', 'Roboto', 'Montserrat', 'Open Sans', 'Oswald', 'Playfair Display'];
 
 export function CreativeEditor({ layout, onClose, onSave }: CreativeEditorProps) {
+  const backgroundImageUrl = layout.backgroundUrl || layout.background?.imageUrl;
   const [doc, setDoc] = useState<CreativeDocument>(layout.document);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [scale, setScale] = useState(0.55);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   const selectedBlock = doc.blocks.find(b => b.id === selectedBlockId) as TextBlock | undefined;
@@ -96,6 +98,18 @@ export function CreativeEditor({ layout, onClose, onSave }: CreativeEditorProps)
     }
   }, []);
 
+  useEffect(() => {
+    // Adjust scale based on screen height to fit the editor comfortably
+    const updateScale = () => {
+      const availableHeight = window.innerHeight - 60 - 64; // 60px header, 64px padding
+      const newScale = Math.min(availableHeight / 1080, 0.7);
+      setScale(newScale);
+    };
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
+  }, []);
+
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 9999, background: '#0f172a',
@@ -117,7 +131,7 @@ export function CreativeEditor({ layout, onClose, onSave }: CreativeEditorProps)
           }}>
             <X size={18} /> Отмена
           </button>
-          <button onClick={() => onSave({ backgroundUrl: layout.backgroundUrl, document: doc })} style={{
+          <button onClick={() => onSave({ ...layout, document: doc })} style={{
             background: '#475569', color: 'white', border: 'none', borderRadius: '6px',
             padding: '0.4rem 1rem', display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontWeight: 500
           }}>
@@ -142,23 +156,27 @@ export function CreativeEditor({ layout, onClose, onSave }: CreativeEditorProps)
         onClick={(e) => {
           if (e.target === e.currentTarget) setSelectedBlockId(null);
         }}>
-          {/* Virtual 1080x1080 canvas scaled to fit screen */}
-          <div style={{
-            width: '1080px', height: '1080px', background: '#fff',
-            position: 'relative', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-            transform: 'scale(0.7)', transformOrigin: 'center center',
-            overflow: 'hidden'
-          }}>
-            {/* Background Image */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              src={layout.backgroundUrl} 
-              alt="background" 
-              crossOrigin="anonymous"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0, pointerEvents: 'none' }} 
-            />
+          {/* Scaled Wrapper to prevent scrollbars */}
+          <div style={{ width: 1080 * scale, height: 1080 * scale, position: 'relative', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
+            {/* Virtual 1080x1080 canvas */}
+            <div style={{
+              width: '1080px', height: '1080px', background: '#fff',
+              position: 'absolute', top: 0, left: 0,
+              transform: `scale(${scale})`, transformOrigin: 'top left',
+              overflow: 'hidden'
+            }}>
+              {/* Background Image */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {backgroundImageUrl && (
+                <img 
+                  src={backgroundImageUrl} 
+                  alt="background" 
+                  crossOrigin="anonymous"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0, pointerEvents: 'none' }} 
+                />
+              )}
 
-            {/* Render Blocks */}
+              {/* Render Blocks */}
             <div ref={canvasRef} style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}>
               {doc.blocks.map(block => {
                 const b = block as any;
@@ -231,6 +249,7 @@ export function CreativeEditor({ layout, onClose, onSave }: CreativeEditorProps)
                 );
               })}
             </div>
+          </div>
           </div>
         </div>
 
