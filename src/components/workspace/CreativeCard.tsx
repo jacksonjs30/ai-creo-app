@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Download, RefreshCw, Loader2, Eye, Trash2, LayoutTemplate } from 'lucide-react';
+import { CreativeDocument, BlockSpec } from '@/types/creative-layout';
 
 export interface CreativeOverlay {
   headline: string;
@@ -23,90 +24,53 @@ interface CreativeCardProps {
   onEdit?: () => void;
 }
 
-// Kept for backward compatibility with ScriptStudio.tsx imports and signatures
 export function extractOverlay(cells: string[]): CreativeOverlay {
-  return {
-    headline: '',
-    accentColor: '#f59e0b',
-    textColor: '#ffffff',
-    bgColor: '#0a0a0c',
-  };
+  return { headline: '', accentColor: '#f59e0b', textColor: '#ffffff', bgColor: '#0a0a0c' };
 }
 
 export function CreativeCard({
-  index, data,
-  isReplacing, disabled, onReplace, onDelete, onEdit
+  index, data, isReplacing, disabled, onReplace, onDelete, onEdit
 }: CreativeCardProps) {
   const [hovered, setHovered] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0.2);
 
-  // Determine if it's a layout object or a legacy string URL
-  const isLayout = typeof data === 'object' && data !== null && ('document' in data || 'backgroundUrl' in data);
-  // Support both { backgroundUrl, document } (from editor) and { background: { imageUrl }, document } (from API)
+  const isLayout = typeof data === 'object' && data !== null && ('document' in data || 'backgroundUrl' in data || 'background' in data);
   const displayUrl = isLayout ? (data.backgroundUrl || data.background?.imageUrl) : data;
+  const doc = isLayout ? (data.document as CreativeDocument) : null;
 
-  // Open full-size image in new tab with a solid dark background wrapper
+  useEffect(() => {
+    if (containerRef.current) {
+      setScale(containerRef.current.clientWidth / 1080);
+    }
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        setScale(entry.contentRect.width / 1080);
+      }
+    });
+    if (containerRef.current) observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   const handleOpenFull = () => {
-    if (isLayout) {
-      if (onEdit) onEdit();
-      return;
-    }
-    const newWindow = window.open('', '_blank');
-    if (!newWindow) {
-      window.open(displayUrl, '_blank');
-      return;
-    }
-    newWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Креатив #${index}</title>
-        <style>
-          body {
-            margin: 0;
-            background-color: #0c0a1c;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            overflow: hidden;
-            font-family: system-ui, -apple-system, sans-serif;
-          }
-          img {
-            max-width: 100%;
-            max-height: 100vh;
-            object-fit: contain;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-          }
-        </style>
-      </head>
-      <body>
-        <img src="${displayUrl}" />
-      </body>
-      </html>
-    `);
-    newWindow.document.close();
+    if (isLayout && onEdit) { onEdit(); return; }
+    window.open(displayUrl, '_blank');
   };
 
-  // Download raw image directly via fetch
   const handleDownload = async () => {
     if (isDownloading) return;
     setIsDownloading(true);
-    setHovered(false);
     try {
-      const response = await fetch(displayUrl);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = `creative_${index}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(blobUrl);
+      const res = await fetch(displayUrl);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `creative_${index}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
     } catch (e) {
-      console.error('Failed to download image directly', e);
       window.open(displayUrl, '_blank');
     } finally {
       setIsDownloading(false);
@@ -115,28 +79,76 @@ export function CreativeCard({
 
   return (
     <div
+      ref={containerRef}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
         position: 'relative', borderRadius: '12px', overflow: 'hidden',
         border: '1px solid rgba(199,210,254,0.3)', aspectRatio: '1/1',
         background: '#0c0a1c', boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
-        userSelect: 'none',
-        transition: 'transform 0.2s, box-shadow 0.2s',
+        userSelect: 'none', transition: 'transform 0.2s',
       }}
     >
-      {/* Generated image or video */}
+      {/* Background */}
       {displayUrl?.endsWith('.mp4') ? (
-        <video
-          src={displayUrl} crossOrigin="anonymous"
-          autoPlay loop muted playsInline
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-        />
+        <video src={displayUrl} crossOrigin="anonymous" autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       ) : (
-        <img
-          src={displayUrl} alt={`Креатив #${index}`} crossOrigin="anonymous"
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-        />
+        <img src={displayUrl} alt={`Креатив #${index}`} crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      )}
+
+      {/* Render Layout Blocks */}
+      {doc && doc.blocks && (
+        <div style={{
+          position: 'absolute', top: 0, left: 0,
+          width: 1080, height: 1080,
+          transform: `scale(${scale})`, transformOrigin: 'top left',
+          pointerEvents: 'none'
+        }}>
+          {doc.blocks.map(block => {
+            if (block.type === 'image') return null;
+            const b = block as any;
+            
+            let color = b.colorRole || '#ffffff';
+            if (color === 'textPrimary') color = doc.brandPalette?.textPrimary || '#1e293b';
+            else if (color === 'accentPrimary') color = doc.brandPalette?.accentPrimary || '#f59e0b';
+            else if (!color.startsWith('#')) color = '#ffffff';
+
+            let bgColor = b.bgColorRole || 'transparent';
+            if (bgColor === 'accentPrimary') bgColor = doc.brandPalette?.accentPrimary || '#f59e0b';
+            else if (bgColor === 'primary') bgColor = doc.brandPalette?.accentPrimary || '#6366f1';
+
+            const fs = b.fontSize || (b.fontRole === 'display' ? 78 : b.fontRole === 'highlight' ? 54 : b.fontRole === 'badge' ? 38 : 32);
+            const ff = b.fontFamily || 'Inter';
+            const bw = parseInt(b.w || b.width || '900');
+            const bh = parseInt(b.h || b.height || '160');
+            const bx = b.x !== undefined ? b.x - bw / 2 : 90;
+            const by = b.y !== undefined ? b.y - bh / 2 : 90;
+
+            return (
+              <div key={b.id} style={{
+                position: 'absolute', left: bx, top: by, width: bw, height: bh,
+                display: 'flex', alignItems: 'center',
+                justifyContent: b.align === 'center' ? 'center' : b.align === 'left' ? 'flex-start' : 'flex-end',
+                background: (b.type === 'button' || b.type === 'shape') ? bgColor : 'transparent',
+                borderRadius: b.type === 'button' ? '14px' : b.shape === 'pill' ? '99px' : '4px',
+                padding: b.type === 'button' ? '16px 40px' : '0',
+                boxSizing: 'border-box'
+              }}>
+                <div style={{
+                  width: '100%',
+                  fontSize: `${fs}px`, fontFamily: `${ff}, sans-serif`,
+                  fontWeight: b.fontRole === 'display' || b.type === 'button' ? 800 : 600,
+                  color: b.type === 'button' ? (b.textColorRole || '#fff') : color,
+                  textAlign: b.align || 'center', lineHeight: 1.18,
+                  textShadow: b.type === 'button' ? 'none' : '0 2px 12px rgba(0,0,0,0.35)',
+                  whiteSpace: 'pre-wrap',
+                }}>
+                  {b.text}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       )}
 
       {/* Index badge */}
@@ -144,102 +156,51 @@ export function CreativeCard({
         position: 'absolute', top: '0.4rem', left: '0.4rem',
         background: 'rgba(67,56,202,0.9)', color: 'white',
         fontSize: '0.62rem', fontWeight: 700, padding: '0.15rem 0.38rem', borderRadius: '5px',
-      }}>
-        #{index}
-      </div>
+      }}>#{index}</div>
 
       {/* Hover actions */}
       {hovered && !isDownloading && (
         <div style={{
-          position: 'absolute', inset: 0,
-          background: 'rgba(5,0,40,0.65)',
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'stretch', justifyContent: 'center',
-          gap: '0.35rem', padding: '0.6rem',
-          backdropFilter: 'blur(4px)',
+          position: 'absolute', inset: 0, background: 'rgba(5,0,40,0.65)',
+          display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center',
+          gap: '0.35rem', padding: '0.6rem', backdropFilter: 'blur(4px)', pointerEvents: 'auto'
         }}>
-          <button
-            onClick={handleOpenFull}
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem',
-              background: 'white', color: '#4338ca', border: 'none',
-              borderRadius: '7px', padding: '0.42rem 0', fontSize: '0.72rem', fontWeight: 700,
-              cursor: 'pointer', width: '100%',
-            }}
-          >
-            <Eye size={13} /> В новой вкладке
-          </button>
-
-          <button
-            onClick={handleDownload}
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem',
-              background: '#6366f1', color: 'white', border: 'none',
-              borderRadius: '7px', padding: '0.42rem 0', fontSize: '0.72rem', fontWeight: 700,
-              cursor: 'pointer', width: '100%',
-            }}
-          >
-            <Download size={13} /> Скачать {displayUrl?.endsWith('.mp4') ? 'MP4' : 'PNG'}
-          </button>
-
-          {isLayout && onEdit && (
-            <button
-              onClick={onEdit}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem',
-                background: '#475569', color: 'white', border: 'none',
-                borderRadius: '7px', padding: '0.42rem 0', fontSize: '0.72rem', fontWeight: 700,
-                cursor: 'pointer', width: '100%',
-              }}
-            >
-              <LayoutTemplate size={13} /> Редактировать слои
-            </button>
+          {isLayout && onEdit ? (
+            <button onClick={onEdit} style={actionBtnStyle('#475569', 'white')}><LayoutTemplate size={13} /> Редактировать креатив</button>
+          ) : (
+            <button onClick={handleOpenFull} style={actionBtnStyle('white', '#4338ca')}><Eye size={13} /> В новой вкладке</button>
           )}
 
+          <button onClick={handleDownload} style={actionBtnStyle('#6366f1', 'white')}><Download size={13} /> Скачать {displayUrl?.endsWith('.mp4') ? 'MP4' : 'PNG'}</button>
+
           {onReplace && (
-            <button
-              onClick={onReplace} disabled={disabled || isReplacing}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem',
-                background: 'rgba(255,255,255,0.1)', color: 'white',
-                border: '1px solid rgba(255,255,255,0.25)', borderRadius: '7px',
-                padding: '0.38rem 0', fontSize: '0.68rem', fontWeight: 600,
-                cursor: disabled ? 'not-allowed' : 'pointer', width: '100%',
-              }}
-            >
-              {isReplacing
-                ? <><Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> Заменяю…</>
-                : <><RefreshCw size={12} /> Перегенерировать</>}
+            <button onClick={onReplace} disabled={disabled || isReplacing} style={actionBtnStyle('rgba(255,255,255,0.1)', 'white', true)}>
+              {isReplacing ? <><Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> Заменяю…</> : <><RefreshCw size={12} /> Перегенерировать</>}
             </button>
           )}
 
           {onDelete && (
-            <button
-              onClick={onDelete} disabled={disabled || isReplacing}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem',
-                background: 'rgba(220,38,38,0.15)', color: '#fca5a5',
-                border: '1px solid rgba(220,38,38,0.3)', borderRadius: '7px',
-                padding: '0.38rem 0', fontSize: '0.68rem', fontWeight: 600,
-                cursor: disabled ? 'not-allowed' : 'pointer', width: '100%', marginTop: '0.1rem',
-              }}
-            >
+            <button onClick={onDelete} disabled={disabled || isReplacing} style={actionBtnStyle('rgba(220,38,38,0.15)', '#fca5a5', true)}>
               <Trash2 size={12} /> Удалить
             </button>
           )}
         </div>
       )}
 
-      {/* Download spinner */}
       {isDownloading && (
-        <div style={{
-          position: 'absolute', inset: 0, background: 'rgba(5,0,40,0.7)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: 'white', fontSize: '0.75rem', fontWeight: 700, gap: '0.4rem',
-        }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(5,0,40,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.75rem', fontWeight: 700, gap: '0.4rem' }}>
           <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Скачиваю…
         </div>
       )}
     </div>
   );
+}
+
+function actionBtnStyle(bg: string, color: string, outline = false): React.CSSProperties {
+  return {
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem',
+    background: bg, color, border: outline ? `1px solid ${color.replace(')', ',0.3)')}` : 'none',
+    borderRadius: '7px', padding: '0.42rem 0', fontSize: '0.72rem', fontWeight: outline ? 600 : 700,
+    cursor: 'pointer', width: '100%',
+  };
 }

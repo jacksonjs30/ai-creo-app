@@ -195,7 +195,6 @@ export function CreativeEditor({ layout, onClose, onSave }: CreativeEditorProps)
                     size={{ width: bw, height: bh }}
                     onDragStop={(_e, d) => updateBlock(block.id, { x: d.x + bw / 2, y: d.y + bh / 2 })}
                     onResizeStop={(_e, _dir, ref, _delta, pos) => updateBlock(block.id, { w: parseInt(ref.style.width), h: parseInt(ref.style.height), x: pos.x + parseInt(ref.style.width) / 2, y: pos.y + parseInt(ref.style.height) / 2 })}
-                    bounds="parent"
                     onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedId(block.id); }}
                     style={{
                       border: isSelected ? '2px solid #818cf8' : '2px solid transparent',

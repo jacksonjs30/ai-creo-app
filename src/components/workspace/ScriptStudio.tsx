@@ -261,25 +261,22 @@ export default function ScriptStudio({ id }: { id: string }) {
       try {
         const designBrief = item.cells[item.cells.length - 1] || '';
         const scriptText = item.cells.join('\n');
-        
-        const res = await fetch('/api/creative/layout-v1', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            brief: `${scriptText}\n\n${designBrief}\n${combinedNotes}`,
-            language: project?.language || 'uk',
-            format: 'square'
-          })
-        });
-
-        const data = await res.json();
-        if (!res.ok) {
-          alert('Ошибка для строки: ' + data.error);
-          continue;
+        const layouts = [];
+        for (let i = 0; i < quantity; i++) {
+          const res = await fetch('/api/creative/layout-v1', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              brief: `${scriptText}\n\n${designBrief}\n${combinedNotes}`,
+              language: project?.language || 'uk',
+              format: 'square'
+            })
+          });
+          const data = await res.json();
+          if (res.ok) layouts.push(data);
         }
 
         const newRowImages = item.script.rowImages || {};
-        const layouts = Array(quantity).fill(data); // In mass generation, we reuse the layout for quantity
         newRowImages[item.rowIdx] = [...(newRowImages[item.rowIdx] || []), ...layouts];
 
         const newScripts = [...scripts];
