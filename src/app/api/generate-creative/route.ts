@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
           parts: [{ text: prompt }]
         }],
         generationConfig: {
-          temperature: 0.6,
+          temperature: 1.0,
           thinkingConfig: {
             thinkingBudget: 0 // ОТКЛЮЧАЕМ THINKING MODE
           }
