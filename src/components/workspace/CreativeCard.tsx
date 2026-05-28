@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Download, RefreshCw, Loader2, Eye, Trash2 } from 'lucide-react';
+import { Download, RefreshCw, Loader2, Eye, Trash2, LayoutTemplate } from 'lucide-react';
 
 export interface CreativeOverlay {
   headline: string;
@@ -14,12 +14,13 @@ export interface CreativeOverlay {
 
 interface CreativeCardProps {
   index: number;
-  imageUrl: string;
-  overlay: CreativeOverlay;
+  data: any; // Can be string (legacy image URL) or layout object
+  overlay?: CreativeOverlay;
   isReplacing?: boolean;
   disabled?: boolean;
   onReplace?: () => void;
   onDelete?: () => void;
+  onEdit?: () => void;
 }
 
 // Kept for backward compatibility with ScriptStudio.tsx imports and signatures
@@ -33,17 +34,26 @@ export function extractOverlay(cells: string[]): CreativeOverlay {
 }
 
 export function CreativeCard({
-  index, imageUrl,
-  isReplacing, disabled, onReplace, onDelete,
+  index, data,
+  isReplacing, disabled, onReplace, onDelete, onEdit
 }: CreativeCardProps) {
   const [hovered, setHovered] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
+  // Determine if it's a layout object or a legacy string URL
+  const isLayout = typeof data === 'object' && data !== null && ('document' in data || 'backgroundUrl' in data);
+  // Support both { backgroundUrl, document } (from editor) and { background: { imageUrl }, document } (from API)
+  const displayUrl = isLayout ? (data.backgroundUrl || data.background?.imageUrl) : data;
+
   // Open full-size image in new tab with a solid dark background wrapper
   const handleOpenFull = () => {
+    if (isLayout) {
+      if (onEdit) onEdit();
+      return;
+    }
     const newWindow = window.open('', '_blank');
     if (!newWindow) {
-      window.open(imageUrl, '_blank');
+      window.open(displayUrl, '_blank');
       return;
     }
     newWindow.document.write(`
@@ -71,7 +81,7 @@ export function CreativeCard({
         </style>
       </head>
       <body>
-        <img src="${imageUrl}" />
+        <img src="${displayUrl}" />
       </body>
       </html>
     `);
@@ -84,7 +94,7 @@ export function CreativeCard({
     setIsDownloading(true);
     setHovered(false);
     try {
-      const response = await fetch(imageUrl);
+      const response = await fetch(displayUrl);
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
       
@@ -97,7 +107,7 @@ export function CreativeCard({
       URL.revokeObjectURL(blobUrl);
     } catch (e) {
       console.error('Failed to download image directly', e);
-      window.open(imageUrl, '_blank');
+      window.open(displayUrl, '_blank');
     } finally {
       setIsDownloading(false);
     }
@@ -116,15 +126,15 @@ export function CreativeCard({
       }}
     >
       {/* Generated image or video */}
-      {imageUrl.endsWith('.mp4') ? (
+      {displayUrl?.endsWith('.mp4') ? (
         <video
-          src={imageUrl} crossOrigin="anonymous"
+          src={displayUrl} crossOrigin="anonymous"
           autoPlay loop muted playsInline
           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
         />
       ) : (
         <img
-          src={imageUrl} alt={`Креатив #${index}`} crossOrigin="anonymous"
+          src={displayUrl} alt={`Креатив #${index}`} crossOrigin="anonymous"
           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
         />
       )}
@@ -169,8 +179,22 @@ export function CreativeCard({
               cursor: 'pointer', width: '100%',
             }}
           >
-            <Download size={13} /> Скачать {imageUrl.endsWith('.mp4') ? 'MP4' : 'PNG'}
+            <Download size={13} /> Скачать {displayUrl?.endsWith('.mp4') ? 'MP4' : 'PNG'}
           </button>
+
+          {isLayout && onEdit && (
+            <button
+              onClick={onEdit}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem',
+                background: '#475569', color: 'white', border: 'none',
+                borderRadius: '7px', padding: '0.42rem 0', fontSize: '0.72rem', fontWeight: 700,
+                cursor: 'pointer', width: '100%',
+              }}
+            >
+              <LayoutTemplate size={13} /> Редактировать слои
+            </button>
+          )}
 
           {onReplace && (
             <button

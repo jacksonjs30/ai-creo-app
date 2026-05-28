@@ -448,5 +448,72 @@ TBE — тільки пунктирні смислові текстові вст
 Жодних вступних слів ("Ось ваші сценарії", "Я зрозумів", "Here are 3 concepts"). Жодних пояснень після таблиці. 
 Твоя відповідь має починатися з символу \`|\` (початок таблиці) і закінчуватися останньою строкою таблиці. Це необхідно для автоматичного парсингу!
 `;
+  },
+
+  PARSE_LAYOUT_PROMPT: (brief: string, language: string) => {
+    return `
+You are an expert graphic design assistant and JSON parser.
+Your task is to parse a raw text brief for an advertising creative and convert it into a strict JSON layout document.
+
+LANGUAGE DIRECTIVE:
+Extract and format all text content (headlines, pains, solutions, ctas, etc.) EXACTLY as they appear in the brief, preserving the requested language (which is likely ${language}). Do NOT translate the text content if it's already in the correct language. Keep Cyrillic characters perfectly intact (UTF-8).
+
+JSON SCHEMA REQUIREMENT:
+You must return a single, valid JSON object strictly adhering to this structure:
+
+{
+  "id": "unique_creative_id",
+  "type": "image_creative",
+  "size": { "width": 1080, "height": 1080 },
+  "brandPalette": {
+    "bgGradientFrom": "hex",
+    "bgGradientTo": "hex",
+    "textPrimary": "hex",
+    "accentPrimary": "hex"
+  },
+  "backgroundHint": "Description of the background scene ONLY. MUST explicitly state: NO TEXT, NO LOGOS, clean space for overlay text.",
+  "blocks": [
+    // Array of block objects. Examples below:
+    {
+      "id": "headline",
+      "type": "text",
+      "role": "hook",
+      "text": "The actual text from brief",
+      "fontRole": "display",
+      "colorRole": "textPrimary",
+      "area": "top_center",
+      "align": "center",
+      "zIndex": 10
+    },
+    {
+      "id": "cta",
+      "type": "button",
+      "role": "cta",
+      "text": "Click here",
+      "bgColorRole": "accentPrimary",
+      "textColorRole": "#ffffff",
+      "fontRole": "badge",
+      "area": "bottom_center",
+      "zIndex": 10
+    }
+  ],
+  "meta": {
+    "createdByAi": true
+  }
+}
+
+INSTRUCTIONS:
+1. Parse the "Кольорова палітра" (Color Palette) from the brief and fill \`brandPalette\`. If colors are missing, use sensible defaults (e.g., #FFFFFF for background, #000000 for text).
+2. Parse "Розташування елементів" (Element placement) and extract the exact text for Hook, Pain, Solution, CTA, Discount, etc.
+3. For each element, create a block in the \`blocks\` array. Assign roles like "hook", "pain", "solution", "cta", "discount". Assign types ("text", "button", "shape", "image").
+4. Assign \`area\` strings based on their relative position (e.g., "top_center", "middle_center", "bottom_center", "bottom_right").
+5. The \`backgroundHint\` MUST be a description for an image generator (like DALL-E) to create the background ONLY. It MUST include directives like "no text, no letters, no words, clean empty space in the center and top for text overlay".
+
+OUTPUT FORMAT:
+Return ONLY the raw JSON string. Do not wrap it in markdown blocks (\`\`\`json). Do not add any conversational text.
+
+RAW BRIEF TO PARSE:
+${brief}
+`;
   }
 };
