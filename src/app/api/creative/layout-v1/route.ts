@@ -112,7 +112,8 @@ export async function POST(req: NextRequest) {
       if (visionRes.ok) {
         const visionData = await visionRes.json();
         const rawVisionText = visionData.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        const visionJsonStr = rawVisionText.replace(/^```json\s*/, '').replace(/\s*```$/, '').trim();
+        const match = rawVisionText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        const visionJsonStr = match ? match[1] : rawVisionText.trim();
         finalDocument = JSON.parse(visionJsonStr);
         console.log('[layout-v1] Vision layout applied successfully');
       } else {

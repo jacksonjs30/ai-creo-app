@@ -131,7 +131,7 @@ export function CreativeEditor({ layout, onClose, onSave }: CreativeEditorProps)
     const compute = (width: number, height: number) => {
       const h = height - 48; // padding
       const w = width - 48;
-      let s = Math.min(h / CANVAS_SIZE, w / CANVAS_SIZE, 0.72);
+      let s = Math.min(h / CANVAS_SIZE, w / CANVAS_SIZE, 1.0);
       if (!s || isNaN(s) || s <= 0) s = 0.55;
       setScale(Math.max(s, 0.25));
     };
@@ -238,14 +238,14 @@ export function CreativeEditor({ layout, onClose, onSave }: CreativeEditorProps)
           style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0d1117', overflow: 'hidden', padding: '24px' }}
         >
           {/* Outer wrapper — screen-size container */}
-          <div style={{ width: CANVAS_SIZE * scale, height: CANVAS_SIZE * scale, position: 'relative', flexShrink: 0 }}>
+          <div style={{ width: CANVAS_SIZE * (isNaN(scale) ? 0.55 : scale), height: CANVAS_SIZE * (isNaN(scale) ? 0.55 : scale), position: 'relative', flexShrink: 0 }}>
             {/* Inner 1080×1080 canvas, scaled down */}
             <div
               ref={canvasRef}
               style={{
                 width: CANVAS_SIZE, height: CANVAS_SIZE,
                 position: 'absolute', top: 0, left: 0,
-                transform: `scale(${scale})`, transformOrigin: 'top left',
+                transform: `scale(${isNaN(scale) ? 0.55 : scale})`, transformOrigin: 'top left',
                 overflow: 'hidden', boxShadow: '0 30px 60px rgba(0,0,0,0.7)',
                 background: '#fff',
               }}
