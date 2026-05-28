@@ -452,65 +452,166 @@ TBE — тільки пунктирні смислові текстові вст
 
   PARSE_LAYOUT_PROMPT: (brief: string, language: string) => {
     return `
-You are an expert graphic design assistant and JSON parser.
-Your task is to parse a raw text brief for an advertising creative and convert it into a strict JSON layout document.
+You are an expert graphic design assistant and JSON layout architect.
+Your task is to parse a raw text brief for an advertising creative and produce a strict JSON layout document.
 
 LANGUAGE DIRECTIVE:
-Extract and format all text content (headlines, pains, solutions, ctas, etc.) EXACTLY as they appear in the brief, preserving the requested language (which is likely ${language}). Do NOT translate the text content if it's already in the correct language. Keep Cyrillic characters perfectly intact (UTF-8).
+Extract all text content EXACTLY as it appears in the brief, preserving ${language} language. Keep Cyrillic perfectly intact (UTF-8). Do NOT translate or paraphrase.
 
-JSON SCHEMA REQUIREMENT:
-You must return a single, valid JSON object strictly adhering to this structure:
+=== FULL JSON SCHEMA ===
 
 {
-  "id": "unique_creative_id",
+  "id": "creative_<random_id>",
   "type": "image_creative",
   "size": { "width": 1080, "height": 1080 },
   "brandPalette": {
-    "bgGradientFrom": "hex",
-    "bgGradientTo": "hex",
-    "textPrimary": "hex",
-    "accentPrimary": "hex"
+    "bgGradientFrom": "#hex (from brief 'Фон' color)",
+    "bgGradientTo": "#hex",
+    "textPrimary": "#hex (main text color from brief)",
+    "textSecondary": "#hex (secondary text)",
+    "accentPrimary": "#hex (buttons, discounts, highlights)",
+    "accentSecondary": "#hex"
   },
-  "backgroundHint": "Description of the background scene ONLY. MUST explicitly state: NO TEXT, NO LOGOS, clean space for overlay text.",
+  "backgroundHint": "Scene description for image generator. NO TEXT, NO LOGOS, NO UI. Leave clean empty space in TOP CENTER and BOTTOM CENTER for text overlay.",
   "blocks": [
-    // Array of block objects. Examples below:
     {
-      "id": "headline",
+      "id": "hook",
       "type": "text",
       "role": "hook",
-      "text": "The actual text from brief",
+      "text": "exact hook text from brief in quotes",
       "fontRole": "display",
-      "colorRole": "textPrimary",
+      "colorRole": "text_primary",
       "area": "top_center",
       "align": "center",
-      "zIndex": 10
+      "zIndex": 10,
+      "styleHints": { "bold": true, "shadow": true }
+    },
+    {
+      "id": "pain",
+      "type": "text",
+      "role": "pain",
+      "text": "exact pain/body text from brief",
+      "fontRole": "body",
+      "colorRole": "text_primary",
+      "area": "under_headline",
+      "align": "center",
+      "zIndex": 10,
+      "styleHints": { "shadow": true }
+    },
+    {
+      "id": "solution",
+      "type": "text",
+      "role": "solution",
+      "text": "exact solution text from brief",
+      "fontRole": "highlight",
+      "colorRole": "accent_primary",
+      "area": "middle_center",
+      "align": "center",
+      "zIndex": 10,
+      "styleHints": { "bold": true, "shadow": true }
+    },
+    {
+      "id": "discount_bg",
+      "type": "shape",
+      "role": "discount_bg",
+      "shape": "rounded_rect",
+      "bgColorRole": "accent_primary",
+      "area": "above_cta",
+      "zIndex": 8,
+      "cornerRadius": 12,
+      "padding": 16
+    },
+    {
+      "id": "discount_text",
+      "type": "text",
+      "role": "discount",
+      "text": "Знижка -30%",
+      "fontRole": "badge",
+      "colorRole": "text_on_accent",
+      "area": "above_cta",
+      "align": "center",
+      "zIndex": 12,
+      "parent": "discount_bg",
+      "styleHints": { "uppercase": true, "bold": true }
     },
     {
       "id": "cta",
       "type": "button",
       "role": "cta",
-      "text": "Click here",
-      "bgColorRole": "accentPrimary",
-      "textColorRole": "#ffffff",
+      "text": "CTA button text from brief",
+      "bgColorRole": "accent_primary",
+      "textColorRole": "text_on_accent",
       "fontRole": "badge",
       "area": "bottom_center",
-      "zIndex": 10
+      "zIndex": 10,
+      "styleHints": { "uppercase": true }
+    },
+    {
+      "id": "logo",
+      "type": "image",
+      "role": "logo",
+      "source": "placeholder",
+      "area": "top_right",
+      "zIndex": 5
     }
   ],
   "meta": {
-    "createdByAi": true
+    "createdByAi": true,
+    "version": "v1"
   }
 }
 
-INSTRUCTIONS:
-1. Parse the "Кольорова палітра" (Color Palette) from the brief and fill \`brandPalette\`. If colors are missing, use sensible defaults (e.g., #FFFFFF for background, #000000 for text).
-2. Parse "Розташування елементів" (Element placement) and extract the exact text for Hook, Pain, Solution, CTA, Discount, etc.
-3. For each element, create a block in the \`blocks\` array. Assign roles like "hook", "pain", "solution", "cta", "discount". Assign types ("text", "button", "shape", "image").
-4. Assign \`area\` strings based on their relative position (e.g., "top_center", "middle_center", "bottom_center", "bottom_right").
-5. The \`backgroundHint\` MUST be a description for an image generator (like DALL-E) to create the background ONLY. It MUST include directives like "no text, no letters, no words, clean empty space in the center and top for text overlay".
+=== ROLE → STYLE MAPPING RULES (MANDATORY) ===
+
+1. hook → type:"text", fontRole:"display", colorRole:"text_primary" or "accent_primary" (if brief says to highlight). This is the BIGGEST text.
+2. pain / body → type:"text", fontRole:"body", colorRole:"text_primary" or "text_secondary". Smaller than hook.
+3. solution / benefit → type:"text", fontRole:"highlight", colorRole:"accent_primary". Visually distinct accent.
+4. discount → TWO blocks:
+   a) ShapeBlock (id:"discount_bg"): type:"shape", bgColorRole:"accent_primary", shape:"rounded_rect"
+   b) TextBlock (id:"discount_text"): type:"text", fontRole:"badge", colorRole:"text_on_accent", parent:"discount_bg"
+5. cta → type:"button", bgColorRole:"accent_primary", textColorRole:"text_on_accent", fontRole:"badge"
+6. logo → type:"image", role:"logo", source:"placeholder"
+
+=== AREA ASSIGNMENT RULES ===
+
+Parse "Розташування елементів" from the brief and map:
+- "ЗАГОЛОВОК – великий, по центру" → area:"top_center"
+- "БІЛЬ – під заголовком" → area:"under_headline"  
+- "РІШЕННЯ – виділений" → area:"middle_center"
+- "Знижка – над CTA" → area:"above_cta"
+- "CTA – внизу" → area:"bottom_center"
+- "Логотип – у правому верхньому куті" → area:"top_right"
+ALWAYS fill the area field. Never leave it empty or use "default".
+
+Allowed area values: top_left, top_center, top_right, under_headline, middle_left, middle_center, middle_right, above_cta, bottom_left, bottom_center, bottom_right
+
+=== BACKGROUND HINT RULES ===
+
+The backgroundHint field describes the SCENE for GPT Image to generate. It MUST:
+1. Describe only the visual scene (characters, objects, setting, mood, lighting)
+2. Explicitly state: "DO NOT render any text, letters, words, logos, or UI elements on this image."
+3. Specify where to leave empty space: "Leave clean empty space in the TOP portion and BOTTOM portion of the image for text overlay."
+4. Use colors from brandPalette for the scene atmosphere.
+
+=== PALETTE EXTRACTION ===
+
+From the brief's "Кольорова палітра" section:
+- "Фон: глибокий синій" → bgGradientFrom: deep blue hex
+- "Текст: білий" → textPrimary: "#FFFFFF"  
+- "Акценти: яскраво-жовтий" → accentPrimary: bright yellow hex
+
+=== CRITICAL RULES ===
+
+1. Extract text content EXACTLY from the brief — do not rephrase, truncate, or translate.
+2. Every block MUST have: id, type, role, area, zIndex.
+3. Text blocks MUST have: text, fontRole, colorRole, align, styleHints.
+4. Button blocks MUST have: text, bgColorRole, textColorRole, fontRole.
+5. Shape blocks MUST have: shape, bgColorRole.
+6. Use DIFFERENT fontRole values for DIFFERENT roles — this is how the frontend differentiates visual hierarchy.
+7. Do NOT create blocks for elements not mentioned in the brief.
 
 OUTPUT FORMAT:
-Return ONLY the raw JSON string. Do not wrap it in markdown blocks (\`\`\`json). Do not add any conversational text.
+Return ONLY the raw JSON object. No markdown wrapping. No conversational text.
 
 RAW BRIEF TO PARSE:
 ${brief}
