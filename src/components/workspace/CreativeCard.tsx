@@ -118,11 +118,13 @@ export function CreativeCard({
             else if (bgColor === 'primary') bgColor = doc.brandPalette?.accentPrimary || '#6366f1';
 
             const fs = b.fontSize || (b.fontRole === 'display' ? 78 : b.fontRole === 'highlight' ? 54 : b.fontRole === 'badge' ? 38 : 32);
-            const ff = b.fontFamily || 'Inter';
-            const bw = parseInt(b.w || b.width || '900');
-            const bh = parseInt(b.h || b.height || '160');
-            const bx = b.x !== undefined ? b.x - bw / 2 : 90;
-            const by = b.y !== undefined ? b.y - bh / 2 : 90;
+            const ff = b.fontFamily || 'Montserrat';
+            let bw = parseInt(b.w || b.width || '0');
+            if (!bw || isNaN(bw)) bw = b.type === 'button' ? 600 : b.fontRole === 'display' ? 950 : 850;
+            let bh = parseInt(b.h || b.height || '0');
+            if (!bh || isNaN(bh)) bh = b.type === 'button' ? 120 : b.fontRole === 'display' ? 250 : 160;
+            const bx = b.x !== undefined ? b.x - bw / 2 : 1080 / 2 - bw / 2;
+            const by = b.y !== undefined ? b.y - bh / 2 : 1080 / 2 - bh / 2;
 
             return (
               <div key={b.id} style={{
@@ -130,17 +132,20 @@ export function CreativeCard({
                 display: 'flex', alignItems: 'center',
                 justifyContent: b.align === 'center' ? 'center' : b.align === 'left' ? 'flex-start' : 'flex-end',
                 background: (b.type === 'button' || b.type === 'shape') ? bgColor : 'transparent',
-                borderRadius: b.type === 'button' ? '14px' : b.shape === 'pill' ? '99px' : '4px',
-                padding: b.type === 'button' ? '16px 40px' : '0',
+                borderRadius: b.type === 'button' ? '24px' : b.shape === 'pill' ? '99px' : '4px',
+                boxShadow: b.type === 'button' ? '0 16px 40px rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.2)' : 'none',
+                padding: b.type === 'button' ? '20px 48px' : '0',
                 boxSizing: 'border-box'
               }}>
                 <div style={{
                   width: '100%',
-                  fontSize: `${fs}px`, fontFamily: `${ff}, sans-serif`,
-                  fontWeight: b.fontRole === 'display' || b.type === 'button' ? 800 : 600,
-                  color: b.type === 'button' ? (b.textColorRole || '#fff') : color,
-                  textAlign: b.align || 'center', lineHeight: 1.18,
-                  textShadow: b.type === 'button' ? 'none' : '0 2px 12px rgba(0,0,0,0.35)',
+                  fontSize: `${fs}px`, fontFamily: `'${ff}', sans-serif`,
+                  fontWeight: b.fontRole === 'display' || b.type === 'button' ? 900 : 700,
+                  color: b.type === 'button' ? (b.textColorRole || '#000') : color,
+                  textAlign: b.align || 'center', lineHeight: 1.15,
+                  textTransform: b.type === 'button' ? 'uppercase' : 'none',
+                  letterSpacing: b.type === 'button' ? '1px' : 'normal',
+                  textShadow: b.type === 'button' ? 'none' : '0 4px 24px rgba(0,0,0,0.7), 0 2px 4px rgba(0,0,0,0.8)',
                   whiteSpace: 'pre-wrap',
                 }}>
                   {b.text}
