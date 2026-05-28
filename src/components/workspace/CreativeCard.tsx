@@ -139,89 +139,8 @@ export function CreativeCard({
         <img src={displayUrl} alt={`Креатив #${index}`} crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       )}
 
-      {/* Render Layout Blocks */}
-      {doc && doc.blocks && (
-        <div style={{
-          position: 'absolute', top: 0, left: 0,
-          width: CANVAS, height: CANVAS,
-          transform: `scale(${scale})`, transformOrigin: 'top left',
-          pointerEvents: 'none'
-        }}>
-          {doc.blocks.map(block => {
-            const b = block as any;
-            if (block.type === 'image') return null;
-
-            const textColor = b.explicitColor || resolveColor(b.colorRole, palette, '#ffffff');
-            const bgColor = resolveColor(b.bgColorRole, palette, 'transparent');
-            const btnTextColor = b.explicitColor || resolveColor(b.textColorRole, palette, '#ffffff');
-            const hints = b.styleHints || {};
-
-            const defaults = getDefaultDims(b);
-            let bw = safeNum(b.w, defaults.w);
-            let bh = safeNum(b.h, defaults.h);
-            let bx, by;
-
-            if (b.frame) {
-              bw = b.frame.width * CANVAS;
-              bh = b.frame.height * CANVAS;
-              bx = b.frame.x * CANVAS;
-              by = b.frame.y * CANVAS;
-            } else {
-              // Use stored coords or fall back to area-based coords
-              const area = b.area || 'middle_center';
-              const areaCoords = areaToCoords(area);
-              bx = safeNum(b.x, areaCoords.x) - bw / 2;
-              by = safeNum(b.y, areaCoords.y) - bh / 2;
-            }
-
-            const fs = getFontSize(b);
-            const fw = getFontWeight(b);
-            const ff = b.fontFamily || 'Montserrat';
-            const isButton = block.type === 'button';
-            const isShape = block.type === 'shape';
-
-            if (isShape) {
-              return (
-                <div key={b.id} style={{
-                  position: 'absolute', left: bx, top: by, width: bw, height: bh,
-                  background: bgColor,
-                  borderRadius: b.shape === 'pill' ? '99px' : `${b.cornerRadius || 16}px`,
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-                }} />
-              );
-            }
-
-            return (
-              <div key={b.id} style={{
-                position: 'absolute', left: bx, top: by, width: bw, height: bh,
-                display: 'flex', alignItems: 'center',
-                justifyContent: (b.align || 'center') === 'center' ? 'center' : (b.align || 'center') === 'left' ? 'flex-start' : 'flex-end',
-                background: isButton ? bgColor : 'transparent',
-                borderRadius: isButton ? '24px' : '4px',
-                boxShadow: isButton ? '0 12px 36px rgba(0,0,0,0.45), inset 0 2px 0 rgba(255,255,255,0.15)' : 'none',
-                padding: isButton ? '16px 48px' : '0',
-                boxSizing: 'border-box'
-              }}>
-                <div style={{
-                  width: '100%',
-                  fontSize: `${fs}px`, fontFamily: `'${ff}', sans-serif`,
-                  fontWeight: fw,
-                  color: isButton ? btnTextColor : textColor,
-                  textAlign: (b.align || 'center') as any,
-                  lineHeight: 1.15,
-                  textTransform: (isButton || hints.uppercase) ? 'uppercase' : 'none',
-                  letterSpacing: (isButton || hints.uppercase) ? '1.5px' : 'normal',
-                  textShadow: isButton ? 'none' : '0 4px 20px rgba(0,0,0,0.75), 0 2px 4px rgba(0,0,0,0.9)',
-                  whiteSpace: 'pre-wrap',
-                }}>
-                  {b.text}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
+      {/* Render Layout Blocks - REMOVED PER USER REQUEST */}
+      
       {/* Index badge */}
       <div style={{
         position: 'absolute', top: '0.4rem', left: '0.4rem',
@@ -236,11 +155,7 @@ export function CreativeCard({
           display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center',
           gap: '0.35rem', padding: '0.6rem', backdropFilter: 'blur(4px)', pointerEvents: 'auto'
         }}>
-          {isLayout && onEdit ? (
-            <button onClick={onEdit} style={actionBtnStyle('#475569', 'white')}><LayoutTemplate size={13} /> Редактировать креатив</button>
-          ) : (
-            <button onClick={handleOpenFull} style={actionBtnStyle('white', '#4338ca')}><Eye size={13} /> В новой вкладке</button>
-          )}
+          <button onClick={handleOpenFull} style={actionBtnStyle('white', '#4338ca')}><Eye size={13} /> В новой вкладке</button>
           <button onClick={handleDownload} style={actionBtnStyle('#6366f1', 'white')}><Download size={13} /> Скачать {displayUrl?.endsWith('.mp4') ? 'MP4' : 'PNG'}</button>
           {onReplace && (
             <button onClick={onReplace} disabled={disabled || isReplacing} style={actionBtnStyle('rgba(255,255,255,0.1)', 'white', true)}>
