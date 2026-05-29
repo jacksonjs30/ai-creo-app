@@ -6,11 +6,16 @@ import Link from 'next/link';
 import { Image as ImageIcon, Video, Smile, LayoutTemplate, Palette, Mic, CheckCircle2, Lock, Loader2, PlayCircle, FileText, Camera, User } from 'lucide-react';
 
 const CREATIVE_TYPES = [
-  { id: 'Відео-крео на основі JTBD + CJM', name: 'Відео-крео (JTBD + CJM)', icon: PlayCircle },
-  { id: 'Текст на білому фоні (статична картинка)', name: 'Текст на білому фоні', icon: FileText },
-  { id: 'Крео з фото/графікою + текст', name: 'Фото + текст', icon: Camera },
-  { id: 'Крео в стилі Specsavers', name: 'Стиль Specsavers', icon: Video },
-  { id: 'Мем-крео', name: 'Мем-крео', icon: Smile }
+  { id: 'Відео-крео на основі JTBD + CJM', name: 'Відео-крео (JTBD + CJM)', icon: PlayCircle, isVideo: true },
+  { id: 'Текст на білому фоні (статична картинка)', name: 'Текст на білому фоні', icon: FileText, isVideo: false },
+  { id: 'Крео з фото/графікою + текст', name: 'Фото + текст', icon: Camera, isVideo: false },
+  { id: 'Реалістичне фото-крео (Real-Photo Creo)', name: 'Реалістичне фото (Real-Photo)', icon: Camera, isVideo: false },
+  { id: 'Крео в стилі Specsavers', name: 'Стиль Specsavers', icon: Video, isVideo: true },
+  { id: 'Інфографіка', name: 'Інфографіка', icon: LayoutTemplate, isVideo: false },
+  { id: 'Карусель (5-10 слайдів)', name: 'Карусель (5-10 слайдів)', icon: LayoutTemplate, isVideo: false },
+  { id: 'Мем-крео', name: 'Мем-крео', icon: Smile, isVideo: false },
+  { id: 'Відео-відгук (Testimonial-video)', name: 'Відео-відгук', icon: Video, isVideo: true },
+  { id: 'Коротке демо-відео (screen recording)', name: 'Демо-відео (скрін)', icon: Video, isVideo: true }
 ];
 
 const TONE_OPTIONS = [
@@ -225,10 +230,13 @@ export default function GenerateCreatives({ params }: { params: Promise<{ id: st
                 <button
                   key={type.id}
                   type="button"
-                  disabled={isGenerating}
+                  disabled={isGenerating || type.isVideo}
                   onClick={() => setSelectedType(type.id)}
                   className={`type-card ${isSelected ? 'selected' : ''}`}
-                  style={{ justifyContent: 'flex-start', padding: '1rem 1.5rem', flexDirection: 'row', textAlign: 'left', minHeight: 'auto' }}
+                  style={{ 
+                    justifyContent: 'flex-start', padding: '1rem 1.5rem', flexDirection: 'row', textAlign: 'left', minHeight: 'auto',
+                    opacity: type.isVideo ? 0.4 : 1, cursor: type.isVideo ? 'not-allowed' : 'pointer'
+                  }}
                 >
                   <div className="icon-wrapper" style={{ margin: 0 }}>
                     <Icon size={20} />
