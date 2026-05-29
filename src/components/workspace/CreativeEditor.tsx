@@ -23,6 +23,25 @@ interface CreativeEditorProps {
 const FONTS = ['Montserrat', 'Inter', 'Roboto', 'Open Sans', 'Oswald', 'Playfair Display', 'Raleway', 'Bebas Neue'];
 const CANVAS_SIZE = 1080;
 
+const handleStyle = {
+  width: '12px',
+  height: '12px',
+  background: '#ffffff',
+  border: '2px solid #818cf8',
+  borderRadius: '50%',
+};
+
+const resizeHandleStyles = {
+  bottomRight: { ...handleStyle, right: '-6px', bottom: '-6px' },
+  bottomLeft: { ...handleStyle, left: '-6px', bottom: '-6px' },
+  topRight: { ...handleStyle, right: '-6px', top: '-6px' },
+  topLeft: { ...handleStyle, left: '-6px', top: '-6px' },
+  left: { ...handleStyle, left: '-6px', top: '50%', transform: 'translateY(-50%)' },
+  right: { ...handleStyle, right: '-6px', top: '50%', transform: 'translateY(-50%)' },
+  top: { ...handleStyle, top: '-6px', left: '50%', transform: 'translateX(-50%)' },
+  bottom: { ...handleStyle, bottom: '-6px', left: '50%', transform: 'translateX(-50%)' }
+};
+
 function getImageUrl(layout: any): string | null {
   if (!layout) return null;
   if (layout.background?.imageUrl) return layout.background.imageUrl;
@@ -120,7 +139,20 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
     setSelectedId(null); // hide selection borders
     await new Promise((r) => setTimeout(r, 150));
     try {
-      const url = await htmlToImage.toPng(canvasRef.current, { pixelRatio: 2, cacheBust: true });
+      // Force scale(1) so htmlToImage captures the true 1080x1080 canvas 
+      // instead of the visual scaled-down one.
+      const url = await htmlToImage.toPng(canvasRef.current, { 
+        pixelRatio: 1,
+        canvasWidth: CANVAS_SIZE,
+        canvasHeight: CANVAS_SIZE,
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left',
+          width: `${CANVAS_SIZE}px`,
+          height: `${CANVAS_SIZE}px`
+        },
+        cacheBust: true 
+      });
       
       const newLayout = {
         ...layout,
@@ -276,6 +308,7 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                           zIndex: block.zIndex || 1
                         }}
                         enableResizing={isSelected && !isExporting}
+                        resizeHandleStyles={resizeHandleStyles}
                       >
                         <div style={{ width: '100%', height: '100%' }} />
                       </Rnd>
@@ -299,6 +332,7 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                           zIndex: block.zIndex || 1
                         }}
                         enableResizing={isSelected && !isExporting}
+                        resizeHandleStyles={resizeHandleStyles}
                       >
                         <img src={block.imageUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} alt="" crossOrigin="anonymous" />
                       </Rnd>
@@ -312,8 +346,20 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                       scale={scale}
                       position={{ x: bx, y: by }}
                       size={{ width: bw, height: bh }}
+                      lockAspectRatio={true}
                       onDragStop={(_e, d) => updateBlock(block.id, { x: d.x + bw / 2, y: d.y + bh / 2 })}
-                      onResizeStop={(_e, _dir, ref, _delta, pos) => updateBlock(block.id, { w: parseInt(ref.style.width), h: parseInt(ref.style.height), x: pos.x + parseInt(ref.style.width) / 2, y: pos.y + parseInt(ref.style.height) / 2 })}
+                      onResizeStop={(_e, _dir, ref, _delta, pos) => {
+                        const newW = parseInt(ref.style.width);
+                        const newH = parseInt(ref.style.height);
+                        const scaleRatio = newW / bw;
+                        updateBlock(block.id, { 
+                          w: newW, 
+                          h: newH, 
+                          x: pos.x + newW / 2, 
+                          y: pos.y + newH / 2,
+                          fontSize: Math.max(8, Math.round((block.fontSize || 32) * scaleRatio))
+                        });
+                      }}
                       onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedId(block.id); }}
                       style={{
                         border: isSelected && !isExporting ? '3px dashed #818cf8' : 'none',
@@ -326,6 +372,7 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                         padding: block.bgColorRole && block.bgColorRole !== 'transparent' ? '16px' : '0'
                       }}
                       enableResizing={isSelected && !isExporting}
+                      resizeHandleStyles={resizeHandleStyles}
                     >
                       <div
                         contentEditable={!isExporting && isSelected}
