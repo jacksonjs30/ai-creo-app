@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Rnd } from 'react-rnd';
 import { X, Download, Save, LayoutTemplate, Type, Square, Circle, Image as ImageIcon, UploadCloud, Pipette, Trash2, ChevronUp, ChevronDown, Loader2 } from 'lucide-react';
 import * as htmlToImage from 'html-to-image';
@@ -164,9 +165,14 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
     }
   };
 
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const selectedBlock = blocks.find((b) => b.id === selectedId);
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: '#0d1117', display: 'flex', flexDirection: 'column', fontFamily: "'Inter', sans-serif" }}>
       {/* ── Header ── */}
       <div style={{ height: 60, background: '#161b22', borderBottom: '1px solid #30363d', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1.5rem', flexShrink: 0 }}>
@@ -422,7 +428,8 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
