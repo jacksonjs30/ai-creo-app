@@ -42,6 +42,7 @@ export default function GenerateCreatives({ params }: { params: Promise<{ id: st
   const [toneOfVoice, setToneOfVoice] = useState(TONE_OPTIONS[0].id);
   const [language, setLanguage] = useState(LANGUAGE_OPTIONS[0]);
   const [focusDirection, setFocusDirection] = useState('');
+  const [promoOffer, setPromoOffer] = useState('');
 
   const [useColors, setUseColors] = useState(false);
   const [mainColor, setMainColor] = useState('#3b82f6');
@@ -120,6 +121,7 @@ export default function GenerateCreatives({ params }: { params: Promise<{ id: st
           language,
           count: variantsCount,
           focusDirection: focusDirection.trim() || undefined,
+          promoOffer: promoOffer.trim() || undefined,
           colors: useColors ? { main: mainColor, secondary: secondColor, accent: accentColor } : undefined
         }),
       });
@@ -302,6 +304,21 @@ export default function GenerateCreatives({ params }: { params: Promise<{ id: st
                 value={focusDirection} 
                 onChange={e => setFocusDirection(e.target.value)}
                 style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1', minHeight: '80px', resize: 'vertical' }}
+              />
+            </div>
+
+            <div className="form-group mt-4">
+              <label>Акция / Спецпредложение (опционально)</label>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem', marginTop: '-0.25rem' }}>
+                Добавьте кратко суть акции если есть (данный текст будет размещен на креативе).
+              </p>
+              <input 
+                type="text" 
+                placeholder="Например: Скидка -20% до конца недели"
+                disabled={isGenerating}
+                value={promoOffer} 
+                onChange={e => setPromoOffer(e.target.value)}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
               />
             </div>
 
