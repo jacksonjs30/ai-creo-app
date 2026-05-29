@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Download, RefreshCw, Loader2, Eye, Trash2 } from 'lucide-react';
+import { Download, RefreshCw, Loader2, Eye, Trash2, Edit2 } from 'lucide-react';
 
 export interface CreativeOverlay {
   headline: string;
@@ -20,6 +20,7 @@ interface CreativeCardProps {
   disabled?: boolean;
   onReplace?: () => void;
   onDelete?: () => void;
+  onEdit?: () => void;
 }
 
 // Kept for backward compatibility with ScriptStudio.tsx imports and signatures
@@ -34,7 +35,7 @@ export function extractOverlay(cells: string[]): CreativeOverlay {
 
 export function CreativeCard({
   index, imageUrl,
-  isReplacing, disabled, onReplace, onDelete,
+  isReplacing, disabled, onReplace, onDelete, onEdit
 }: CreativeCardProps) {
   const [hovered, setHovered] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -159,6 +160,20 @@ export function CreativeCard({
           >
             <Eye size={13} /> В новой вкладке
           </button>
+
+          {onEdit && (
+            <button
+              onClick={onEdit}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem',
+                background: '#f59e0b', color: 'white', border: 'none',
+                borderRadius: '7px', padding: '0.42rem 0', fontSize: '0.72rem', fontWeight: 700,
+                cursor: 'pointer', width: '100%',
+              }}
+            >
+              <Edit2 size={13} /> Редактировать
+            </button>
+          )}
 
           <button
             onClick={handleDownload}

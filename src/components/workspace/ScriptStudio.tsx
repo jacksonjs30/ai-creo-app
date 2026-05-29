@@ -7,6 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import { CreativeCard, extractOverlay } from './CreativeCard';
+import { CreativeEditor } from './CreativeEditor';
 
 const remarkPluginsList = [remarkGfm];
 const rehypePluginsList = [rehypeRaw];
@@ -25,6 +26,9 @@ export default function ScriptStudio({ id }: { id: string }) {
   const [isGeneratingImage, setIsGeneratingImage] = useState<{ scriptId: string, rowIdx: number, action: 'add' | 'replace', imgIdx?: number } | null>(null);
   const [isGeneratingVideo, setIsGeneratingVideo] = useState<string | null>(null);
   const [rowNotes, setRowNotes] = useState<Record<string, string>>({});
+  
+  const [editingLayout, setEditingLayout] = useState<{ scriptId: string, rowIdx: number, imgIdx: number, layoutData: any } | null>(null);
+  const [projectAssets, setProjectAssets] = useState<{ id: string, name: string, url: string }[]>([]);
 
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [generationModal, setGenerationModal] = useState<{
@@ -60,6 +64,9 @@ export default function ScriptStudio({ id }: { id: string }) {
       // Load scripts from LocalStorage
       const scriptsKey = `projectScripts_${id}`;
       const savedScripts = JSON.parse(localStorage.getItem(scriptsKey) || '[]');
+      
+      const assetsKey = `projectAssets_${id}`;
+      setProjectAssets(JSON.parse(localStorage.getItem(assetsKey) || '[]'));
       
       // Load scripts from Database (if available in brief)
       let dbScripts: any[] = [];
@@ -855,7 +862,7 @@ export default function ScriptStudio({ id }: { id: string }) {
                               {thisRowImgs.length > 0 && (
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.75rem' }}>
                                   {thisRowImgs.map((imgData: any, imgIdx: number) => {
-                                    const finalImageUrl = typeof imgData === 'string' ? imgData : (imgData?.backgroundUrl || imgData?.background?.imageUrl || '');
+                                    const finalImageUrl = typeof imgData === 'string' ? imgData : (imgData?.previewUrl || imgData?.backgroundUrl || imgData?.background?.imageUrl || '');
                                     return (
                                       <CreativeCard
                                         key={imgIdx}
@@ -870,6 +877,10 @@ export default function ScriptStudio({ id }: { id: string }) {
                                         }
                                       }}
                                       onDelete={() => handleDeleteRowImage(script, dataRowIdx, imgIdx)}
+                                      onEdit={() => {
+                                        const layoutData = typeof imgData === 'object' && imgData.layoutData ? imgData.layoutData : null;
+                                        setEditingLayout({ scriptId: script.id, rowIdx: dataRowIdx, imgIdx, layoutData: layoutData || imgData });
+                                      }}
                                       />
                                     );
                                   })}
@@ -1044,6 +1055,35 @@ export default function ScriptStudio({ id }: { id: string }) {
           to { transform: rotate(360deg); }
         }
       `}</style>
+      
+      {editingLayout && (
+        <CreativeEditor
+          layout={editingLayout.layoutData}
+          assets={projectAssets}
+          onClose={() => setEditingLayout(null)}
+          onUploadAsset={(asset) => {
+            const newAssets = [asset, ...projectAssets];
+            setProjectAssets(newAssets);
+            localStorage.setItem(`projectAssets_${id}`, JSON.stringify(newAssets));
+          }}
+          onSave={(newLayout) => {
+            const newScripts = [...scripts];
+            const sIdx = newScripts.findIndex(s => s.id === editingLayout.scriptId);
+            if (sIdx !== -1) {
+              const s = { ...newScripts[sIdx] };
+              const newRowImgs = { ...s.rowImages };
+              const rImgs = [...(newRowImgs[editingLayout.rowIdx] || [])];
+              rImgs[editingLayout.imgIdx] = newLayout;
+              newRowImgs[editingLayout.rowIdx] = rImgs;
+              s.rowImages = newRowImgs;
+              newScripts[sIdx] = s;
+              setScripts(newScripts);
+              localStorage.setItem(`projectScripts_${id}`, JSON.stringify(newScripts));
+            }
+            setEditingLayout(null);
+          }}
+        />
+      )}
     </div>
   );
 }
