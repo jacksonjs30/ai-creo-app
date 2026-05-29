@@ -141,7 +141,8 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
     try {
       // Force scale(1) so htmlToImage captures the true 1080x1080 canvas 
       // instead of the visual scaled-down one.
-      const url = await htmlToImage.toPng(canvasRef.current, { 
+      const url = await htmlToImage.toJpeg(canvasRef.current, { 
+        quality: 0.85,
         pixelRatio: 1,
         canvasWidth: CANVAS_SIZE,
         canvasHeight: CANVAS_SIZE,
@@ -173,10 +174,27 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
-      const base64 = ev.target?.result as string;
-      if (onUploadAsset) {
-        onUploadAsset({ id: `asset_${Date.now()}`, name: file.name, url: base64 });
-      }
+      const src = ev.target?.result as string;
+      const img = new window.Image();
+      img.onload = () => {
+        let w = img.width;
+        let h = img.height;
+        if (w > 1080 || h > 1080) {
+          const ratio = Math.min(1080 / w, 1080 / h);
+          w = Math.round(w * ratio);
+          h = Math.round(h * ratio);
+        }
+        const cvs = document.createElement('canvas');
+        cvs.width = w;
+        cvs.height = h;
+        const ctx = cvs.getContext('2d');
+        if (ctx) ctx.drawImage(img, 0, 0, w, h);
+        const base64 = cvs.toDataURL('image/png'); 
+        if (onUploadAsset) {
+          onUploadAsset({ id: `asset_${Date.now()}`, name: file.name, url: base64 });
+        }
+      };
+      img.src = src;
     };
     reader.readAsDataURL(file);
     e.target.value = ''; // reset
