@@ -119,6 +119,34 @@ export default function GenerateCreative({ id }: { id: string }) {
     try {
       const selectedAvatar = avatars[selectedAvatarIdx];
 
+      // Вытягиваем уже сгенерированные концепции для этого аватара и формата
+      const scriptsKey = `projectScripts_${id}`;
+      let existingLoc = await get(scriptsKey);
+      if (!existingLoc) {
+        const oldLocal = localStorage.getItem(scriptsKey);
+        existingLoc = oldLocal ? JSON.parse(oldLocal) : [];
+      }
+      
+      let existingConcepts: string[] = [];
+      if (existingLoc && Array.isArray(existingLoc)) {
+        const relevantScripts = existingLoc.filter(s => s.avatarName === selectedAvatar.segmentName && s.format === selectedType);
+        relevantScripts.forEach(script => {
+          if (script.content) {
+            const lines = script.content.split('\n');
+            lines.forEach((line: string) => {
+              if (line.trim().startsWith('|') && !line.includes('---|')) {
+                const parts = line.split('|').map(p => p.trim());
+                if (parts.length > 2 && !isNaN(parseInt(parts[1]))) {
+                  existingConcepts.push(parts[2]);
+                }
+              }
+            });
+          }
+        });
+      }
+      // Ограничим 20 последними концепциями, чтобы не перегружать промпт
+      existingConcepts = existingConcepts.slice(0, 20);
+
       const response = await fetch('/api/generate-creative', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -132,7 +160,8 @@ export default function GenerateCreative({ id }: { id: string }) {
           count: variantsCount,
           focusDirection: focusDirection.trim() || undefined,
           promoOffer: promoOffer.trim() || undefined,
-          colors: useColors ? { main: mainColor, secondary: secondColor, accent: accentColor } : undefined
+          colors: useColors ? { main: mainColor, secondary: secondColor, accent: accentColor } : undefined,
+          existingConcepts: existingConcepts.length > 0 ? existingConcepts : undefined
         }),
       });
 
@@ -143,7 +172,6 @@ export default function GenerateCreative({ id }: { id: string }) {
       }
       
       // Сохраняем скрипт локально в массив проекта, объединяя с данными из БД
-      const scriptsKey = `projectScripts_${id}`;
       // fallback to localStorage if nothing in IDB
       let existingLocal = await get(scriptsKey);
       if (!existingLocal) {
@@ -213,14 +241,13 @@ export default function GenerateCreative({ id }: { id: string }) {
       }
 
       // ВАЖНО: сохраняем локально, чтобы ScriptStudio сразу нашёл скрипты
-      const localStorageKey = `projectScripts_${id}`;
-      let existingLoc = await get(localStorageKey);
+      existingLoc = await get(scriptsKey);
       if (!existingLoc) {
-        const oldLocal = localStorage.getItem(localStorageKey);
+        const oldLocal = localStorage.getItem(scriptsKey);
         existingLoc = oldLocal ? JSON.parse(oldLocal) : [];
       }
       const allScripts = [generatedScript, ...existingLoc.filter((s: any) => s.id !== generatedScript.id)];
-      await set(localStorageKey, allScripts);
+      await set(scriptsKey, allScripts);
 
       router.push(`/project/${id}?tab=studio&view=scripts`);
     } catch (e: any) {

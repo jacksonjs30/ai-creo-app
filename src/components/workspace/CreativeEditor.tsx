@@ -60,11 +60,46 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
   const [blocks, setBlocks] = useState<any[]>(initialBlocks);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [isEditingText, setIsEditingText] = useState(false);
   const [scale, setScale] = useState(0.55);
   const [activeTab, setActiveTab] = useState<'tools' | 'assets'>('tools');
   const canvasRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Global Copy/Paste
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+        const activeEl = document.activeElement;
+        if (activeEl && activeEl.tagName === 'DIV' && activeEl.getAttribute('contenteditable') === 'true') return;
+        if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) return;
+
+        if (selectedId) {
+          const blockToCopy = blocks.find(b => b.id === selectedId);
+          if (blockToCopy) localStorage.setItem('copiedBlock', JSON.stringify(blockToCopy));
+        }
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+        const activeEl = document.activeElement;
+        if (activeEl && activeEl.tagName === 'DIV' && activeEl.getAttribute('contenteditable') === 'true') return;
+        if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) return;
+        
+        const copied = localStorage.getItem('copiedBlock');
+        if (copied) {
+          try {
+            const parsed = JSON.parse(copied);
+            const newId = `block_${Date.now()}`;
+            const newBlock = { ...parsed, id: newId, x: parsed.x + 20, y: parsed.y + 20, zIndex: blocks.length + 1 };
+            setBlocks(prev => [...prev, newBlock]);
+            setSelectedId(newId);
+          } catch(err) {}
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedId, blocks]);
 
   // Compute scale
   useEffect(() => {
@@ -364,18 +399,24 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                       scale={scale}
                       position={{ x: bx, y: by }}
                       size={{ width: bw, height: bh }}
-                      lockAspectRatio={true}
+                      lockAspectRatio={false}
+                      disableDragging={isEditingText && isSelected}
                       onDragStop={(_e, d) => updateBlock(block.id, { x: d.x + bw / 2, y: d.y + bh / 2 })}
-                      onResizeStop={(_e, _dir, ref, _delta, pos) => {
+                      onResizeStop={(_e, dir, ref, _delta, pos) => {
                         const newW = parseInt(ref.style.width);
                         const newH = parseInt(ref.style.height);
-                        const scaleRatio = newW / bw;
+                        const isCorner = dir.includes('top') || dir.includes('bottom');
+                        let newFontSize = block.fontSize || 32;
+                        if (isCorner) {
+                          const scaleRatio = newW / bw;
+                          newFontSize = Math.max(8, Math.round(newFontSize * scaleRatio));
+                        }
                         updateBlock(block.id, { 
                           w: newW, 
                           h: newH, 
                           x: pos.x + newW / 2, 
                           y: pos.y + newH / 2,
-                          fontSize: Math.max(8, Math.round((block.fontSize || 32) * scaleRatio))
+                          fontSize: newFontSize
                         });
                       }}
                       onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedId(block.id); }}
@@ -383,21 +424,29 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                         border: isSelected && !isExporting ? '3px dashed #818cf8' : 'none',
                         display: 'flex', alignItems: 'center',
                         justifyContent: block.align === 'center' ? 'center' : block.align === 'left' ? 'flex-start' : 'flex-end',
-                        cursor: 'move',
+                        cursor: isEditingText && isSelected ? 'text' : 'move',
                         zIndex: block.zIndex || 1,
                         background: block.bgColorRole || 'transparent',
                         borderRadius: `${block.cornerRadius || 0}px`,
                         padding: block.bgColorRole && block.bgColorRole !== 'transparent' ? '16px' : '0'
                       }}
-                      enableResizing={isSelected && !isExporting}
+                      enableResizing={isSelected && !isExporting && !isEditingText}
                       resizeHandleStyles={resizeHandleStyles}
                     >
                       <div
                         contentEditable={!isExporting && isSelected}
                         suppressContentEditableWarning
-                        onBlur={(e) => updateBlock(block.id, { text: e.currentTarget.innerText })}
+                        onDoubleClick={() => setIsEditingText(true)}
+                        onBlur={(e) => {
+                          setIsEditingText(false);
+                          updateBlock(block.id, { text: e.currentTarget.innerText });
+                        }}
+                        onMouseDown={(e) => {
+                          if (isEditingText && isSelected) e.stopPropagation();
+                        }}
                         style={{
-                          width: '100%', outline: 'none', cursor: isSelected ? 'text' : 'move',
+                          width: '100%', height: '100%', outline: 'none', 
+                          cursor: isEditingText && isSelected ? 'text' : 'move',
                           fontSize: `${block.fontSize || 32}px`,
                           fontFamily: `'${block.fontFamily || 'Montserrat'}', sans-serif`,
                           fontWeight: block.fontWeight || 600,
@@ -407,6 +456,7 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                           textTransform: block.styleHints?.uppercase ? 'uppercase' : 'none',
                           fontStyle: block.styleHints?.italic ? 'italic' : 'normal',
                           whiteSpace: 'pre-wrap',
+                          overflow: 'hidden'
                         }}
                       >
                         {block.text}

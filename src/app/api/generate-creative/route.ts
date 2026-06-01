@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { projectId, productName, avatarData, format, toneOfVoice, language, count, colors, focusDirection, promoOffer } = body;
+    const { projectId, productName, avatarData, format, toneOfVoice, language, count, colors, focusDirection, promoOffer, existingConcepts } = body;
     
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
@@ -24,7 +24,8 @@ export async function POST(req: NextRequest) {
       count,
       colors,
       focusDirection,
-      promoOffer
+      promoOffer,
+      existingConcepts
     });
 
     console.log('Generating creative script for format:', format, 'Avatar:', avatarData?.segmentName);

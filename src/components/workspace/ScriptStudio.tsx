@@ -26,6 +26,7 @@ export default function ScriptStudio({ id }: { id: string }) {
   const [isRegenerating, setIsRegenerating] = useState<string | null>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState<{ scriptId: string, rowIdx: number, action: 'add' | 'replace', imgIdx?: number } | null>(null);
   const [isGeneratingVideo, setIsGeneratingVideo] = useState<string | null>(null);
+  const [isUpdatingBrief, setIsUpdatingBrief] = useState<string | null>(null);
   const [rowNotes, setRowNotes] = useState<Record<string, string>>({});
   
   const [editingLayout, setEditingLayout] = useState<{ scriptId: string, rowIdx: number, imgIdx: number, layoutData: any } | null>(null);
@@ -145,6 +146,64 @@ export default function ScriptStudio({ id }: { id: string }) {
     setEditingScriptId(null);
   };
 
+  const updateTableCell = async (scriptId: string, rIdx: number, cIdx: number, newValue: string) => {
+    const newScripts = [...scripts];
+    const sIdx = newScripts.findIndex(s => s.id === scriptId);
+    if (sIdx === -1) return;
+    
+    const targetScript = newScripts[sIdx];
+    const lines = targetScript.content.split('\n');
+    const tableLines = lines.filter((l: string) => l.trim().startsWith('|'));
+    if (tableLines.length === 0) return;
+    
+    const firstTableIdx = lines.indexOf(tableLines[0]);
+    const lastTableIdx = lines.indexOf(tableLines[tableLines.length - 1]);
+    const before = lines.slice(0, firstTableIdx).join('\n');
+    const after = lines.slice(lastTableIdx + 1).join('\n');
+    
+    const parsedData = tableLines.map((line: string) => {
+      const parts = line.split('|');
+      return parts.slice(1, parts.length - 1).map((p: string) => p.trim());
+    });
+    
+    const targetRowIdx = rIdx + 2; // header and separator
+    if (parsedData[targetRowIdx] && parsedData[targetRowIdx][cIdx] !== undefined) {
+      parsedData[targetRowIdx][cIdx] = newValue.replace(/\n/g, '<br>');
+      const tableStr = parsedData.map((r: string[]) => `| ${r.join(' | ')} |`).join('\n');
+      targetScript.content = `${before}\n${tableStr}\n${after}`.trim();
+      setScripts(newScripts);
+      await set(`projectScripts_${id}`, newScripts);
+    }
+  };
+
+  const handleBriefAIUpdate = async (script: any, rIdx: number, newText: string, oldBrief: string) => {
+    const rowKey = `${script.id}_row${rIdx}`;
+    setIsUpdatingBrief(rowKey);
+    try {
+      const res = await fetch('/api/update-brief', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          newText,
+          oldBrief,
+          format: script.format,
+          avatarName: script.avatarName,
+          productName: script.productName || project?.name
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.updatedBrief) {
+        const parsed = parseTableRows(script.content);
+        const lastColIdx = parsed[0].length - 1;
+        await updateTableCell(script.id, rIdx, lastColIdx, data.updatedBrief);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsUpdatingBrief(null);
+    }
+  };
+
   const handleRegenerate = async (script: any) => {
     setIsRegenerating(script.id);
     try {
@@ -153,6 +212,23 @@ export default function ScriptStudio({ id }: { id: string }) {
         safeAvatarIdx = project.avatars.findIndex((a: any) => a.segmentName === script.avatarName);
       }
       const safeAvatarData = project?.avatars?.[safeAvatarIdx] || project?.avatars?.[0];
+
+      let existingConcepts: string[] = [];
+      const relevantScripts = scripts.filter(s => s.avatarName === script.avatarName && s.format === script.format);
+      relevantScripts.forEach(s => {
+        if (s.content) {
+          const lines = s.content.split('\n');
+          lines.forEach((line: string) => {
+            if (line.trim().startsWith('|') && !line.includes('---|')) {
+              const parts = line.split('|').map(p => p.trim());
+              if (parts.length > 2 && !isNaN(parseInt(parts[1]))) {
+                existingConcepts.push(parts[2]);
+              }
+            }
+          });
+        }
+      });
+      existingConcepts = existingConcepts.slice(0, 20);
 
       const res = await fetch('/api/generate-creative', {
         method: 'POST',
@@ -166,7 +242,8 @@ export default function ScriptStudio({ id }: { id: string }) {
           toneOfVoice: script.toneOfVoice || 'Дружелюбный',
           count: 3,
           language: script.language || 'Українська',
-          colors: script.colors
+          colors: script.colors,
+          existingConcepts: existingConcepts.length > 0 ? existingConcepts : undefined
         })
       });
       const data = await res.json();
@@ -901,30 +978,58 @@ export default function ScriptStudio({ id }: { id: string }) {
 
                             {/* Row cells (rendered below) */}
                             <div style={{ display: 'grid', gridTemplateColumns: headerRow.length === 4 ? '40px 60px 1.25fr 2fr 3.5fr' : headerRow.length === 3 ? '40px 1.25fr 2fr 3.5fr' : `40px repeat(${headerRow.length}, 1fr)`, background: dataRowIdx % 2 === 0 ? 'white' : '#fafbff' }}>
-                              {row.map((cell, cIdx) => (
+                              {row.map((cell, cIdx) => {
+                                const isTextCol = headerRow.length === 4 && cIdx === 2;
+                                const isBriefCol = headerRow.length === 4 && cIdx === 3;
+                                const isUpdatingThisBrief = isUpdatingBrief === `${script.id}_row${dataRowIdx}` && isBriefCol;
                                 
-  <React.Fragment key={cIdx}>
-  {cIdx === 0 && (
-    <div style={{ padding: '1rem', borderRight: '1px solid #e2e8f0', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
-      <input type="checkbox" style={{ cursor: 'pointer', width: '16px', height: '16px', marginTop: '4px' }}
-        checked={selectedRows.includes(`${script.id}_row${dataRowIdx}`)}
-        onChange={(e) => {
-          const id = `${script.id}_row${dataRowIdx}`;
-          if (e.target.checked) setSelectedRows(prev => [...prev, id]);
-          else setSelectedRows(prev => prev.filter(r => r !== id));
-        }}
-      />
-    </div>
-  )}
-  <div style={{ padding: '1rem', fontSize: '0.9rem', color: '#334155', lineHeight: 1.6, borderRight: cIdx < headerRow.length - 1 ? '1px solid #e2e8f0' : 'none', wordBreak: 'break-word', textAlign: (headerRow.length === 4 && cIdx === 0) ? 'center' : 'left' }}>
-                                  <div className="markdown-content">
-                                    <ReactMarkdown remarkPlugins={remarkPluginsList} rehypePlugins={rehypePluginsList}>
-                                      {cell}
-                                    </ReactMarkdown>
+                                return (
+                                  <React.Fragment key={cIdx}>
+                                  {cIdx === 0 && (
+                                    <div style={{ padding: '1rem', borderRight: '1px solid #e2e8f0', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
+                                      <input type="checkbox" style={{ cursor: 'pointer', width: '16px', height: '16px', marginTop: '4px' }}
+                                        checked={selectedRows.includes(`${script.id}_row${dataRowIdx}`)}
+                                        onChange={(e) => {
+                                          const id = `${script.id}_row${dataRowIdx}`;
+                                          if (e.target.checked) setSelectedRows(prev => [...prev, id]);
+                                          else setSelectedRows(prev => prev.filter(r => r !== id));
+                                        }}
+                                      />
+                                    </div>
+                                  )}
+                                  <div style={{ padding: '1rem', fontSize: '0.9rem', color: '#334155', lineHeight: 1.6, borderRight: cIdx < headerRow.length - 1 ? '1px solid #e2e8f0' : 'none', wordBreak: 'break-word', textAlign: (headerRow.length === 4 && cIdx === 0) ? 'center' : 'left', position: 'relative' }}>
+                                    {isUpdatingThisBrief && (
+                                      <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', color: '#4338ca', fontWeight: 600 }}>
+                                          <Loader2 size={24} className="animate-spin" />
+                                          <span>Обновление ТЗ ИИ...</span>
+                                        </div>
+                                      </div>
+                                    )}
+                                    {isTextCol && !script.format?.toLowerCase().includes('відео') && !script.format?.toLowerCase().includes('видео') ? (
+                                      <textarea
+                                        defaultValue={cell.replace(/<br\s*\/?>/gi, '\n')}
+                                        onBlur={(e) => {
+                                          const newText = e.target.value;
+                                          const oldText = cell.replace(/<br\s*\/?>/gi, '\n');
+                                          if (newText !== oldText) {
+                                            updateTableCell(script.id, dataRowIdx, cIdx, newText);
+                                            handleBriefAIUpdate(script, dataRowIdx, newText, row[3]);
+                                          }
+                                        }}
+                                        style={{ width: '100%', minHeight: '120px', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '6px', resize: 'vertical', outline: 'none', fontFamily: 'inherit', fontSize: '0.9rem' }}
+                                      />
+                                    ) : (
+                                      <div className="markdown-content" style={{ opacity: isUpdatingThisBrief ? 0.3 : 1 }}>
+                                        <ReactMarkdown remarkPlugins={remarkPluginsList} rehypePlugins={rehypePluginsList}>
+                                          {cell}
+                                        </ReactMarkdown>
+                                      </div>
+                                    )}
                                   </div>
-                                </div>
-                                </React.Fragment>
-                              ))}
+                                  </React.Fragment>
+                                );
+                              })}
                             </div>
                           </div>
                         );
@@ -1071,12 +1176,12 @@ export default function ScriptStudio({ id }: { id: string }) {
           layout={editingLayout.layoutData}
           assets={projectAssets}
           onClose={() => setEditingLayout(null)}
-          onUploadAsset={(asset) => {
+          onUploadAsset={async (asset) => {
             const newAssets = [asset, ...projectAssets];
             setProjectAssets(newAssets);
             await set(`projectAssets_${id}`, newAssets);
           }}
-          onSave={(newLayout) => {
+          onSave={async (newLayout) => {
             const newScripts = [...scripts];
             const sIdx = newScripts.findIndex(s => s.id === editingLayout.scriptId);
             if (sIdx !== -1) {
