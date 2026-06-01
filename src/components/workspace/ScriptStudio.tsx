@@ -787,7 +787,7 @@ export default function ScriptStudio({ id }: { id: string }) {
                   return (
                     <div>
                       {/* Header row */}
-                      <div style={{ display: 'grid', gridTemplateColumns: headerRow.length === 4 ? '40px 60px 1.25fr 2fr 3.5fr' : headerRow.length === 3 ? '40px 1.25fr 2fr 3.5fr' : `40px repeat(${headerRow.length}, 1fr)`, background: '#f8fafc', borderRadius: '10px 10px 0 0', border: '1px solid #e2e8f0', borderBottom: 'none' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: headerRow.length === 4 ? '40px 60px 1.25fr 2.5fr 3fr' : headerRow.length === 3 ? '40px 1.25fr 2.5fr 3fr' : `40px repeat(${headerRow.length}, 1fr)`, background: '#f8fafc', borderRadius: '10px 10px 0 0', border: '1px solid #e2e8f0', borderBottom: 'none' }}>
                         {headerRow.map((cell, cIdx) => (
                           
   <React.Fragment key={cIdx}>
@@ -987,7 +987,7 @@ export default function ScriptStudio({ id }: { id: string }) {
                             )}
 
                             {/* Row cells (rendered below) */}
-                            <div style={{ display: 'grid', gridTemplateColumns: headerRow.length === 4 ? '40px 60px 1.25fr 2fr 3.5fr' : headerRow.length === 3 ? '40px 1.25fr 2fr 3.5fr' : `40px repeat(${headerRow.length}, 1fr)`, background: dataRowIdx % 2 === 0 ? 'white' : '#fafbff' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: headerRow.length === 4 ? '40px 60px 1.25fr 2.5fr 3fr' : headerRow.length === 3 ? '40px 1.25fr 2.5fr 3fr' : `40px repeat(${headerRow.length}, 1fr)`, background: dataRowIdx % 2 === 0 ? 'white' : '#fafbff' }}>
                               {row.map((cell, cIdx) => {
                                 const isTextCol = headerRow.length === 4 && cIdx === 2;
                                 const isBriefCol = headerRow.length === 4 && cIdx === 3;
@@ -1007,7 +1007,7 @@ export default function ScriptStudio({ id }: { id: string }) {
                                       />
                                     </div>
                                   )}
-                                  <div style={{ padding: '1rem', fontSize: '0.9rem', color: '#334155', lineHeight: 1.6, borderRight: cIdx < headerRow.length - 1 ? '1px solid #e2e8f0' : 'none', wordBreak: 'break-word', textAlign: (headerRow.length === 4 && cIdx === 0) ? 'center' : 'left', position: 'relative' }}>
+                                  <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '1rem', fontSize: '0.9rem', color: '#334155', lineHeight: 1.6, borderRight: cIdx < headerRow.length - 1 ? '1px solid #e2e8f0' : 'none', wordBreak: 'break-word', textAlign: (headerRow.length === 4 && cIdx === 0) ? 'center' : 'left', position: 'relative' }}>
                                     {isUpdatingThisBrief && (
                                       <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', color: '#4338ca', fontWeight: 600 }}>
@@ -1027,7 +1027,7 @@ export default function ScriptStudio({ id }: { id: string }) {
                                             handleBriefAIUpdate(script, dataRowIdx, newText, row[3]);
                                           }
                                         }}
-                                        style={{ width: '100%', minHeight: '120px', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '6px', resize: 'vertical', outline: 'none', fontFamily: 'inherit', fontSize: '0.9rem' }}
+                                        style={{ flex: 1, width: '100%', minHeight: '120px', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '6px', resize: 'vertical', outline: 'none', fontFamily: 'inherit', fontSize: '0.9rem' }}
                                       />
                                     ) : (
                                       <div className="markdown-content" style={{ opacity: isUpdatingThisBrief ? 0.3 : 1 }}>
