@@ -164,26 +164,33 @@ export async function POST(req: NextRequest) {
         strictRules,
         '',
         `${productLabel}: "${sanitize(productName || '')}"`,
-        '',
+        ''
+      ];
+
+      // Add user notes BEFORE the brief with maximum priority to override default branding colors or compositions
+      if (userNotes && userNotes.trim().length > 0) {
+        const userNotesHeader = lang === 'uk'
+          ? '🔴 КРИТИЧНЕ ПРАВИЛО ВІД КОРИСТУВАЧА (АБСОЛЮТНИЙ ПРІОРИТЕТ):'
+          : '🔴 КРИТИЧЕСКОЕ ПРАВИЛО ОТ ПОЛЬЗОВАТЕЛЯ (АБСОЛЮТНЫЙ ПРИОРИТЕТ):';
+        const overrideText = lang === 'uk'
+          ? 'ЦІ ВКАЗІВКИ СКАСОВУЮТЬ БУДЬ-ЯКІ СУПЕРЕЧЛИВІ ДАНІ З ТЗ. ЯКЩО Є КОНФЛІКТ (наприклад, інший вік, фон чи стать) — ІГНОРУЙ ТЗ І РОБИ ТІЛЬКИ ТАК, ЯК ВКАЗАНО ТУТ:'
+          : 'ЭТИ УКАЗАНИЯ ОТМЕНЯЮТ ЛЮБЫЕ ПРОТИВОРЕЧИВЫЕ ДАННЫЕ ИЗ ТЗ. ЕСЛИ ЕСТЬ КОНФЛИКТ (например другой возраст, фон или пол) — ИГНОРИРУЙ ТЗ И ДЕЛАЙ ТОЛЬКО ТАК, КАК УКАЗАНО ЗДЕСЬ:';
+        promptParts.push(
+          `=== ${userNotesHeader} ===`,
+          overrideText,
+          `"${sanitize(userNotes.trim())}"`,
+          `========================================================================================`,
+          ''
+        );
+      }
+
+      promptParts.push(
         `=== ${briefHeader} ===`,
         fullBrief,
         `=== КІНЕЦЬ ТЗ ===`,
         '',
-        `${composLabel}: ${variationHint}`,
-      ];
-
-      // Add user notes at the VERY END with maximum priority to override default branding colors or compositions
-      if (userNotes && userNotes.trim().length > 0) {
-        const userNotesHeader = lang === 'uk'
-          ? 'КРИТИЧНО ВАЖЛИВА ДИРЕКТИВА ВІД КОРИСТУВАЧА (ЦЕЙ ПРАВИЛО МАЄ НАЙВИЩИЙ ПРІОРИТЕТ ТА СКАСОВУЄ ІНШІ ПРАВИЛА З ТЗ):'
-          : 'КРИТИЧЕСКИ ВАЖНАЯ ДИРЕКТИВА ОТ ПОЛЬЗОВАТЕЛЯ (ЭТО ПРАВИЛО ИМЕЕТ НАИВЫСШИЙ ПРИОРИТЕТ И ОТМЕНЯЕТ ДРУГИЕ ПРАВИЛА ИЗ ТЗ):';
-        promptParts.push(
-          '',
-          `=== ${userNotesHeader} ===`,
-          `СЛІДУЙ СУВОРО: ${sanitize(userNotes.trim())}`,
-          `========================================================================================`
-        );
-      }
+        `${composLabel}: ${variationHint}`
+      );
 
       return promptParts.join('\n');
     };
