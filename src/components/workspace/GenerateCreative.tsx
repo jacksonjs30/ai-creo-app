@@ -382,7 +382,7 @@ export default function GenerateCreative({ id }: { id: string }) {
                 <input 
                   type="range" 
                   min="1" 
-                  max="10" 
+                  max="20" 
                   disabled={isGenerating}
                   value={variantsCount} 
                   onChange={e => setVariantsCount(parseInt(e.target.value))}
