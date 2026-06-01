@@ -13,6 +13,18 @@ import { CreativeEditor } from './CreativeEditor';
 const remarkPluginsList = [remarkGfm];
 const rehypePluginsList = [rehypeRaw];
 
+const robustParseTableLine = (line: string): string[] => {
+  const parts = line.split('|');
+  const result: string[] = [];
+  for (let i = 1; i < parts.length; i++) {
+    if (i === parts.length - 1 && parts[i].trim() === '') {
+      continue;
+    }
+    result.push(parts[i].trim());
+  }
+  return result;
+};
+
 export default function ScriptStudio({ id }: { id: string }) {
   const [project, setProject] = useState<any>(null);
   const [scripts, setScripts] = useState<any[]>([]);
@@ -162,8 +174,7 @@ export default function ScriptStudio({ id }: { id: string }) {
     const after = lines.slice(lastTableIdx + 1).join('\n');
     
     const parsedData = tableLines.map((line: string) => {
-      const parts = line.split('|');
-      return parts.slice(1, parts.length - 1).map((p: string) => p.trim());
+      return robustParseTableLine(line);
     });
     
     const targetRowIdx = rIdx + 2; // header and separator
@@ -408,8 +419,7 @@ export default function ScriptStudio({ id }: { id: string }) {
       .filter(l => !l.replace(/\|/g, '').replace(/-/g, '').trim().startsWith('') || l.replace(/[|\-\s]/g, '').length > 0)
       .filter(l => !l.replace(/\|/g, '').replace(/-+/g, '').trim() === false)
       .map(l => {
-        const parts = l.split('|');
-        return parts.slice(1, parts.length - 1).map(p => p.trim());
+        return robustParseTableLine(l);
       })
       .filter(row => !row.every(cell => /^-+$/.test(cell.replace(/\s/g, ''))));
   };
