@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Image as ImageIcon, Video, Smile, LayoutTemplate, Palette, Mic, CheckCircle2, Lock, Loader2, PlayCircle, FileText, Camera, User, Upload, X } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
+import { get, set } from 'idb-keyval';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -143,7 +144,12 @@ export default function GenerateCreative({ id }: { id: string }) {
       
       // Сохраняем скрипт локально в массив проекта, объединяя с данными из БД
       const scriptsKey = `projectScripts_${id}`;
-      const localScripts = JSON.parse(localStorage.getItem(scriptsKey) || '[]');
+      // fallback to localStorage if nothing in IDB
+      let existingLocal = await get(scriptsKey);
+      if (!existingLocal) {
+        const oldLocal = localStorage.getItem(scriptsKey);
+        existingLocal = oldLocal ? JSON.parse(oldLocal) : [];
+      }
       
       // Upload Logo if new one selected
       let finalLogoUrl = logoPreviewUrl;
@@ -208,9 +214,13 @@ export default function GenerateCreative({ id }: { id: string }) {
 
       // ВАЖНО: сохраняем локально, чтобы ScriptStudio сразу нашёл скрипты
       const localStorageKey = `projectScripts_${id}`;
-      const existingLocal = JSON.parse(localStorage.getItem(localStorageKey) || '[]');
-      const allScripts = [generatedScript, ...existingLocal.filter((s: any) => s.id !== generatedScript.id)];
-      localStorage.setItem(localStorageKey, JSON.stringify(allScripts));
+      let existingLoc = await get(localStorageKey);
+      if (!existingLoc) {
+        const oldLocal = localStorage.getItem(localStorageKey);
+        existingLoc = oldLocal ? JSON.parse(oldLocal) : [];
+      }
+      const allScripts = [generatedScript, ...existingLoc.filter((s: any) => s.id !== generatedScript.id)];
+      await set(localStorageKey, allScripts);
 
       router.push(`/project/${id}?tab=studio&view=scripts`);
     } catch (e: any) {

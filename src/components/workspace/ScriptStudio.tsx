@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FileText, Copy, CheckCircle2, ArrowLeft, Plus, Image as ImageIcon, Loader2, RefreshCw } from 'lucide-react';
+import { get, set } from 'idb-keyval';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -61,12 +62,21 @@ export default function ScriptStudio({ id }: { id: string }) {
     async function loadData() {
       setIsLoading(true);
 
-      // Load scripts from LocalStorage
+      // Load scripts from IndexedDB (fallback to localStorage)
       const scriptsKey = `projectScripts_${id}`;
-      const savedScripts = JSON.parse(localStorage.getItem(scriptsKey) || '[]');
+      let savedScripts = await get(scriptsKey);
+      if (!savedScripts) {
+        const oldLocal = localStorage.getItem(scriptsKey);
+        savedScripts = oldLocal ? JSON.parse(oldLocal) : [];
+      }
       
       const assetsKey = `projectAssets_${id}`;
-      setProjectAssets(JSON.parse(localStorage.getItem(assetsKey) || '[]'));
+      let loadedAssets = await get(assetsKey);
+      if (!loadedAssets) {
+        const oldAssets = localStorage.getItem(assetsKey);
+        loadedAssets = oldAssets ? JSON.parse(oldAssets) : [];
+      }
+      setProjectAssets(loadedAssets);
       
       // Load scripts from Database (if available in brief)
       let dbScripts: any[] = [];
@@ -97,9 +107,9 @@ export default function ScriptStudio({ id }: { id: string }) {
       );
 
       setScripts(mergedScripts);
-      // Update LocalStorage with merged data to keep it in sync
+      // Update IndexedDB with merged data to keep it in sync
       if (mergedScripts.length > 0) {
-        localStorage.setItem(scriptsKey, JSON.stringify(mergedScripts));
+        await set(scriptsKey, mergedScripts);
       }
       setIsLoading(false);
     }
@@ -113,14 +123,14 @@ export default function ScriptStudio({ id }: { id: string }) {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleDeleteScript = (scriptId: string) => {
+  const handleDeleteScript = async (scriptId: string) => {
     if (!window.confirm('Удалить этот пак сценариев?')) return;
     const updatedScripts = scripts.filter(s => s.id !== scriptId);
     setScripts(updatedScripts);
-    localStorage.setItem(`projectScripts_${id}`, JSON.stringify(updatedScripts));
+    await set(`projectScripts_${id}`, updatedScripts);
   };
 
-  const handleSaveEdit = (scriptId: string) => {
+  const handleSaveEdit = async (scriptId: string) => {
     const tableStr = editTableData.map(row => `| ${row.join(' | ')} |`).join('\n');
     const newContent = `${editOtherText.before}\n${tableStr}\n${editOtherText.after}`.trim();
 
@@ -131,7 +141,7 @@ export default function ScriptStudio({ id }: { id: string }) {
       return s;
     });
     setScripts(updatedScripts);
-    localStorage.setItem(`projectScripts_${id}`, JSON.stringify(updatedScripts));
+    await set(`projectScripts_${id}`, updatedScripts);
     setEditingScriptId(null);
   };
 
@@ -164,7 +174,7 @@ export default function ScriptStudio({ id }: { id: string }) {
 
       const updatedScripts = [data.script, ...scripts];
       setScripts(updatedScripts);
-      localStorage.setItem(`projectScripts_${id}`, JSON.stringify(updatedScripts));
+      await set(`projectScripts_${id}`, updatedScripts);
     } catch (e: any) {
       alert('Ошибка при регенерации: ' + e.message);
     } finally {
@@ -195,7 +205,7 @@ export default function ScriptStudio({ id }: { id: string }) {
       if (scriptIndex !== -1) {
         newScripts[scriptIndex] = { ...newScripts[scriptIndex], videoUrl: data.videoUrl };
         setScripts(newScripts);
-        localStorage.setItem(`projectScripts_${id}`, JSON.stringify(newScripts));
+        await set(`projectScripts_${id}`, newScripts);
 
         if (id && id !== 'temp-id') {
           fetch('/api/projects', {
@@ -300,7 +310,7 @@ export default function ScriptStudio({ id }: { id: string }) {
         if (sIdx !== -1) {
           newScripts[sIdx] = { ...newScripts[sIdx], rowImages: newRowImages };
           setScripts(newScripts);
-          localStorage.setItem(`projectScripts_${id}`, JSON.stringify(newScripts));
+          await set(`projectScripts_${id}`, newScripts);
         }
       } catch (err: any) {
         console.error(err);
@@ -381,7 +391,7 @@ export default function ScriptStudio({ id }: { id: string }) {
         targetScript.rowImages = newRowImages;
         newScripts[scriptIndex] = targetScript;
         setScripts(newScripts);
-        localStorage.setItem(`projectScripts_${id}`, JSON.stringify(newScripts));
+        await set(`projectScripts_${id}`, newScripts);
 
         if (id && id !== 'temp-id') {
           fetch('/api/projects', {
@@ -414,7 +424,7 @@ export default function ScriptStudio({ id }: { id: string }) {
         targetScript.rowImages = newRowImages;
         newScripts[scriptIndex] = targetScript;
         setScripts(newScripts);
-        localStorage.setItem(`projectScripts_${id}`, JSON.stringify(newScripts));
+        await set(`projectScripts_${id}`, newScripts);
 
         if (id && id !== 'temp-id') {
           fetch('/api/projects', {
@@ -1064,7 +1074,7 @@ export default function ScriptStudio({ id }: { id: string }) {
           onUploadAsset={(asset) => {
             const newAssets = [asset, ...projectAssets];
             setProjectAssets(newAssets);
-            localStorage.setItem(`projectAssets_${id}`, JSON.stringify(newAssets));
+            await set(`projectAssets_${id}`, newAssets);
           }}
           onSave={(newLayout) => {
             const newScripts = [...scripts];
@@ -1078,7 +1088,7 @@ export default function ScriptStudio({ id }: { id: string }) {
               s.rowImages = newRowImgs;
               newScripts[sIdx] = s;
               setScripts(newScripts);
-              localStorage.setItem(`projectScripts_${id}`, JSON.stringify(newScripts));
+              await set(`projectScripts_${id}`, newScripts);
             }
             setEditingLayout(null);
           }}
