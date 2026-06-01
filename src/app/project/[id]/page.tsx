@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Users, BrainCircuit, ChevronRight, RefreshCw, Copy, CheckCircle2, PenTool, FileText } from 'lucide-react';
 import GenerateCreative from '@/components/workspace/GenerateCreative';
 import ScriptStudio from '@/components/workspace/ScriptStudio';
+import ProjectGallery from '@/components/workspace/ProjectGallery';
 
 export default function ProjectDashboard({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -315,6 +316,10 @@ export default function ProjectDashboard({ params }: { params: Promise<{ id: str
             ))}
           </div>
         </div>
+      )}
+
+      {activeSection === 'gallery' && (
+        <ProjectGallery id={id} />
       )}
 
       {activeSection === 'studio' && (

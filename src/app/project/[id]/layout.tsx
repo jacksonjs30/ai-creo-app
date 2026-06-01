@@ -2,7 +2,7 @@
 
 import { usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, Users, FileSearch, PenTool, ImagePlay, Activity, Blocks } from 'lucide-react';
+import { LayoutDashboard, Users, FileSearch, PenTool, ImagePlay, Activity, Blocks, Image as ImageIcon } from 'lucide-react';
 import { use } from 'react';
 
 const STEPS = [
@@ -10,9 +10,10 @@ const STEPS = [
   { id: 'discovery', label: '2. Audience Discovery', icon: FileSearch },
   { id: 'avatars', label: '3. Avatar Research', icon: Users },
   { id: 'studio', label: '4. Creative Studio', icon: PenTool },
-  { id: 'assets', label: '5. Asset Production', icon: ImagePlay },
-  { id: 'feedback', label: '6. Feedback Loop', icon: Activity },
-  { id: 'integrations', label: '7. Integrations / API', icon: Blocks },
+  { id: 'gallery', label: '5. Галерея Креативов', icon: ImageIcon },
+  { id: 'assets', label: '6. Asset Production', icon: ImagePlay },
+  { id: 'feedback', label: '7. Feedback Loop', icon: Activity },
+  { id: 'integrations', label: '8. Integrations / API', icon: Blocks },
 ];
 
 export default function ProjectLayout({
