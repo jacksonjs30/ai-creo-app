@@ -6,6 +6,7 @@ import { FileText, Copy, CheckCircle2, ArrowLeft, Plus } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
+import { get, set } from 'idb-keyval';
 
 export default function ScriptsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -38,9 +39,13 @@ export default function ScriptsPage({ params }: { params: Promise<{ id: string }
     async function loadData() {
       setIsLoading(true);
 
-      // Load scripts from LocalStorage
+      // Load scripts from IndexedDB
       const scriptsKey = `projectScripts_${id}`;
-      const savedScripts = JSON.parse(localStorage.getItem(scriptsKey) || '[]');
+      let savedScripts = await get(scriptsKey);
+      if (!savedScripts) {
+        const oldLocal = localStorage.getItem(scriptsKey);
+        savedScripts = oldLocal ? JSON.parse(oldLocal) : [];
+      }
       
       // Load scripts from Database (if available in brief)
       let dbScripts: any[] = [];
@@ -71,9 +76,9 @@ export default function ScriptsPage({ params }: { params: Promise<{ id: string }
       );
 
       setScripts(mergedScripts);
-      // Update LocalStorage with merged data to keep it in sync
+      // Update IndexedDB with merged data to keep it in sync
       if (mergedScripts.length > 0) {
-        localStorage.setItem(scriptsKey, JSON.stringify(mergedScripts));
+        await set(scriptsKey, mergedScripts);
       }
       setIsLoading(false);
     }
@@ -87,14 +92,14 @@ export default function ScriptsPage({ params }: { params: Promise<{ id: string }
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleDeleteScript = (scriptId: string) => {
+  const handleDeleteScript = async (scriptId: string) => {
     if (!window.confirm('Удалить этот пак сценариев?')) return;
     const updatedScripts = scripts.filter(s => s.id !== scriptId);
     setScripts(updatedScripts);
-    localStorage.setItem(`projectScripts_${id}`, JSON.stringify(updatedScripts));
+    await set(`projectScripts_${id}`, updatedScripts);
   };
 
-  const handleSaveEdit = (scriptId: string) => {
+  const handleSaveEdit = async (scriptId: string) => {
     const tableStr = editTableData.map(row => `| ${row.join(' | ')} |`).join('\n');
     const newContent = `${editOtherText.before}\n${tableStr}\n${editOtherText.after}`.trim();
 
@@ -105,7 +110,7 @@ export default function ScriptsPage({ params }: { params: Promise<{ id: string }
       return s;
     });
     setScripts(updatedScripts);
-    localStorage.setItem(`projectScripts_${id}`, JSON.stringify(updatedScripts));
+    await set(`projectScripts_${id}`, updatedScripts);
     setEditingScriptId(null);
   };
 
@@ -138,7 +143,7 @@ export default function ScriptsPage({ params }: { params: Promise<{ id: string }
 
       const updatedScripts = [data.script, ...scripts];
       setScripts(updatedScripts);
-      localStorage.setItem(`projectScripts_${id}`, JSON.stringify(updatedScripts));
+      await set(`projectScripts_${id}`, updatedScripts);
     } catch (e: any) {
       alert('Ошибка при регенерации: ' + e.message);
     } finally {

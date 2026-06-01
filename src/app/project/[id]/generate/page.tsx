@@ -3,7 +3,8 @@
 import { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Image as ImageIcon, Video, Smile, LayoutTemplate, Palette, Mic, CheckCircle2, Lock, Loader2, PlayCircle, FileText, Camera, User } from 'lucide-react';
+import { Image as ImageIcon, Video, Smile, LayoutTemplate, Palette, Mic, CheckCircle2, Lock, Loader2, PlayCircle, FileText, Camera, User, ArrowLeft } from 'lucide-react';
+import { get, set } from 'idb-keyval';
 
 const CREATIVE_TYPES = [
   { id: 'Відео-крео на основі JTBD + CJM', name: 'Відео-крео (JTBD + CJM)', icon: PlayCircle, isVideo: true },
@@ -134,9 +135,13 @@ export default function GenerateCreatives({ params }: { params: Promise<{ id: st
       
       // Сохраняем скрипт локально в массив проекта
       const scriptsKey = `projectScripts_${id}`;
-      const existingScripts = JSON.parse(localStorage.getItem(scriptsKey) || '[]');
+      let existingScripts = await get(scriptsKey);
+      if (!existingScripts) {
+        const oldLocal = localStorage.getItem(scriptsKey);
+        existingScripts = oldLocal ? JSON.parse(oldLocal) : [];
+      }
       const updatedScripts = [data.script, ...existingScripts];
-      localStorage.setItem(scriptsKey, JSON.stringify(updatedScripts));
+      await set(scriptsKey, updatedScripts);
 
       // Сохраняем также в базу данных для синхронизации
       if (id && id !== 'temp-id' && project) {
