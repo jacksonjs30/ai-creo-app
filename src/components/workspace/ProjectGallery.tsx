@@ -77,7 +77,7 @@ export default function ProjectGallery({ id }: { id: string }) {
         });
       });
 
-      setItems(galleryItems);
+      setItems(galleryItems.reverse());
     };
     loadData();
   }, [id]);
