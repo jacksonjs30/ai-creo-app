@@ -1198,7 +1198,11 @@ export default function ScriptStudio({ id }: { id: string }) {
               const s = { ...newScripts[sIdx] };
               const newRowImgs = { ...s.rowImages };
               const rImgs = [...(newRowImgs[editingLayout.rowIdx] || [])];
-              rImgs[editingLayout.imgIdx] = newLayout;
+              rImgs[editingLayout.imgIdx] = {
+                ...rImgs[editingLayout.imgIdx],
+                previewUrl: newLayout.previewUrl,
+                layoutData: newLayout
+              };
               newRowImgs[editingLayout.rowIdx] = rImgs;
               s.rowImages = newRowImgs;
               newScripts[sIdx] = s;

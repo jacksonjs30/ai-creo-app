@@ -52,7 +52,7 @@ export default function ProjectGallery({ id }: { id: string }) {
 
       const galleryItems: GalleryItem[] = [];
 
-      savedScripts.forEach((script: any) => {
+      [...savedScripts].reverse().forEach((script: any) => {
         const tableRows = parseTableRows(script.content || '');
         const dataRows = tableRows.slice(1);
         const rowImages = script.rowImages || {};
@@ -155,7 +155,7 @@ export default function ProjectGallery({ id }: { id: string }) {
               const rImgs = [...(newRowImgs[editingLayout.rowIdx] || [])];
               rImgs[editingLayout.imgIdx] = {
                 ...rImgs[editingLayout.imgIdx],
-                previewUrl: newLayout.background.imageUrl,
+                previewUrl: newLayout.previewUrl,
                 layoutData: newLayout
               };
               newRowImgs[editingLayout.rowIdx] = rImgs;
@@ -170,7 +170,7 @@ export default function ProjectGallery({ id }: { id: string }) {
                   return {
                     ...item,
                     imgData: rImgs[editingLayout.imgIdx],
-                    finalImageUrl: newLayout.background.imageUrl
+                    finalImageUrl: newLayout.previewUrl
                   };
                 }
                 return item;
