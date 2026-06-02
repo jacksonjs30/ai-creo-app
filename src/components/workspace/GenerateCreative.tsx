@@ -34,6 +34,12 @@ const TONE_OPTIONS = [
 
 const LANGUAGE_OPTIONS = ['Українська', 'Русский', 'English'];
 
+const PEOPLE_OPTIONS = [
+  { id: 'with_people', label: 'С людьми (По умолчанию)' },
+  { id: 'without_people', label: 'Без людей (Фокус на продукте)' },
+  { id: 'mix', label: 'Микс (Часть с людьми, часть без)' }
+];
+
 export default function GenerateCreative({ id }: { id: string }) {
   const router = useRouter();
   
@@ -47,6 +53,7 @@ export default function GenerateCreative({ id }: { id: string }) {
   const [productName, setProductName] = useState('');
   const [toneOfVoice, setToneOfVoice] = useState(TONE_OPTIONS[0].id);
   const [language, setLanguage] = useState(LANGUAGE_OPTIONS[0]);
+  const [peoplePresence, setPeoplePresence] = useState(PEOPLE_OPTIONS[0].id);
   const [focusDirection, setFocusDirection] = useState('');
   const [promoOffer, setPromoOffer] = useState('');
 
@@ -160,6 +167,8 @@ export default function GenerateCreative({ id }: { id: string }) {
           count: variantsCount,
           focusDirection: focusDirection.trim() || undefined,
           promoOffer: promoOffer.trim() || undefined,
+          peoplePresence,
+          productBullets: project?.brief?.productBullets || undefined,
           colors: useColors ? { main: mainColor, secondary: secondColor, accent: accentColor } : undefined,
           existingConcepts: existingConcepts.length > 0 ? existingConcepts : undefined
         }),
@@ -211,6 +220,7 @@ export default function GenerateCreative({ id }: { id: string }) {
         productName,
         toneOfVoice,
         language,
+        peoplePresence,
         focusDirection,
         useColors,
         mainColor,
@@ -373,6 +383,22 @@ export default function GenerateCreative({ id }: { id: string }) {
                 ))}
               </select>
             </div>
+
+            {selectedType && !selectedType.includes('Текст на білому фоні') && !selectedType.includes('Інфографіка') && (
+              <div className="form-group">
+                <label>Наличие людей в креативе</label>
+                <select 
+                  disabled={isGenerating}
+                  value={peoplePresence} 
+                  onChange={e => setPeoplePresence(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                >
+                  {PEOPLE_OPTIONS.map(o => (
+                    <option key={o.id} value={o.id}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div className="form-group mt-4">
               <label>Фокус / Направление креатива (опционально)</label>

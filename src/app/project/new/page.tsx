@@ -40,6 +40,7 @@ export default function NewProjectPage() {
   const [geo, setGeo] = useState<string[]>([]);
   const [desiredOutcome, setDesiredOutcome] = useState('');
   const [targetSegments, setTargetSegments] = useState<string[]>(['']);
+  const [productBullets, setProductBullets] = useState<string[]>(['']);
   const [existingAds, setExistingAds] = useState('');
   const [objections, setObjections] = useState('');
 
@@ -65,7 +66,8 @@ export default function NewProjectPage() {
         productName: productName || projectName,
         category, description, advantages, landingUrl, briefDocUrl, useBriefOnly,
         audienceDesc, ageRange, gender, profession, income, geo, objections, desiredOutcome, existingAds,
-        targetSegments: targetSegments.filter(s => s.trim() !== '')
+        targetSegments: targetSegments.filter(s => s.trim() !== ''),
+        productBullets: productBullets.filter(b => b.trim() !== '')
       };
       setBriefState(briefData);
 
@@ -197,6 +199,14 @@ export default function NewProjectPage() {
     const next = [...targetSegments];
     next[i] = v;
     setTargetSegments(next);
+  };
+
+  const addBullet = () => setProductBullets([...productBullets, '']);
+  const removeBullet = (i: number) => setProductBullets(productBullets.filter((_, idx) => idx !== i));
+  const updateBullet = (i: number, v: string) => {
+    const next = [...productBullets];
+    next[i] = v;
+    setProductBullets(next);
   };
 
   if (isGenerating) {
@@ -379,6 +389,30 @@ export default function NewProjectPage() {
                 <label className="form-group"><span>Категория</span><select value={category} onChange={e => setCategory(e.target.value)}>{CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></label>
                 <label className="form-group col-span-2"><span>Описание продукта</span><textarea rows={3} value={description} onChange={e => setDescription(e.target.value)} /></label>
                 <div className="form-group col-span-2"><span>Landing URL</span><input type="url" value={landingUrl} onChange={e => setLandingUrl(e.target.value)} /></div>
+                
+                <div className="form-group col-span-2 mt-2">
+                  <span style={{ fontWeight: 800 }}>Ключевые особенности / буллеты продукта (до 5 шт., опционально)</span>
+                  <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '1rem' }}>Например: "Интеграция по API", "Гарантия возврата денег". ИИ учтёт их при создании сценариев.</p>
+                  <div style={{ display: 'grid', gap: '0.75rem' }}>
+                    {productBullets.map((bullet, i) => (
+                      <div key={i} style={{ display: 'flex', gap: '0.5rem' }}>
+                        <input
+                          type="text"
+                          value={bullet}
+                          onChange={e => updateBullet(i, e.target.value)}
+                          placeholder={`Буллет ${i + 1}...`}
+                          style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                        />
+                        {productBullets.length > 1 && (
+                          <button type="button" onClick={() => removeBullet(i)} style={{ padding: '0 0.75rem', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 800 }}>×</button>
+                        )}
+                      </div>
+                    ))}
+                    {productBullets.length < 5 && (
+                      <button type="button" onClick={addBullet} style={{ alignSelf: 'flex-start', background: 'none', border: 'none', color: '#3b82f6', fontWeight: 700, cursor: 'pointer', padding: '0.5rem 0' }}>+ Добавить буллет</button>
+                    )}
+                  </div>
+                </div>
               </div>
             </section>
 
