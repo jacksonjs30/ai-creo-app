@@ -154,11 +154,11 @@ export function CreativeCard({
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem',
               background: 'white', color: '#4338ca', border: 'none',
-              borderRadius: '7px', padding: '0.42rem 0', fontSize: '0.72rem', fontWeight: 700,
-              cursor: 'pointer', width: '100%',
+              borderRadius: '7px', padding: '0.42rem 0', fontSize: '0.68rem', fontWeight: 700,
+              cursor: 'pointer', width: '100%', textAlign: 'center', whiteSpace: 'normal', lineHeight: '1.1'
             }}
           >
-            <Eye size={13} /> В новой вкладке
+            <Eye size={13} style={{ flexShrink: 0 }} /> В новой вкладке
           </button>
 
           {onEdit && (
@@ -167,11 +167,11 @@ export function CreativeCard({
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem',
                 background: '#f59e0b', color: 'white', border: 'none',
-                borderRadius: '7px', padding: '0.42rem 0', fontSize: '0.72rem', fontWeight: 700,
-                cursor: 'pointer', width: '100%',
+                borderRadius: '7px', padding: '0.42rem 0', fontSize: '0.68rem', fontWeight: 700,
+                cursor: 'pointer', width: '100%', textAlign: 'center', whiteSpace: 'normal', lineHeight: '1.1'
               }}
             >
-              <Edit2 size={13} /> Редактировать
+              <Edit2 size={13} style={{ flexShrink: 0 }} /> Редактировать
             </button>
           )}
 
@@ -180,11 +180,11 @@ export function CreativeCard({
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem',
               background: '#6366f1', color: 'white', border: 'none',
-              borderRadius: '7px', padding: '0.42rem 0', fontSize: '0.72rem', fontWeight: 700,
-              cursor: 'pointer', width: '100%',
+              borderRadius: '7px', padding: '0.42rem 0', fontSize: '0.68rem', fontWeight: 700,
+              cursor: 'pointer', width: '100%', textAlign: 'center', whiteSpace: 'normal', lineHeight: '1.1'
             }}
           >
-            <Download size={13} /> Скачать {imageUrl.endsWith('.mp4') ? 'MP4' : 'PNG'}
+            <Download size={13} style={{ flexShrink: 0 }} /> Скачать {imageUrl.endsWith('.mp4') ? 'MP4' : 'PNG'}
           </button>
 
           {onReplace && (
@@ -194,8 +194,8 @@ export function CreativeCard({
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem',
                 background: 'rgba(255,255,255,0.1)', color: 'white',
                 border: '1px solid rgba(255,255,255,0.25)', borderRadius: '7px',
-                padding: '0.38rem 0', fontSize: '0.68rem', fontWeight: 600,
-                cursor: disabled ? 'not-allowed' : 'pointer', width: '100%',
+                padding: '0.38rem 0', fontSize: '0.65rem', fontWeight: 600,
+                cursor: disabled ? 'not-allowed' : 'pointer', width: '100%', textAlign: 'center', whiteSpace: 'normal', lineHeight: '1.1'
               }}
             >
               {isReplacing

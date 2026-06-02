@@ -119,7 +119,7 @@ export default function ProjectGallery({ id }: { id: string }) {
           <p style={{ color: '#64748b' }}>Здесь появятся сгенерированные изображения и видео из ваших сценариев.</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '1rem' }}>
           {items.map((item, idx) => (
             <CreativeCard
               key={`${item.scriptId}_${item.dataRowIdx}_${item.imgIdx}_${idx}`}
