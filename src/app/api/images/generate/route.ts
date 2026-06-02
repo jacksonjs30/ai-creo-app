@@ -129,6 +129,12 @@ export async function POST(req: NextRequest) {
       fullBrief = 'Professional advertising image, modern design, premium aesthetic.';
     }
 
+    // Detect and extract [NO_PEOPLE] tag
+    const hasNoPeopleTag = fullBrief.includes('[NO_PEOPLE]');
+    if (hasNoPeopleTag) {
+      fullBrief = fullBrief.replace(/\[NO_PEOPLE\]/gi, '').trim();
+    }
+
     const langInstructions = LANG_INSTRUCTIONS[lang];
     const cyrillicHint = CYRILLIC_HINT[lang];
 
@@ -166,6 +172,16 @@ export async function POST(req: NextRequest) {
         `${productLabel}: "${sanitize(productName || '')}"`,
         ''
       ];
+
+      if (hasNoPeopleTag) {
+        promptParts.push(
+          '=== CRITICAL RULE ===',
+          'DO NOT DRAW ANY HUMANS, FACES, PEOPLE, OR BODY PARTS IN THIS IMAGE. NO CHARACTERS ALLOWED.',
+          'DRAW ONLY EMPTY OBJECTS, INTERFACES, OR ENVIRONMENTS.',
+          '=====================',
+          ''
+        );
+      }
 
       // Add user notes BEFORE the brief with maximum priority to override default branding colors or compositions
       if (userNotes && userNotes.trim().length > 0) {
