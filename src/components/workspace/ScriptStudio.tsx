@@ -36,7 +36,7 @@ export default function ScriptStudio({ id }: { id: string }) {
   const [editTableData, setEditTableData] = useState<string[][]>([]);
   const [editOtherText, setEditOtherText] = useState<{ before: string, after: string }>({ before: '', after: '' });
   const [isRegenerating, setIsRegenerating] = useState<string | null>(null);
-  const [isGeneratingImage, setIsGeneratingImage] = useState<{ scriptId: string, rowIdx: number, action: 'add' | 'replace', imgIdx?: number } | null>(null);
+  const [generatingImages, setGeneratingImages] = useState<{ scriptId: string, rowIdx: number, action: 'add' | 'replace', imgIdx?: number }[]>([]);
   const [isGeneratingVideo, setIsGeneratingVideo] = useState<string | null>(null);
   const [isUpdatingBrief, setIsUpdatingBrief] = useState<string | null>(null);
   const [rowNotes, setRowNotes] = useState<Record<string, string>>({});
@@ -365,7 +365,7 @@ export default function ScriptStudio({ id }: { id: string }) {
          finalScriptNotes = `[NO_PEOPLE]\n${finalScriptNotes}`;
       }
 
-      setIsGeneratingImage({ scriptId: item.script.id, rowIdx: item.rowIdx, action: 'add' });
+      setGeneratingImages(prev => [...prev, { scriptId: item.script.id, rowIdx: item.rowIdx, action: 'add' }]);
       try {
         const designBrief = item.cells[item.cells.length - 1] || '';
         const scriptText = item.cells.join('\n');
@@ -407,9 +407,10 @@ export default function ScriptStudio({ id }: { id: string }) {
         }
       } catch (err: any) {
         console.error(err);
+      } finally {
+        setGeneratingImages(prev => prev.filter(g => !(g.scriptId === item.script.id && g.rowIdx === item.rowIdx && g.action === 'add')));
       }
     }
-    setIsGeneratingImage(null);
     setSelectedRows([]); // clear selection
   };
 
@@ -432,7 +433,7 @@ export default function ScriptStudio({ id }: { id: string }) {
   // Generate images for a specific table row
   // rowCells: all cells of the row; last cell is typically the design brief
   const handleGenerateRowImage = async (script: any, rowIdx: number, rowCells: string[], action: 'add' | 'replace' = 'add', imgIdx?: number, genCount: number = 1) => {
-    setIsGeneratingImage({ scriptId: script.id, rowIdx, action, imgIdx });
+    setGeneratingImages(prev => [...prev, { scriptId: script.id, rowIdx, action, imgIdx }]);
     try {
       const rowImages: Record<number, string[]> = script.rowImages || {};
       const oldImageUrl = action === 'replace' && imgIdx !== undefined ? rowImages[rowIdx]?.[imgIdx] : undefined;
@@ -494,15 +495,14 @@ export default function ScriptStudio({ id }: { id: string }) {
           fetch('/api/projects', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id, brief: { ...(project?.brief || {}), scripts: newScripts } })
           }).catch(console.error);
         }
       }
     } catch (err: any) {
       console.error(err);
-      alert('Ошибка при генерации картинки: ' + err.message);
+      alert(err.message || 'Error generating image');
     } finally {
-      setIsGeneratingImage(null);
+      setGeneratingImages(prev => prev.filter(g => !(g.scriptId === script.id && g.rowIdx === rowIdx && g.action === action && g.imgIdx === imgIdx)));
     }
   };
 
@@ -826,8 +826,9 @@ export default function ScriptStudio({ id }: { id: string }) {
                       {/* Data rows with per-row image gallery */}
                       {dataRows.map((row, dataRowIdx) => {
                         const thisRowImgs = rowImages[dataRowIdx] || [];
-                        const isGenThisRow = isGeneratingImage?.scriptId === script.id && isGeneratingImage?.rowIdx === dataRowIdx;
-                        const isAnyGen = isGeneratingImage !== null;
+                        const isGenThisRow = generatingImages.some(g => g.scriptId === script.id && g.rowIdx === dataRowIdx);
+                        const isGenThisRowAdding = generatingImages.some(g => g.scriptId === script.id && g.rowIdx === dataRowIdx && g.action === 'add');
+                        const isAnyGen = generatingImages.length > 0;
 
                         const isVideoFormat = /відео|видео|video/i.test(script.format || '');
                         console.log('[DEBUG] script.format:', JSON.stringify(script.format), 'isVideoFormat:', isVideoFormat);
@@ -938,7 +939,7 @@ export default function ScriptStudio({ id }: { id: string }) {
                                       transition: 'all 0.2s'
                                     }}
                                   >
-                                    {isGenThisRow && isGeneratingImage?.action === 'add' ? (
+                                    {isGenThisRowAdding ? (
                                       <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}><Loader2 size={13} /></span> Генерирую…</>
                                     ) : (
                                       <><Plus size={13} /> {thisRowImgs.length > 0 ? '+ 1 вариант' : 'Сгенерировать (~$0.04)'}</>
@@ -976,7 +977,7 @@ export default function ScriptStudio({ id }: { id: string }) {
                                         index={imgIdx + 1}
                                         imageUrl={finalImageUrl}
                                         overlay={extractOverlay(row)}
-                                      isReplacing={isGenThisRow && isGeneratingImage?.imgIdx === imgIdx}
+                                      isReplacing={generatingImages.some(g => g.scriptId === script.id && g.rowIdx === dataRowIdx && g.action === 'replace' && g.imgIdx === imgIdx)}
                                       disabled={isAnyGen}
                                       onReplace={() => {
                                         if (window.confirm('Перегенерировать это изображение? Текущий вариант будет заменен.')) {
