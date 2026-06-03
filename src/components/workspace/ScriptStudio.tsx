@@ -395,16 +395,30 @@ export default function ScriptStudio({ id }: { id: string }) {
           continue;
         }
 
-        const newRowImages = item.script.rowImages || {};
-        newRowImages[item.rowIdx] = [...(newRowImages[item.rowIdx] || []), ...data.urls];
-
-        const newScripts = [...scripts];
-        const sIdx = newScripts.findIndex(s => s.id === item.script.id);
-        if (sIdx !== -1) {
-          newScripts[sIdx] = { ...newScripts[sIdx], rowImages: newRowImages };
-          setScripts(newScripts);
-          await set(`projectScripts_${id}`, newScripts);
-        }
+        setScripts(prevScripts => {
+          const newScripts = [...prevScripts];
+          const sIdx = newScripts.findIndex(s => s.id === item.script.id);
+          if (sIdx !== -1) {
+            const targetScript = { ...newScripts[sIdx] };
+            const newRowImages = { ...(targetScript.rowImages || {}) };
+            const addedUrls = data.urls && data.urls.length > 0 ? data.urls : (data.url ? [data.url] : []);
+            newRowImages[item.rowIdx] = [...(newRowImages[item.rowIdx] || []), ...addedUrls];
+            
+            targetScript.rowImages = newRowImages;
+            newScripts[sIdx] = targetScript;
+            
+            set(`projectScripts_${id}`, newScripts).catch(console.error);
+            if (id && id !== 'temp-id') {
+              fetch('/api/projects', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, brief: { ...(project?.brief || {}), scripts: newScripts } })
+              }).catch(console.error);
+            }
+            return newScripts;
+          }
+          return prevScripts;
+        });
       } catch (err: any) {
         console.error(err);
       } finally {
@@ -471,33 +485,37 @@ export default function ScriptStudio({ id }: { id: string }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to generate image');
 
-      const newScripts = [...scripts];
-      const scriptIndex = newScripts.findIndex(s => s.id === script.id);
-      if (scriptIndex !== -1) {
-        const targetScript = { ...newScripts[scriptIndex] };
-        const newRowImages: Record<number, string[]> = { ...(targetScript.rowImages || {}) };
-        const existingRowImgs = [...(newRowImages[rowIdx] || [])];
+      setScripts(prevScripts => {
+        const newScripts = [...prevScripts];
+        const scriptIndex = newScripts.findIndex(s => s.id === script.id);
+        if (scriptIndex !== -1) {
+          const targetScript = { ...newScripts[scriptIndex] };
+          const newRowImages: Record<number, string[]> = { ...(targetScript.rowImages || {}) };
+          const existingRowImgs = [...(newRowImages[rowIdx] || [])];
 
-        if (action === 'add') {
-          if (data.urls?.length > 0) existingRowImgs.push(...data.urls);
-          else if (data.url) existingRowImgs.push(data.url);
-        } else if (action === 'replace' && imgIdx !== undefined) {
-          existingRowImgs[imgIdx] = data.urls?.[0] || data.url;
+          if (action === 'add') {
+            if (data.urls?.length > 0) existingRowImgs.push(...data.urls);
+            else if (data.url) existingRowImgs.push(data.url);
+          } else if (action === 'replace' && imgIdx !== undefined) {
+            existingRowImgs[imgIdx] = data.urls?.[0] || data.url;
+          }
+
+          newRowImages[rowIdx] = existingRowImgs;
+          targetScript.rowImages = newRowImages;
+          newScripts[scriptIndex] = targetScript;
+
+          set(`projectScripts_${id}`, newScripts).catch(console.error);
+          if (id && id !== 'temp-id') {
+            fetch('/api/projects', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id, brief: { ...(project?.brief || {}), scripts: newScripts } })
+            }).catch(console.error);
+          }
+          return newScripts;
         }
-
-        newRowImages[rowIdx] = existingRowImgs;
-        targetScript.rowImages = newRowImages;
-        newScripts[scriptIndex] = targetScript;
-        setScripts(newScripts);
-        await set(`projectScripts_${id}`, newScripts);
-
-        if (id && id !== 'temp-id') {
-          fetch('/api/projects', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-          }).catch(console.error);
-        }
-      }
+        return prevScripts;
+      });
     } catch (err: any) {
       console.error(err);
       alert(err.message || 'Error generating image');
@@ -509,28 +527,31 @@ export default function ScriptStudio({ id }: { id: string }) {
   const handleDeleteRowImage = async (script: any, rowIdx: number, imgIdx: number) => {
     if (!confirm('Вы уверены, что хотите удалить этот вариант креатива?')) return;
     try {
-      const newScripts = [...scripts];
-      const scriptIndex = newScripts.findIndex(s => s.id === script.id);
-      if (scriptIndex !== -1) {
-        const targetScript = { ...newScripts[scriptIndex] };
-        const newRowImages: Record<number, string[]> = { ...(targetScript.rowImages || {}) };
-        const existingRowImgs = [...(newRowImages[rowIdx] || [])];
-        
-        existingRowImgs.splice(imgIdx, 1);
-        newRowImages[rowIdx] = existingRowImgs;
-        targetScript.rowImages = newRowImages;
-        newScripts[scriptIndex] = targetScript;
-        setScripts(newScripts);
-        await set(`projectScripts_${id}`, newScripts);
-
-        if (id && id !== 'temp-id') {
-          fetch('/api/projects', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id, brief: { ...(project?.brief || {}), scripts: newScripts } })
-          }).catch(console.error);
+      setScripts(prevScripts => {
+        const newScripts = [...prevScripts];
+        const scriptIndex = newScripts.findIndex(s => s.id === script.id);
+        if (scriptIndex !== -1) {
+          const targetScript = { ...newScripts[scriptIndex] };
+          const newRowImages: Record<number, string[]> = { ...(targetScript.rowImages || {}) };
+          const existingRowImgs = [...(newRowImages[rowIdx] || [])];
+          
+          existingRowImgs.splice(imgIdx, 1);
+          newRowImages[rowIdx] = existingRowImgs;
+          targetScript.rowImages = newRowImages;
+          newScripts[scriptIndex] = targetScript;
+          
+          set(`projectScripts_${id}`, newScripts).catch(console.error);
+          if (id && id !== 'temp-id') {
+            fetch('/api/projects', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id, brief: { ...(project?.brief || {}), scripts: newScripts } })
+            }).catch(console.error);
+          }
+          return newScripts;
         }
-      }
+        return prevScripts;
+      });
     } catch (err: any) {
       console.error(err);
       alert('Ошибка при удалении картинки: ' + err.message);
