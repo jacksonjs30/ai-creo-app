@@ -897,7 +897,7 @@ export default function ScriptStudio({ id }: { id: string }) {
                                     ...prev,
                                     [`${script.id}_row${dataRowIdx}`]: e.target.value
                                   }))}
-                                  disabled={isAnyGen}
+                                  disabled={isGenThisRow}
                                   style={{
                                     flex: 1,
                                     fontSize: '0.78rem',
@@ -927,15 +927,15 @@ export default function ScriptStudio({ id }: { id: string }) {
                                   {/* Generate 1 image — primary button, cheap */}
                                   <button
                                     onClick={() => handleGenerateRowImage(script, dataRowIdx, row, 'add', undefined, 1)}
-                                    disabled={isAnyGen}
+                                    disabled={isGenThisRow}
                                     title="~$0.04 за 1 зображення (medium quality)"
                                     style={{
                                       display: 'flex', alignItems: 'center', gap: '0.4rem',
                                       background: isGenThisRow ? '#4338ca' : '#6366f1',
                                       color: 'white', border: 'none', borderRadius: '8px',
                                       padding: '0.4rem 0.9rem', fontSize: '0.78rem', fontWeight: 700,
-                                      cursor: isAnyGen ? 'not-allowed' : 'pointer',
-                                      opacity: isAnyGen && !isGenThisRow ? 0.5 : 1,
+                                      cursor: isGenThisRow ? 'not-allowed' : 'pointer',
+                                      opacity: isGenThisRow && !isGenThisRowAdding ? 0.5 : 1,
                                       transition: 'all 0.2s'
                                     }}
                                   >
@@ -949,15 +949,15 @@ export default function ScriptStudio({ id }: { id: string }) {
                                   {!isGenThisRow && (
                                     <button
                                       onClick={() => handleGenerateRowImage(script, dataRowIdx, row, 'add', undefined, 3)}
-                                      disabled={isAnyGen}
+                                      disabled={isGenThisRow}
                                       title="~$0.12 за 3 зображення (medium quality)"
                                       style={{
                                         display: 'flex', alignItems: 'center', gap: '0.3rem',
                                         background: 'transparent', border: '1px solid #a5b4fc',
                                         color: '#6366f1', borderRadius: '8px',
                                         padding: '0.4rem 0.75rem', fontSize: '0.72rem', fontWeight: 600,
-                                        cursor: isAnyGen ? 'not-allowed' : 'pointer',
-                                        opacity: isAnyGen ? 0.4 : 1,
+                                        cursor: isGenThisRow ? 'not-allowed' : 'pointer',
+                                        opacity: isGenThisRow ? 0.4 : 1,
                                         transition: 'all 0.2s'
                                       }}
                                     >
@@ -978,7 +978,7 @@ export default function ScriptStudio({ id }: { id: string }) {
                                         imageUrl={finalImageUrl}
                                         overlay={extractOverlay(row)}
                                       isReplacing={generatingImages.some(g => g.scriptId === script.id && g.rowIdx === dataRowIdx && g.action === 'replace' && g.imgIdx === imgIdx)}
-                                      disabled={isAnyGen}
+                                      disabled={isGenThisRow}
                                       onReplace={() => {
                                         if (window.confirm('Перегенерировать это изображение? Текущий вариант будет заменен.')) {
                                           handleGenerateRowImage(script, dataRowIdx, row, 'replace', imgIdx);
