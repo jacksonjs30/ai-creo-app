@@ -79,7 +79,8 @@ export async function POST(req: NextRequest) {
       quality = 'high', // Default to high quality to ensure sharper rendering
       userNotes,
       logoUrl,
-      logoPosition = 'BR'
+      logoPosition = 'BR',
+      enhancePrompt = false
     } = await req.json();
 
     const apiKey = process.env.OPENAI_API_KEY;
@@ -224,7 +225,36 @@ export async function POST(req: NextRequest) {
     const finalUrls: string[] = [];
 
     for (let index = 0; index < count; index++) {
-      const prompt = buildPrompt(variations[index % variations.length]);
+      let prompt = buildPrompt(variations[index % variations.length]);
+
+      if (enhancePrompt) {
+        try {
+          const enhanceSysPrompt = lang === 'uk' 
+            ? 'Ти — експерт з написання промптів для DALL-E 3. Твоя мета: взяти ТЗ рекламного креативу і написати ідеальний, структурований промпт англійською мовою. Опиши рекламний постер з детальними UI-елементами (плашки, стікери, галочки, кнопки). ВАЖЛИВО: Текстові написи кирилицею залишай без змін у лапках, не перекладай їх! Вкажи DALL-E 3, де саме їх розмістити.' 
+            : 'Ты — эксперт по написанию промптов для DALL-E 3. Твоя цель: взять ТЗ рекламного креатива и написать идеальный, структурированный промпт на английском. Опиши рекламный постер с детальными UI-элементами (плашки, стикеры, галочки, кнопки). ВАЖНО: Текстовые надписи кириллицей оставляй без изменений в кавычках, не переводи их! Укажи DALL-E 3, где именно их разместить.';
+          
+          const enhanceRes = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: enhanceSysPrompt },
+              { role: 'user', content: `Ось сирий промпт, який потрібно покращити і структурувати для DALL-E 3:\n\n${prompt}` }
+            ],
+            temperature: 0.7,
+            max_tokens: 800,
+          });
+          
+          if (enhanceRes.choices[0]?.message?.content) {
+            prompt = enhanceRes.choices[0].message.content;
+          }
+        } catch (err) {
+          console.error('Error enhancing prompt:', err);
+          // Fallback to original prompt if enhancement fails
+        }
+      }
+
+      if (prompt.length > 3900) {
+        prompt = prompt.substring(0, 3900) + '...';
+      }
 
       let b64ImageData: string;
       try {

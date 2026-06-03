@@ -51,7 +51,10 @@ export default function ScriptStudio({ id }: { id: string }) {
     quantity: number;
     useBrandColors: boolean;
     userNotes: string;
+    enhancePrompt: boolean;
   } | null>(null);
+
+  const [globalEnhancePrompt, setGlobalEnhancePrompt] = useState<boolean>(true);
 
 
   const [filterFormat, setFilterFormat] = useState<string>('Все');
@@ -321,7 +324,8 @@ export default function ScriptStudio({ id }: { id: string }) {
       selectedIds: [{script, rowIdx, cells}],
       quantity: 1,
       useBrandColors: false,
-      userNotes: ''
+      userNotes: '',
+      enhancePrompt: globalEnhancePrompt
     });
   };
 
@@ -342,14 +346,15 @@ export default function ScriptStudio({ id }: { id: string }) {
       selectedIds: selectedData,
       quantity: 1,
       useBrandColors: false,
-      userNotes: ''
+      userNotes: '',
+      enhancePrompt: globalEnhancePrompt
     });
   };
 
   const confirmGeneration = async () => {
     if (!generationModal) return;
     setGenerationModal({...generationModal, isOpen: false});
-    const { selectedIds, quantity, useBrandColors, userNotes } = generationModal;
+    const { selectedIds, quantity, useBrandColors, userNotes, enhancePrompt } = generationModal;
 
     for (const item of selectedIds) {
       // Small delay to prevent rate limit
@@ -385,7 +390,8 @@ export default function ScriptStudio({ id }: { id: string }) {
             count: quantity,
             userNotes: finalScriptNotes,
             logoUrl: project?.logoUrl,
-            logoPosition: project?.logoPosition
+            logoPosition: project?.logoPosition,
+            enhancePrompt
           })
         });
 
@@ -478,7 +484,8 @@ export default function ScriptStudio({ id }: { id: string }) {
           action,
           oldImageUrl,
           count: action === 'replace' ? 1 : genCount,
-          userNotes
+          userNotes,
+          enhancePrompt: globalEnhancePrompt
         })
       });
 
@@ -604,6 +611,19 @@ export default function ScriptStudio({ id }: { id: string }) {
             >
               {avatarOptions.map(a => <option key={a} value={a}>{a}</option>)}
             </select>
+          </div>
+
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#fef3c7', padding: '0.5rem 1rem', borderRadius: '10px', border: '1px solid #fde68a' }}>
+            <input
+              type="checkbox"
+              id="globalEnhancePrompt"
+              checked={globalEnhancePrompt}
+              onChange={(e) => setGlobalEnhancePrompt(e.target.checked)}
+              style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+            />
+            <label htmlFor="globalEnhancePrompt" style={{ fontSize: '0.85rem', color: '#92400e', fontWeight: 700, cursor: 'pointer' }} title="GPT-4 автоматически улучшит структуру промпта для генерации идеальной рекламной инфографики (как в ChatGPT)">
+              ✨ Улучшенное качество (GPT-4)
+            </label>
           </div>
         </div>
       )}
@@ -1128,6 +1148,20 @@ export default function ScriptStudio({ id }: { id: string }) {
                 />
                 Использовать брендовые цвета (из параметров)
               </label>
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem' }}>
+                <input 
+                  type="checkbox" 
+                  checked={generationModal.enhancePrompt}
+                  onChange={e => setGenerationModal({...generationModal, enhancePrompt: e.target.checked})}
+                />
+                ✨ Улучшенное качество картинки (GPT-4)
+              </label>
+              <p style={{ margin: '0.2rem 0 0 1.7rem', fontSize: '0.8rem', color: '#64748b' }}>
+                GPT-4 автоматически перепишет ТЗ в идеальный промпт для DALL-E 3 (инфографика, UI-элементы).
+              </p>
             </div>
 
             <div style={{ marginBottom: '2rem' }}>
