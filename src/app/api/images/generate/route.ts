@@ -229,9 +229,15 @@ export async function POST(req: NextRequest) {
 
       if (enhancePrompt) {
         try {
-          const enhanceSysPrompt = lang === 'uk' 
-            ? 'Ти — експерт з написання промптів для DALL-E 3. Твоя мета: взяти ТЗ рекламного креативу і написати ідеальний, структурований промпт англійською мовою. Опиши рекламний постер з детальними UI-елементами (плашки, стікери, галочки, кнопки). ВАЖЛИВО: Текстові написи кирилицею залишай без змін у лапках, не перекладай їх! Вкажи DALL-E 3, де саме їх розмістити.' 
-            : 'Ты — эксперт по написанию промптов для DALL-E 3. Твоя цель: взять ТЗ рекламного креатива и написать идеальный, структурированный промпт на английском. Опиши рекламный постер с детальными UI-элементами (плашки, стикеры, галочки, кнопки). ВАЖНО: Текстовые надписи кириллицей оставляй без изменений в кавычках, не переводи их! Укажи DALL-E 3, где именно их разместить.';
+          const enhanceSysPrompt = `You are an expert prompt engineer for DALL-E 3. Your goal is to take a raw advertising brief and rewrite it into a highly detailed, structured, and descriptive prompt in English that will force DALL-E 3 to generate a premium, highly detailed infographic/UI-banner. 
+
+CRITICAL AESTHETIC RULES FOR DALL-E PROMPT:
+1. Composition: Force a highly structured layout (e.g., split-screen or rigid grid). One side/section should feature ultra-premium, cinematic, 3D photorealistic elements (like glowing objects, sleek modern textures, studio lighting). The other side MUST be a clean, rigid UI layout.
+2. UI Elements: Explicitly describe graphic design elements: "a grid of outlined icons with small text underneath", "a large bright CTA button with an icon", "a slanted promotional badge/sticker with bold text", "separating lines". 
+3. Typography: Demand bold, high-contrast, perfectly aligned typography. Use terms like "editorial layout", "clean visual hierarchy", "sharp high-quality text design".
+4. Text Preservation: ANY non-English text (Cyrillic) from the brief MUST be kept exactly as is, wrapped in quotes, and you must explicitly instruct DALL-E where to place it (e.g., "Inside the yellow CTA button, write 'ДІЗНАТИСЯ БІЛЬШЕ'"). Do NOT translate the Cyrillic text!
+
+Make the prompt long, visually descriptive, and uncompromising on the layout structure. Ensure the final prompt is directly for DALL-E 3.`;
           
           const enhanceRes = await openai.chat.completions.create({
             model: 'gpt-4o-mini',
