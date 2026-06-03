@@ -358,7 +358,12 @@ export default function ScriptStudio({ id }: { id: string }) {
       const finalNotes = (useBrandColors ? "Используй брендовые цвета. " : "") + userNotes;
       const prevNotes = rowNotes[`${item.script.id}_row${item.rowIdx}`] || '';
       
-      const combinedNotes = finalNotes ? `${prevNotes}\n${finalNotes}`.trim() : prevNotes;
+      let finalScriptNotes = finalNotes ? `${prevNotes}\n${finalNotes}`.trim() : prevNotes;
+      
+      // Inject NO_PEOPLE rule into notes if the script was generated in without_people mode
+      if (item.script.peoplePresence === 'without_people') {
+         finalScriptNotes = `[NO_PEOPLE]\n${finalScriptNotes}`;
+      }
 
       setIsGeneratingImage({ scriptId: item.script.id, rowIdx: item.rowIdx, action: 'add' });
       try {
@@ -378,7 +383,7 @@ export default function ScriptStudio({ id }: { id: string }) {
             productName: item.script.productName || project?.name,
             action: 'add',
             count: quantity,
-            userNotes: combinedNotes,
+            userNotes: finalScriptNotes,
             logoUrl: project?.logoUrl,
             logoPosition: project?.logoPosition
           })
@@ -437,7 +442,12 @@ export default function ScriptStudio({ id }: { id: string }) {
       const designBrief = rowCells[rowCells.length - 1] || '';
       const scriptText = rowCells.join('\n');
       
-      const userNotes = rowNotes[`${script.id}_row${rowIdx}`] || '';
+      let userNotes = rowNotes[`${script.id}_row${rowIdx}`] || '';
+
+      // Inject NO_PEOPLE rule into notes if the script was generated in without_people mode
+      if (script.peoplePresence === 'without_people') {
+         userNotes = `[NO_PEOPLE]\n${userNotes}`;
+      }
 
       const res = await fetch('/api/images/generate', {
         method: 'POST',

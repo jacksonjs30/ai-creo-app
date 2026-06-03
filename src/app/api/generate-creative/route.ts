@@ -73,6 +73,7 @@ export async function POST(req: NextRequest) {
       toneOfVoice,
       language,
       colors,
+      peoplePresence,
       content: text,
       createdAt: new Date().toISOString()
     };
