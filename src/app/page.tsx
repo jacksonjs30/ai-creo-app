@@ -352,7 +352,20 @@ export default function Dashboard() {
         <div className="projects-grid">
           {projects.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map((project: any) => {
             const avatarCount = project.avatars?.length || 0;
-            const scriptsCount = project.scriptsCount || 0;
+            const scripts = project.brief?.scripts || [];
+            const scriptsCount = scripts.length > 0 ? scripts.length : (project.scriptsCount || 0);
+            
+            let creativesCount = 0;
+            if (scripts && scripts.length > 0) {
+              scripts.forEach((s: any) => {
+                if (s.rowImages) {
+                  Object.values(s.rowImages).forEach((imgs: any) => {
+                    creativesCount += Array.isArray(imgs) ? imgs.length : 0;
+                  });
+                }
+              });
+            }
+
             // Progress calculation
             const progress = scriptsCount > 0 ? 100 : (avatarCount > 0 ? 66 : 33);
 
@@ -385,7 +398,7 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'var(--border)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1px', background: 'var(--border)' }}>
                   <Link href={`/project/${project.id}?tab=avatars`} style={{ background: 'white', padding: '1rem', textAlign: 'center', textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a' }}>{mounted ? avatarCount : '-'}</span>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Аватары</span>
@@ -393,6 +406,10 @@ export default function Dashboard() {
                   <Link href={`/project/${project.id}?tab=studio`} style={{ background: 'white', padding: '1rem', textAlign: 'center', textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a' }}>{mounted ? scriptsCount : '-'}</span>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Сценарии</span>
+                  </Link>
+                  <Link href={`/project/${project.id}?tab=results`} style={{ background: 'white', padding: '1rem', textAlign: 'center', textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a' }}>{mounted ? creativesCount : '-'}</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Креативы</span>
                   </Link>
                 </div>
                 
