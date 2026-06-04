@@ -232,7 +232,7 @@ export async function POST(req: NextRequest) {
           const enhanceSysPrompt = `You are an expert prompt engineer for DALL-E 3. Your goal is to take a raw advertising brief and rewrite it into a highly detailed, structured, and descriptive prompt in English that will force DALL-E 3 to generate a premium, highly detailed infographic/UI-banner. 
 
 CRITICAL AESTHETIC RULES FOR DALL-E PROMPT:
-1. Composition & Margins (PREVENT CROPPING): Create a highly stylized editorial layout or digital graphic design. Do NOT force a boring split-screen. Blend ultra-premium, cinematic, 3D photorealistic elements seamlessly with abstract UI containers, glassmorphism panels, glowing lines, and badges. YOU MUST EXPLICITLY TELL DALL-E TO LEAVE WIDE MARGINS/PADDING AROUND ALL TEXT AND BUTTONS SO NOTHING IS CUT OFF AT THE EDGES.
+1. Composition & Margins (PREVENT CROPPING): Create a highly stylized editorial layout or digital graphic design. Do NOT force a boring split-screen. Blend ultra-premium, cinematic, 3D photorealistic elements seamlessly with abstract UI elements and typography. YOU MUST EXPLICITLY TELL DALL-E: "Keep the composition zoomed out with plenty of negative space around the edges. Place all text and buttons safely in the center or well away from the borders so nothing is cropped."
 2. UI Elements: Explicitly describe graphic design elements: "a row of neon-outlined icons", "a large bright CTA button with an icon", "a slanted promotional badge/sticker with bold text". 
 3. Typography & Text Placement (CRITICAL FOR CYRILLIC): 
    - DALL-E 3 struggles with spelling long non-English sentences. You MUST extract ONLY 2 or 3 of the absolute shortest, punchiest phrases from the brief. 
