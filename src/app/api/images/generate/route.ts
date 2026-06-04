@@ -267,15 +267,15 @@ Make the prompt long, visually descriptive, and uncompromising on the layout str
       let b64ImageData: string;
       try {
         const response = await openai.images.generate({
-          model: 'gpt-image-1',
+          model: 'dall-e-3',
           prompt,
           n: 1,
           size: '1024x1024',
-          quality: quality as any, // 'high' | 'medium' | 'low'
+          quality: quality as any, // 'standard' | 'hd'
         });
 
         const imgData = response.data?.[0];
-        if (!imgData?.b64_json) throw new Error('gpt-image-1 не вернул b64_json.');
+        if (!imgData?.b64_json) throw new Error('dall-e-3 не вернул b64_json.');
         b64ImageData = imgData.b64_json;
 
       } catch (openAiError: any) {
@@ -283,7 +283,7 @@ Make the prompt long, visually descriptive, and uncompromising on the layout str
         console.error('[images/generate] OpenAI error:', msg);
 
         if (msg.includes('does not exist') || msg.includes('model_not_found')) {
-          return NextResponse.json({ error: `Модель gpt-image-1 недоступна. Перевірте ключ OpenAI.\n${msg}` }, { status: 400 });
+          return NextResponse.json({ error: `Модель dall-e-3 недоступна. Перевірте ключ OpenAI.\n${msg}` }, { status: 400 });
         }
         if (msg.includes('billing') || msg.includes('quota') || msg.includes('insufficient')) {
           return NextResponse.json({ error: `Недостатньо кредитів OpenAI. Поповніть баланс.\n${msg}` }, { status: 402 });
