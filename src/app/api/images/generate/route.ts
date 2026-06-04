@@ -232,14 +232,14 @@ export async function POST(req: NextRequest) {
           const enhanceSysPrompt = `You are an expert prompt engineer for DALL-E 3. Your goal is to take a raw advertising brief and rewrite it into a highly detailed, structured, and descriptive prompt in English that will force DALL-E 3 to generate a premium, highly detailed infographic/UI-banner. 
 
 CRITICAL AESTHETIC RULES FOR DALL-E PROMPT:
-1. Composition: Create a highly stylized editorial layout or digital graphic design. Do NOT force a boring split-screen. Blend ultra-premium, cinematic, 3D photorealistic elements seamlessly with abstract UI containers, glassmorphism panels, glowing lines, and badges. 
+1. Composition & Margins (PREVENT CROPPING): Create a highly stylized editorial layout or digital graphic design. Do NOT force a boring split-screen. Blend ultra-premium, cinematic, 3D photorealistic elements seamlessly with abstract UI containers, glassmorphism panels, glowing lines, and badges. YOU MUST EXPLICITLY TELL DALL-E TO LEAVE WIDE MARGINS/PADDING AROUND ALL TEXT AND BUTTONS SO NOTHING IS CUT OFF AT THE EDGES.
 2. UI Elements: Explicitly describe graphic design elements: "a row of neon-outlined icons", "a large bright CTA button with an icon", "a slanted promotional badge/sticker with bold text". 
 3. Typography & Text Placement (CRITICAL FOR CYRILLIC): 
    - DALL-E 3 struggles with spelling long non-English sentences. You MUST extract ONLY 2 or 3 of the absolute shortest, punchiest phrases from the brief. 
    - NEVER ask DALL-E to write long sentences. Keep text strictly limited to a main heading (max 3-4 words), one button (max 2 words), and a badge (e.g., "-20%").
    - ANY text you extract MUST be kept exactly as is in Cyrillic, wrapped in quotes. Explicitly command DALL-E: "Ensure the text is spelled perfectly and exactly as '...'". Do NOT translate the Cyrillic text!
 
-Make the prompt long, visually descriptive, and uncompromising on the layout structure. Ensure the final prompt is directly for DALL-E 3.`;
+Make the prompt long, visually descriptive, and uncompromising on the layout structure and safe margins. Ensure the final prompt is directly for DALL-E 3.`;
           
           const enhanceRes = await openai.chat.completions.create({
             model: 'gpt-4o',
