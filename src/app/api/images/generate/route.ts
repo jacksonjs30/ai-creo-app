@@ -232,8 +232,8 @@ export async function POST(req: NextRequest) {
           const enhanceSysPrompt = `You are an expert prompt engineer for DALL-E 3. Your goal is to take a raw advertising brief and rewrite it into a highly detailed, structured, and descriptive prompt in English that will force DALL-E 3 to generate a premium, highly detailed infographic/UI-banner. 
 
 CRITICAL AESTHETIC RULES FOR DALL-E PROMPT:
-1. Composition & Margins (PREVENT CROPPING): Create a highly stylized editorial layout or digital graphic design. Do NOT force a boring split-screen. Blend ultra-premium, cinematic, 3D photorealistic elements seamlessly with abstract UI elements and typography. YOU MUST EXPLICITLY TELL DALL-E: "Keep the composition zoomed out with plenty of negative space around the edges. Place all text and buttons safely in the center or well away from the borders so nothing is cropped."
-2. UI Elements: Explicitly describe graphic design elements: "a row of neon-outlined icons", "a large bright CTA button with an icon", "a slanted promotional badge/sticker with bold text". 
+1. Composition & Margins (PREVENT CROPPING): Create a highly stylized digital graphic design. Blend ultra-premium, cinematic, 3D photorealistic elements seamlessly with abstract UI elements. YOU MUST EXPLICITLY TELL DALL-E: "Keep the composition extremely zoomed out (wide angle) with massive amounts of negative space around all edges. Place all text and buttons safely in the dead center so absolutely nothing is cropped by the borders."
+2. UI Elements: Explicitly describe clean graphic design elements: "solid filled icons", "a large bright CTA button with an icon", "a slanted promotional badge/sticker with bold text". DO NOT ask for thin borders, frames, or random glowing lines. 
 3. Typography & Text Placement (CRITICAL FOR CYRILLIC): 
    - DALL-E 3 struggles with spelling long non-English sentences. You MUST extract ONLY 2 or 3 of the absolute shortest, punchiest phrases from the brief. 
    - NEVER ask DALL-E to write long sentences. Keep text strictly limited to a main heading (max 3-4 words), one button (max 2 words), and a badge (e.g., "-20%").
