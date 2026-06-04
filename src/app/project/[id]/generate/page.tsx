@@ -7,6 +7,7 @@ import { Image as ImageIcon, Video, Smile, LayoutTemplate, Palette, Mic, CheckCi
 import { get, set } from 'idb-keyval';
 
 const CREATIVE_TYPES = [
+  { id: 'Прямий продаж (в лоб)', name: 'Прямий продаж (в лоб)', icon: FileText, isVideo: false },
   { id: 'Відео-крео на основі JTBD + CJM', name: 'Відео-крео (JTBD + CJM)', icon: PlayCircle, isVideo: true },
   { id: 'Текст на білому фоні (статична картинка)', name: 'Текст на білому фоні', icon: FileText, isVideo: false },
   { id: 'Крео з фото/графікою + текст', name: 'Фото + текст', icon: Camera, isVideo: false },
