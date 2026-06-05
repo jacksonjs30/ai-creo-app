@@ -57,6 +57,7 @@ export default function GenerateCreative({ id }: { id: string }) {
   const [peoplePresence, setPeoplePresence] = useState(PEOPLE_OPTIONS[0].id);
   const [focusDirection, setFocusDirection] = useState('');
   const [promoOffer, setPromoOffer] = useState('');
+  const [customProductBullets, setCustomProductBullets] = useState('');
 
   const [useColors, setUseColors] = useState(false);
   const [mainColor, setMainColor] = useState('#3b82f6');
@@ -101,6 +102,9 @@ export default function GenerateCreative({ id }: { id: string }) {
         if (loadedProject) {
            setProject(loadedProject);
            setProductName(loadedProject.name || loadedProject.productName || '');
+           if (loadedProject.brief?.productBullets?.length) {
+              setCustomProductBullets(loadedProject.brief.productBullets.join('\n'));
+           }
            if (loadedProject.logoUrl) setLogoPreviewUrl(loadedProject.logoUrl);
            if (loadedProject.logoPosition) setLogoPosition(loadedProject.logoPosition);
         }
@@ -169,7 +173,7 @@ export default function GenerateCreative({ id }: { id: string }) {
           focusDirection: focusDirection.trim() || undefined,
           promoOffer: promoOffer.trim() || undefined,
           peoplePresence,
-          productBullets: project?.brief?.productBullets || undefined,
+          productBullets: customProductBullets.trim() ? customProductBullets.split('\n').map(b => b.trim()).filter(b => b) : undefined,
           colors: useColors ? { main: mainColor, secondary: secondColor, accent: accentColor } : undefined,
           existingConcepts: existingConcepts.length > 0 ? existingConcepts : undefined
         }),
@@ -409,6 +413,20 @@ export default function GenerateCreative({ id }: { id: string }) {
                 value={focusDirection} 
                 onChange={e => setFocusDirection(e.target.value)}
                 style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1', minHeight: '80px', resize: 'vertical' }}
+              />
+            </div>
+
+            <div className="form-group mt-4">
+              <label>Ключевые преимущества (буллиты)</label>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem', marginTop: '-0.25rem' }}>
+                Введите преимущества продукта (каждое с новой строки). Если оставить пустым, ИИ возьмет их из JTBD аватара.
+              </p>
+              <textarea 
+                placeholder="Анализируй цифры&#10;Планируй будущее&#10;Контролируй расходы"
+                disabled={isGenerating}
+                value={customProductBullets} 
+                onChange={e => setCustomProductBullets(e.target.value)}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1', minHeight: '100px', resize: 'vertical' }}
               />
             </div>
 

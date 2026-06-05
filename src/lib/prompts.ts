@@ -401,7 +401,11 @@ This is a direct conversion ad for the product. No stories, no metaphors. MORE T
 The ad copy text MUST STRICTLY consist of 5 blocks (BULLETS ARE MANDATORY):
 1. MAIN HEADLINE: The key result/promise for the audience (1–2 lines, max 6 words).
 2. SUBHEADLINE: 1 short sentence — what exactly the product does or who it is for.
-3. BULLET POINTS (CRITICAL — MANDATORY): Take 3–4 of the most important benefits directly from the "КЛЮЧОВІ ПЕРЕВАГИ ПРОДУКТУ (Буліти)" section above. If that section is empty, extract key benefits from the avatar data (outcomes, JTBD). Write them as short items with dashes, each 2–3 words (example: "- Analyze data <br> - Plan ahead <br> - Control expenses <br> - Achieve results"). NEVER skip bullets!
+3. BULLET POINTS (CRITICAL — MANDATORY, NEVER SKIP): 
+   IF the "КЛЮЧОВІ ПЕРЕВАГИ ПРОДУКТУ (Буліти)" section above has items — use them directly (shorten each to 1–3 words).
+   IF that section is EMPTY — you MUST extract 3–4 key benefits yourself from the avatar data: look at "outcomes.items" (each outcome), "outcomes.mainPromise", and "jtbd" (each job). Pick the 3–4 most compelling ones and shorten each to 1–3 words.
+   Format: dashes, each bullet 1–3 words ONLY (example: "- Аналізуй цифри <br> - Плануй майбутнє <br> - Контролюй витрати <br> - Досягай результату").
+   THIS BLOCK IS MANDATORY. If you skip bullets, the output is INVALID.
 4. PRODUCT: Product/course name (short).
 5. DISCOUNT/CTA: You MUST include BOTH: a) a visible discount badge text like "–20%" or the promo offer from above, AND b) a CTA button text like "Дізнатися більше" or "Записатися". Write them as separate lines.
 
