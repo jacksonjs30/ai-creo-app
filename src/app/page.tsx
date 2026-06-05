@@ -19,7 +19,7 @@ export default function Dashboard() {
   const [hasLocal, setHasLocal] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [stats, setStats] = useState({ totalProjects: 0, totalAvatars: 0, totalScripts: 0 });
+  const [stats, setStats] = useState({ totalProjects: 0, totalAvatars: 0, totalScripts: 0, totalCreatives: 0 });
 
   useEffect(() => {
     setMounted(true);
@@ -67,9 +67,11 @@ export default function Dashboard() {
 
     let tAvatars = 0;
     let tScripts = 0;
+    let tCreatives = 0;
 
     allProjects = allProjects.map(p => {
       let scriptsCount = 0;
+      let creativesCount = 0;
       try {
         const localScripts = JSON.parse(localStorage.getItem(`projectScripts_${p.id}`) || '[]');
         const dbScripts = (p as any).brief?.scripts || [];
@@ -80,18 +82,28 @@ export default function Dashboard() {
           if (s && s.id) allScriptsMap.set(s.id, s);
         });
         scriptsCount = allScriptsMap.size;
+
+        Array.from(allScriptsMap.values()).forEach((s: any) => {
+          if (s.rowImages) {
+            Object.values(s.rowImages).forEach((imgs: any) => {
+              creativesCount += Array.isArray(imgs) ? imgs.length : 0;
+            });
+          }
+        });
       } catch (e) {}
 
       tAvatars += (p.avatars?.length || 0);
       tScripts += scriptsCount;
+      tCreatives += creativesCount;
 
-      return { ...p, scriptsCount };
+      return { ...p, scriptsCount, creativesCount };
     });
 
     setStats({
       totalProjects: allProjects.length,
       totalAvatars: tAvatars,
-      totalScripts: tScripts
+      totalScripts: tScripts,
+      totalCreatives: tCreatives
     });
 
     setProjects(allProjects);
@@ -314,6 +326,13 @@ export default function Dashboard() {
             <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Готовых сценариев</div>
           </div>
         </div>
+        <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.25rem' }}>
+          <div style={{ background: '#f5f3ff', padding: '12px', borderRadius: '12px' }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+          <div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>{mounted ? stats.totalCreatives : '-'}</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Сгенерировано креативов</div>
+          </div>
+        </div>
       </div>
 
       {/* Toolbar (Search & Filters) */}
@@ -352,19 +371,8 @@ export default function Dashboard() {
         <div className="projects-grid">
           {projects.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map((project: any) => {
             const avatarCount = project.avatars?.length || 0;
-            const scripts = project.brief?.scripts || [];
-            const scriptsCount = scripts.length > 0 ? scripts.length : (project.scriptsCount || 0);
-            
-            let creativesCount = 0;
-            if (scripts && scripts.length > 0) {
-              scripts.forEach((s: any) => {
-                if (s.rowImages) {
-                  Object.values(s.rowImages).forEach((imgs: any) => {
-                    creativesCount += Array.isArray(imgs) ? imgs.length : 0;
-                  });
-                }
-              });
-            }
+            const scriptsCount = project.scriptsCount || 0;
+            const creativesCount = project.creativesCount || 0;
 
             // Progress calculation
             const progress = scriptsCount > 0 ? 100 : (avatarCount > 0 ? 66 : 33);
