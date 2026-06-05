@@ -396,16 +396,21 @@ CJM (Customer Journey Map) / сценарій дня
 Стилі тексту: Вкажи контраст з фоном. Якщо фон строкатий → плашка під текст або тінь.
 Референс: ${params.peoplePresence === 'without_people' ? '1-2 речення, що має бути на фоні, щоб викликати асоціацію з проблемою.' : '1-2 речення, яку емоцію повинен відчути глядач. Глядач має подумати: "Це буквально я".'}
 
-ДЛЯ "ПРЯМИЙ ПРОДАЖ (В ЛОБ)" — СПЕЦІАЛЬНІ ПРАВИЛА (підтип КАРТИНКИ):
-Це пряма конверсійна реклама продукту, без зайвих історій та метафор. ТУТ ДОЗВОЛЯЄТЬСЯ БІЛЬШЕ ТЕКСТУ!
-Текст картинки має СТРОГО складатися з 4-х блоків (ОБОВ'ЯЗКОВО З БУЛІТАМИ):
-1. ГОЛОВНИЙ РЕЗУЛЬТАТ: Величезний заголовок (наприклад, "Керуй цифрами, а не проблемами").
-2. БУЛІТИ (найважливіше): ОБОВ'ЯЗКОВО напиши 3-4 коротких пункти з тире (наприклад: "- Аналізуй цифри <br> - Плануй майбутнє <br> - Контролюй витрати").
-3. ПРОДУКТ: Назва курсу/продукту + для кого він (коротко).
-4. ЗНИЖКА/CTA: Велика плашка "Знижка -20%" + Кнопка "Дізнатися більше".
+FOR "DIRECT SALE" FORMAT — SPECIAL RULES (subtype of IMAGE):
+This is a direct conversion ad for the product. No stories, no metaphors. MORE TEXT IS ALLOWED HERE!
+The ad copy text MUST STRICTLY consist of 5 blocks (BULLETS ARE MANDATORY):
+1. MAIN HEADLINE: The key result/promise for the audience (1–2 lines, max 6 words). Example: "Take control of your numbers, not your problems".
+2. SUBHEADLINE: 1 short sentence — what exactly the product does or who it is for.
+3. BULLET POINTS (CRITICAL — MANDATORY): 3–4 short items with dashes, each 2–3 words (example: "- Analyze data <br> - Plan ahead <br> - Control expenses <br> - Achieve results").
+4. PRODUCT: Product/course name (short).
+5. DISCOUNT/CTA: Large badge "–20% off" + Button "Learn more".
 
-У "Брифі для дизайнера" для Прямого продажу ОБОВ'ЯЗКОВО:
-Вкажи жорстку структурну верстку. Напиши "Буліти з іконками (галочки, списки)". Виділення найважливішого жовтим або яскравим кольором. Чітка кнопка внизу.
+In the "Designer Brief" for Direct Sale format MANDATORY:
+Style: premium SaaS / modern advertising. Dark or gradient background. Clean typography.
+Layout: Split-layout. Left side (60%): headline, subheadline, bullets with solid icons (checkmarks or filled icons) to the left of each text, CTA button. Right side (40%): product mockups (laptop/smartphone with UI) OR cinematic 3D product visual OR abstract thematic illustration.
+Bullets: vertical list with icons to the LEFT of each text, OR horizontal strip at the bottom with 3–4 compact blocks.
+CTA button: large, bright, solid-colored, bottom-left.
+Discount sticker: bright badge near the button.
 
 
 Приклад заповнення для КАРТИНКИ:

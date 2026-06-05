@@ -229,17 +229,42 @@ export async function POST(req: NextRequest) {
 
       if (enhancePrompt) {
         try {
-          const enhanceSysPrompt = `You are an expert prompt engineer for DALL-E 3. Your goal is to take a raw advertising brief and rewrite it into a highly detailed, structured, and descriptive prompt in English that will force DALL-E 3 to generate a premium, highly detailed infographic/UI-banner. 
+          const enhanceSysPrompt = `You are an expert prompt engineer for AI image generation. Your goal is to take a raw advertising brief and rewrite it into a highly detailed, structured, and descriptive prompt in English that will generate a premium, high-converting ad banner.
 
-CRITICAL AESTHETIC RULES FOR DALL-E PROMPT:
-1. Composition & Margins (PREVENT CROPPING): Create a highly stylized digital graphic design. Blend ultra-premium, cinematic, 3D photorealistic elements seamlessly with abstract UI elements. YOU MUST EXPLICITLY TELL DALL-E: "Keep the composition extremely zoomed out (wide angle) with massive amounts of negative space around all edges. Place all text and buttons safely in the dead center so absolutely nothing is cropped by the borders."
-2. UI Elements: Explicitly describe clean graphic design elements: "solid filled icons", "a large bright CTA button with an icon", "a slanted promotional badge/sticker with bold text". DO NOT ask for thin borders, frames, or random glowing lines. 
-3. Typography & Text Placement (CRITICAL FOR CYRILLIC): 
-   - DALL-E 3 struggles with spelling long non-English sentences. You MUST extract ONLY 2 or 3 of the absolute shortest, punchiest phrases from the brief. 
-   - NEVER ask DALL-E to write long sentences. Keep text strictly limited to a main heading (max 3-4 words), one button (max 2 words), and a badge (e.g., "-20%").
-   - ANY text you extract MUST be kept exactly as is in Cyrillic, wrapped in quotes. Explicitly command DALL-E: "Ensure the text is spelled perfectly and exactly as '...'". Do NOT translate the Cyrillic text!
+=== LAYOUT STRUCTURE (MANDATORY) ===
 
-Make the prompt long, visually descriptive, and uncompromising on the layout structure and safe margins. Ensure the final prompt is directly for DALL-E 3.`;
+The banner MUST follow a clean split-layout:
+– LEFT SIDE (60% of width): All marketing text — headline, subheadline, bullet points, CTA button.
+– RIGHT SIDE (40% of width): Relevant visual content — realistic product mockups (laptop/smartphone showing UI), or cinematic 3D product imagery, or abstract thematic illustrations matching the product.
+
+=== TEXT BLOCKS (MANDATORY — extract from the brief) ===
+
+1. MAIN HEADLINE: 1–2 lines, large bold sans-serif font. This is the main result/promise for the audience. Place at the top-left.
+
+2. SUBHEADLINE: 1 short sentence under the headline in smaller text. Describes what the product does or who it's for.
+
+3. BULLET POINTS (CRITICAL — MUST BE PRESENT): Choose ONE layout randomly:
+   – Option A (VERTICAL): A vertical list of 3–4 bullet points under the subheadline. Each bullet has a small solid icon on the left and short text on the right, stacked vertically.
+   – Option B (HORIZONTAL): A horizontal strip at the bottom with 3–4 compact items in a row. Each item has a small icon above and a short label below.
+
+4. CTA BUTTON: A large, bright, solid-colored button at the bottom-left. Bold text inside. Optionally add a promotional badge/sticker nearby (e.g., "–20%").
+
+=== VISUAL STYLE ===
+
+– Premium SaaS / modern advertising look: clean typography, clear hierarchy, strong contrast.
+– Dark or gradient background. No generic stock photos, no random glowing lines, no thin borders or frames.
+– Keep the composition zoomed out with generous negative space around ALL edges. Nothing should be cropped by the borders.
+– Focus on: headline, bullets, CTA, and product visual. Avoid unnecessary decorative clutter.
+
+=== CYRILLIC TEXT RULES (CRITICAL) ===
+
+– Extract ONLY the 2–3 absolute shortest phrases from the brief.
+– Keep text limited to: headline (max 4 words), subheadline (max 6 words), bullet labels (max 2–3 words each), button (max 2 words), badge (e.g., "–20%").
+– ALL Cyrillic text MUST be kept EXACTLY as-is, wrapped in quotes. Say: "Render the text exactly as '...' with perfect Cyrillic spelling." Do NOT translate!
+
+=== OUTPUT ===
+
+Write one long, visually descriptive prompt. Be uncompromising on the split-layout structure, bullet points, and safe margins.`;
           
           const enhanceRes = await openai.chat.completions.create({
             model: 'gpt-4o',
