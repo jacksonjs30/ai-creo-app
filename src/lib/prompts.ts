@@ -410,7 +410,10 @@ The ad copy text MUST STRICTLY consist of 5 blocks (BULLETS ARE MANDATORY):
 5. DISCOUNT/CTA: You MUST include BOTH: a) a visible discount badge text like "–20%" or the promo offer from above, AND b) a CTA button text like "Дізнатися більше" or "Записатися". Write them as separate lines.
 
 In the "Designer Brief" for Direct Sale format MANDATORY:
-Style: premium SaaS / modern advertising. Dark or gradient background. Clean typography.
+CRITICAL FOR VARIETY: Do NOT write identical "Designer Brief" texts across variants! While keeping the layout rules, you MUST drastically change the visual aesthetic, background colors, and the content on the right side for each row!
+- Variety Examples for Right Side: Variant 1 uses a sleek laptop mockup on a desk; Variant 2 uses floating glowing 3D abstract shapes; Variant 3 uses isometric UI elements bursting from a smartphone; Variant 4 uses cinematic product renders. 
+- Variety Examples for Background: Vary colors drastically between variants (e.g., deep dark blue, elegant gradient purple, minimal white, neon dark mode).
+Style: premium SaaS / modern advertising. Clean typography.
 Layout: Split-layout. Left side (60%): headline, subheadline, bullets with solid icons (checkmarks or filled icons) to the left of each text, CTA button. Right side (40%): product mockups (laptop/smartphone with UI) OR cinematic 3D product visual OR abstract thematic illustration.
 Bullets: MUST be a vertical list with checkmark/circle icons to the LEFT of each text item. Each bullet on its own line.
 CTA button: MUST be drawn as a large, bright, solid-colored rectangular button at the bottom-left with text inside. NOT just text — a BUTTON shape!
