@@ -403,11 +403,11 @@ export default function Dashboard() {
                     <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a' }}>{mounted ? avatarCount : '-'}</span>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Аватары</span>
                   </Link>
-                  <Link href={`/project/${project.id}?tab=studio`} style={{ background: 'white', padding: '1rem', textAlign: 'center', textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <Link href={`/project/${project.id}?tab=studio&view=scripts`} style={{ background: 'white', padding: '1rem', textAlign: 'center', textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a' }}>{mounted ? scriptsCount : '-'}</span>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Сценарии</span>
                   </Link>
-                  <Link href={`/project/${project.id}?tab=results`} style={{ background: 'white', padding: '1rem', textAlign: 'center', textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <Link href={`/project/${project.id}?tab=gallery`} style={{ background: 'white', padding: '1rem', textAlign: 'center', textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a' }}>{mounted ? creativesCount : '-'}</span>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Креативы</span>
                   </Link>
