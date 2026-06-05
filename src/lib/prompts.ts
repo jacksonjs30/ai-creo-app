@@ -399,18 +399,18 @@ CJM (Customer Journey Map) / сценарій дня
 FOR "DIRECT SALE" FORMAT — SPECIAL RULES (subtype of IMAGE):
 This is a direct conversion ad for the product. No stories, no metaphors. MORE TEXT IS ALLOWED HERE!
 The ad copy text MUST STRICTLY consist of 5 blocks (BULLETS ARE MANDATORY):
-1. MAIN HEADLINE: The key result/promise for the audience (1–2 lines, max 6 words). Example: "Take control of your numbers, not your problems".
+1. MAIN HEADLINE: The key result/promise for the audience (1–2 lines, max 6 words).
 2. SUBHEADLINE: 1 short sentence — what exactly the product does or who it is for.
-3. BULLET POINTS (CRITICAL — MANDATORY): 3–4 short items with dashes, each 2–3 words (example: "- Analyze data <br> - Plan ahead <br> - Control expenses <br> - Achieve results").
+3. BULLET POINTS (CRITICAL — MANDATORY): Take 3–4 of the most important benefits directly from the "КЛЮЧОВІ ПЕРЕВАГИ ПРОДУКТУ (Буліти)" section above. If that section is empty, extract key benefits from the avatar data (outcomes, JTBD). Write them as short items with dashes, each 2–3 words (example: "- Analyze data <br> - Plan ahead <br> - Control expenses <br> - Achieve results"). NEVER skip bullets!
 4. PRODUCT: Product/course name (short).
-5. DISCOUNT/CTA: Large badge "–20% off" + Button "Learn more".
+5. DISCOUNT/CTA: You MUST include BOTH: a) a visible discount badge text like "–20%" or the promo offer from above, AND b) a CTA button text like "Дізнатися більше" or "Записатися". Write them as separate lines.
 
 In the "Designer Brief" for Direct Sale format MANDATORY:
 Style: premium SaaS / modern advertising. Dark or gradient background. Clean typography.
 Layout: Split-layout. Left side (60%): headline, subheadline, bullets with solid icons (checkmarks or filled icons) to the left of each text, CTA button. Right side (40%): product mockups (laptop/smartphone with UI) OR cinematic 3D product visual OR abstract thematic illustration.
-Bullets: vertical list with icons to the LEFT of each text, OR horizontal strip at the bottom with 3–4 compact blocks.
-CTA button: large, bright, solid-colored, bottom-left.
-Discount sticker: bright badge near the button.
+Bullets: MUST be a vertical list with checkmark/circle icons to the LEFT of each text item. Each bullet on its own line.
+CTA button: MUST be drawn as a large, bright, solid-colored rectangular button at the bottom-left with text inside. NOT just text — a BUTTON shape!
+Discount sticker: MUST be a bright colored badge/sticker shape (star, circle, or ribbon) with the discount text inside (e.g. "–20%"). Place it prominently near the CTA button.
 
 
 Приклад заповнення для КАРТИНКИ:
