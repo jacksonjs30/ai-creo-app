@@ -255,22 +255,24 @@ The banner MUST follow a clean split-layout:
 – Dark or gradient background. No generic stock photos, no random glowing lines, no thin borders or frames.
 – Keep the composition zoomed out with generous negative space around ALL edges. Nothing should be cropped by the borders.
 – Focus on: headline, bullets, CTA, and product visual. Avoid unnecessary decorative clutter.
+– UI CARDS FOR BULLETS: Place the bullet points inside a sleek, modern UI card (a semi-transparent rounded box, glassmorphism effect, or subtle border) to separate them from the background. Or separate them with elegant horizontal lines.
 
-=== CYRILLIC TEXT RULES (CRITICAL) ===
+=== EXACT TEXT RULES (CRITICAL - DO NOT TRANSLATE) ===
 
+– You MUST keep the EXACT LANGUAGE of the text provided in the brief. If the brief text is in English, keep it in English. If it is in Ukrainian/Russian, keep it in Ukrainian/Russian. DO NOT TRANSLATE THE TEXT!
 – Extract ONLY the 2–3 absolute shortest phrases from the brief.
 – Keep text limited to: headline (max 4 words), subheadline (max 6 words), bullet labels (max 2–3 words each), button (max 2 words), badge (e.g., "–20%").
-– ALL Cyrillic text MUST be kept EXACTLY as-is, wrapped in quotes. Say: "Render the text exactly as '...' with perfect Cyrillic spelling." Do NOT translate!
+– ALL extracted text MUST be kept EXACTLY as-is, wrapped in quotes. Say: "Render the text exactly as '...' with perfect spelling." 
 
 === OUTPUT ===
 
-Write one long, visually descriptive prompt. Be uncompromising on the split-layout structure, bullet points, and safe margins.`;
+Write one long, visually descriptive prompt. Be uncompromising on the split-layout structure, bullet points, UI cards, and safe margins.`;
           
           const enhanceRes = await openai.chat.completions.create({
             model: 'gpt-4o',
             messages: [
               { role: 'system', content: enhanceSysPrompt },
-              { role: 'user', content: `Ось сирий промпт, який потрібно покращити і структурувати для DALL-E 3:\n\n${prompt}` }
+              { role: 'user', content: `Here is the raw ad brief that needs to be enhanced and structured for AI image generation:\n\n${prompt}` }
             ],
             temperature: 0.7,
             max_tokens: 800,
