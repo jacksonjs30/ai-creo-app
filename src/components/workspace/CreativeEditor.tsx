@@ -200,6 +200,89 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
     window.addEventListener('mouseup', onMouseUp);
   };
 
+  const handleCustomResize = (e: React.MouseEvent, block: any, handle: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const rect = canvasRef.current?.getBoundingClientRect();
+    const node = document.getElementById(`block-${block.id}`);
+    if (!rect || !node) return;
+    
+    const actualH = block.h === 'auto' ? node.offsetHeight : block.h;
+    
+    const startCx = rect.left + (block.x * scale);
+    const startCy = rect.top + (block.y * scale);
+    const theta = (block.rotation || 0) * (Math.PI / 180);
+    
+    let oppLx = 0, oppLy = 0;
+    if (handle.includes('right')) oppLx = -block.w / 2;
+    if (handle.includes('left')) oppLx = block.w / 2;
+    if (handle.includes('bottom')) oppLy = -actualH / 2;
+    if (handle.includes('top')) oppLy = actualH / 2;
+    
+    const oppX = startCx + (oppLx * Math.cos(theta) - oppLy * Math.sin(theta)) * scale;
+    const oppY = startCy + (oppLx * Math.sin(theta) + oppLy * Math.cos(theta)) * scale;
+
+    const startW = block.w;
+    const startH = actualH;
+    
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const mx = moveEvent.clientX;
+      const my = moveEvent.clientY;
+      
+      const lx = ((mx - oppX) * Math.cos(-theta) - (my - oppY) * Math.sin(-theta)) / scale;
+      const ly = ((mx - oppX) * Math.sin(-theta) + (my - oppY) * Math.cos(-theta)) / scale;
+      
+      let newW = block.w;
+      let newH = startH;
+      
+      if (handle.includes('right')) newW = Math.max(20, lx);
+      if (handle.includes('left')) newW = Math.max(20, -lx);
+      if (handle.includes('bottom')) newH = Math.max(20, ly);
+      if (handle.includes('top')) newH = Math.max(20, -ly);
+
+      if (block.type === 'image' && handle.length > 6) {
+         const ratio = startW / startH;
+         if (newW / ratio > newH) newH = newW / ratio;
+         else newW = newH * ratio;
+      }
+      
+      let newCxLocal = 0;
+      let newCyLocal = 0;
+      
+      if (handle.includes('right')) newCxLocal = newW / 2;
+      if (handle.includes('left')) newCxLocal = -newW / 2;
+      if (handle.includes('bottom')) newCyLocal = newH / 2;
+      if (handle.includes('top')) newCyLocal = -newH / 2;
+      
+      const newCxScreen = oppX + (newCxLocal * Math.cos(theta) - newCyLocal * Math.sin(theta)) * scale;
+      const newCyScreen = oppY + (newCxLocal * Math.sin(theta) + newCyLocal * Math.cos(theta)) * scale;
+      
+      const finalX = (newCxScreen - rect.left) / scale;
+      const finalY = (newCyScreen - rect.top) / scale;
+      
+      let newFontSize = block.fontSize;
+      if (block.type === 'text' && (handle.includes('top') || handle.includes('bottom'))) {
+         const ratio = newW / startW;
+         newFontSize = Math.max(8, Math.round((block.fontSize || 32) * ratio));
+      }
+      
+      updateBlock(block.id, { 
+         w: Math.round(newW), 
+         h: block.type === 'text' ? 'auto' : Math.round(newH), 
+         x: Math.round(finalX), 
+         y: Math.round(finalY),
+         fontSize: newFontSize
+      });
+    };
+    
+    const onMouseUp = () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  };
+
   const handleDrag = (e: any, d: any, block: any) => {
     const w = parseInt(d.node.style.width) || block.w;
     const h = parseInt(d.node.style.height) || block.h || 150;
@@ -414,15 +497,18 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                           cursor: 'move',
                           zIndex: block.zIndex || 1
                         }}
-                        enableResizing={isSelected && !isExporting}
+                        enableResizing={false}
                         resizeHandleStyles={resizeHandleStyles}
                       >
-                        <div style={{ position: 'relative', width: '100%', height: '100%', transform: `rotate(${block.rotation || 0}deg)`, borderRadius: block.shape === 'circle' ? '999px' : `${block.cornerRadius || 0}px`, background: block.useGradient ? `linear-gradient(135deg, ${block.bgColorRole || '#3b82f6'}, ${block.gradientTo || '#000000'})` : (block.bgColorRole || '#3b82f6'), border: isSelected && !isExporting ? '2px solid #818cf8' : 'none' }}>
+                        <div id={`block-${block.id}`} style={{ position: 'relative', width: '100%', height: '100%', transform: `rotate(${block.rotation || 0}deg)`, borderRadius: block.shape === 'circle' ? '999px' : `${block.cornerRadius || 0}px`, background: block.useGradient ? `linear-gradient(135deg, ${block.bgColorRole || '#3b82f6'}, ${block.gradientTo || '#000000'})` : (block.bgColorRole || '#3b82f6'), border: isSelected && !isExporting ? '2px solid #818cf8' : 'none' }}>
                           {isSelected && !isExporting && (
                             <div onMouseDown={(e) => handleRotateStart(e, block)} style={{ position: 'absolute', bottom: -30, left: '50%', transform: 'translateX(-50%)', width: 24, height: 24, background: '#fff', border: '2px solid #818cf8', borderRadius: '50%', cursor: 'grab', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8' }}>
                               <RotateCw size={12} />
                             </div>
                           )}
+                          {isSelected && !isExporting && ['topLeft', 'topRight', 'bottomLeft', 'bottomRight', 'top', 'bottom', 'left', 'right'].map(h => (
+                            <div key={h} onMouseDown={(e) => handleCustomResize(e, block, h)} style={{ position: 'absolute', width: 12, height: 12, background: '#fff', border: '2px solid #818cf8', borderRadius: '50%', ...getHandleStyle(h) }} />
+                          ))}
                         </div>
                       </Rnd>
                     );
@@ -444,16 +530,19 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                           cursor: 'move',
                           zIndex: block.zIndex || 1
                         }}
-                        enableResizing={isSelected && !isExporting}
+                        enableResizing={false}
                         resizeHandleStyles={resizeHandleStyles}
                       >
-                        <div style={{ position: 'relative', width: '100%', height: '100%', transform: `rotate(${block.rotation || 0}deg)`, border: isSelected && !isExporting ? '2px solid #818cf8' : 'none' }}>
+                        <div id={`block-${block.id}`} style={{ position: 'relative', width: '100%', height: '100%', transform: `rotate(${block.rotation || 0}deg)`, border: isSelected && !isExporting ? '2px solid #818cf8' : 'none' }}>
                           <img src={block.imageUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} alt="" crossOrigin="anonymous" />
                           {isSelected && !isExporting && (
                             <div onMouseDown={(e) => handleRotateStart(e, block)} style={{ position: 'absolute', bottom: -30, left: '50%', transform: 'translateX(-50%)', width: 24, height: 24, background: '#fff', border: '2px solid #818cf8', borderRadius: '50%', cursor: 'grab', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8' }}>
                               <RotateCw size={12} />
                             </div>
                           )}
+                          {isSelected && !isExporting && ['topLeft', 'topRight', 'bottomLeft', 'bottomRight', 'top', 'bottom', 'left', 'right'].map(h => (
+                            <div key={h} onMouseDown={(e) => handleCustomResize(e, block, h)} style={{ position: 'absolute', width: 12, height: 12, background: '#fff', border: '2px solid #818cf8', borderRadius: '50%', ...getHandleStyle(h) }} />
+                          ))}
                         </div>
                       </Rnd>
                     );
@@ -491,10 +580,11 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                         cursor: isEditingText && isSelected ? 'text' : 'move',
                         zIndex: block.zIndex || 1,
                       }}
-                      enableResizing={isSelected && !isExporting && !isEditingText ? { top: false, bottom: false, topLeft: false, topRight: false, bottomLeft: false, bottomRight: false, left: true, right: true } : false}
+                      enableResizing={false}
                       resizeHandleStyles={resizeHandleStyles}
                     >
                       <div
+                        id={`block-${block.id}`}
                         style={{
                           position: 'relative',
                           width: '100%', height: '100%', transform: `rotate(${block.rotation || 0}deg)`,
@@ -535,11 +625,14 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                         >
                           {block.text}
                         </div>
-                        {isSelected && !isExporting && (
+                        {isSelected && !isExporting && !isEditingText && (
                           <div onMouseDown={(e) => handleRotateStart(e, block)} style={{ position: 'absolute', bottom: -30, left: '50%', transform: 'translateX(-50%)', width: 24, height: 24, background: '#fff', border: '2px solid #818cf8', borderRadius: '50%', cursor: 'grab', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8' }}>
                             <RotateCw size={12} />
                           </div>
                         )}
+                        {isSelected && !isExporting && !isEditingText && ['topLeft', 'topRight', 'bottomLeft', 'bottomRight', 'left', 'right'].map(h => (
+                          <div key={h} onMouseDown={(e) => handleCustomResize(e, block, h)} style={{ position: 'absolute', width: 12, height: 12, background: '#fff', border: '2px solid #818cf8', borderRadius: '50%', ...getHandleStyle(h) }} />
+                        ))}
                       </div>
                     </Rnd>
                   );
@@ -693,6 +786,30 @@ const iconBtnStyle = {
   background: '#21262d', border: '1px solid #30363d', color: '#c9d1d9',
   width: 32, height: 32, borderRadius: '6px', display: 'flex',
   alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
+};
+
+const getHandleStyle = (h: string) => {
+  const off = -6;
+  const style: any = {};
+  if (h.includes('top')) style.top = off;
+  if (h.includes('bottom')) style.bottom = off;
+  if (h.includes('left')) style.left = off;
+  if (h.includes('right')) style.right = off;
+  
+  if (h === 'top' || h === 'bottom') {
+     style.left = '50%';
+     style.transform = 'translateX(-50%)';
+     style.cursor = 'ns-resize';
+  } else if (h === 'left' || h === 'right') {
+     style.top = '50%';
+     style.transform = 'translateY(-50%)';
+     style.cursor = 'ew-resize';
+  } else if (h === 'topLeft' || h === 'bottomRight') {
+     style.cursor = 'nwse-resize';
+  } else {
+     style.cursor = 'nesw-resize';
+  }
+  return style;
 };
 
 function headerBtnStyle(bg: string, color: string, glow = false) {
