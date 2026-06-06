@@ -206,8 +206,8 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
     const centerX = d.x + w / 2;
     const centerY = d.y + h / 2;
     const newSnap: any = {};
-    if (Math.abs(centerX - CANVAS_SIZE / 2) < 15) newSnap.x = CANVAS_SIZE / 2;
-    if (Math.abs(centerY - CANVAS_SIZE / 2) < 15) newSnap.y = CANVAS_SIZE / 2;
+    if (Math.abs(centerX - CANVAS_SIZE / 2) < 4) newSnap.x = CANVAS_SIZE / 2;
+    if (Math.abs(centerY - CANVAS_SIZE / 2) < 4) newSnap.y = CANVAS_SIZE / 2;
     setSnapLines(newSnap);
   };
 
@@ -216,8 +216,8 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
     const h = parseInt(d.node.style.height) || block.h || 150;
     let finalX = d.x + w / 2;
     let finalY = d.y + h / 2;
-    if (Math.abs(finalX - CANVAS_SIZE / 2) < 15) finalX = CANVAS_SIZE / 2;
-    if (Math.abs(finalY - CANVAS_SIZE / 2) < 15) finalY = CANVAS_SIZE / 2;
+    if (Math.abs(finalX - CANVAS_SIZE / 2) < 4) finalX = CANVAS_SIZE / 2;
+    if (Math.abs(finalY - CANVAS_SIZE / 2) < 4) finalY = CANVAS_SIZE / 2;
     updateBlock(block.id, { x: finalX, y: finalY });
     setSnapLines({});
   };
@@ -411,19 +411,19 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                         onResizeStop={(_e, _dir, ref, _delta, pos) => updateBlock(block.id, { w: parseInt(ref.style.width), h: parseInt(ref.style.height), x: pos.x + parseInt(ref.style.width) / 2, y: pos.y + parseInt(ref.style.height) / 2 })}
                         onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedId(block.id); }}
                         style={{
-                          border: isSelected && !isExporting ? '2px solid #818cf8' : 'none',
                           cursor: 'move',
                           zIndex: block.zIndex || 1
                         }}
                         enableResizing={isSelected && !isExporting}
                         resizeHandleStyles={resizeHandleStyles}
                       >
-                        <div style={{ width: '100%', height: '100%', transform: `rotate(${block.rotation || 0}deg)`, borderRadius: block.shape === 'circle' ? '999px' : `${block.cornerRadius || 0}px`, background: block.useGradient ? `linear-gradient(135deg, ${block.bgColorRole || '#3b82f6'}, ${block.gradientTo || '#000000'})` : (block.bgColorRole || '#3b82f6') }} />
-                        {isSelected && !isExporting && (
-                          <div onMouseDown={(e) => handleRotateStart(e, block)} style={{ position: 'absolute', bottom: -30, left: '50%', transform: 'translateX(-50%)', width: 24, height: 24, background: '#fff', border: '2px solid #818cf8', borderRadius: '50%', cursor: 'grab', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8' }}>
-                            <RotateCw size={12} />
-                          </div>
-                        )}
+                        <div style={{ position: 'relative', width: '100%', height: '100%', transform: `rotate(${block.rotation || 0}deg)`, borderRadius: block.shape === 'circle' ? '999px' : `${block.cornerRadius || 0}px`, background: block.useGradient ? `linear-gradient(135deg, ${block.bgColorRole || '#3b82f6'}, ${block.gradientTo || '#000000'})` : (block.bgColorRole || '#3b82f6'), border: isSelected && !isExporting ? '2px solid #818cf8' : 'none' }}>
+                          {isSelected && !isExporting && (
+                            <div onMouseDown={(e) => handleRotateStart(e, block)} style={{ position: 'absolute', bottom: -30, left: '50%', transform: 'translateX(-50%)', width: 24, height: 24, background: '#fff', border: '2px solid #818cf8', borderRadius: '50%', cursor: 'grab', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8' }}>
+                              <RotateCw size={12} />
+                            </div>
+                          )}
+                        </div>
                       </Rnd>
                     );
                   }
@@ -441,21 +441,20 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                         onResizeStop={(_e, _dir, ref, _delta, pos) => updateBlock(block.id, { w: parseInt(ref.style.width), h: parseInt(ref.style.height), x: pos.x + parseInt(ref.style.width) / 2, y: pos.y + parseInt(ref.style.height) / 2 })}
                         onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedId(block.id); }}
                         style={{
-                          border: isSelected && !isExporting ? '2px solid #818cf8' : 'none',
                           cursor: 'move',
                           zIndex: block.zIndex || 1
                         }}
                         enableResizing={isSelected && !isExporting}
                         resizeHandleStyles={resizeHandleStyles}
                       >
-                        <div style={{ width: '100%', height: '100%', transform: `rotate(${block.rotation || 0}deg)` }}>
+                        <div style={{ position: 'relative', width: '100%', height: '100%', transform: `rotate(${block.rotation || 0}deg)`, border: isSelected && !isExporting ? '2px solid #818cf8' : 'none' }}>
                           <img src={block.imageUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} alt="" crossOrigin="anonymous" />
+                          {isSelected && !isExporting && (
+                            <div onMouseDown={(e) => handleRotateStart(e, block)} style={{ position: 'absolute', bottom: -30, left: '50%', transform: 'translateX(-50%)', width: 24, height: 24, background: '#fff', border: '2px solid #818cf8', borderRadius: '50%', cursor: 'grab', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8' }}>
+                              <RotateCw size={12} />
+                            </div>
+                          )}
                         </div>
-                        {isSelected && !isExporting && (
-                          <div onMouseDown={(e) => handleRotateStart(e, block)} style={{ position: 'absolute', bottom: -30, left: '50%', transform: 'translateX(-50%)', width: 24, height: 24, background: '#fff', border: '2px solid #818cf8', borderRadius: '50%', cursor: 'grab', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8' }}>
-                            <RotateCw size={12} />
-                          </div>
-                        )}
                       </Rnd>
                     );
                   }
@@ -489,7 +488,6 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                       }}
                       onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedId(block.id); }}
                       style={{
-                        border: isSelected && !isExporting ? '2px dashed #818cf8' : 'none',
                         cursor: isEditingText && isSelected ? 'text' : 'move',
                         zIndex: block.zIndex || 1,
                       }}
@@ -498,12 +496,14 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                     >
                       <div
                         style={{
+                          position: 'relative',
                           width: '100%', height: '100%', transform: `rotate(${block.rotation || 0}deg)`,
                           display: 'flex', alignItems: 'center',
                           justifyContent: block.align === 'center' ? 'center' : block.align === 'left' ? 'flex-start' : 'flex-end',
                           background: block.bgColorRole || 'transparent',
                           borderRadius: `${block.cornerRadius || 0}px`,
-                          padding: block.bgColorRole && block.bgColorRole !== 'transparent' ? '16px' : '0'
+                          padding: block.bgColorRole && block.bgColorRole !== 'transparent' ? '16px' : '0',
+                          border: isSelected && !isExporting ? '2px dashed #818cf8' : 'none'
                         }}
                       >
                         <div
@@ -535,12 +535,12 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                         >
                           {block.text}
                         </div>
+                        {isSelected && !isExporting && (
+                          <div onMouseDown={(e) => handleRotateStart(e, block)} style={{ position: 'absolute', bottom: -30, left: '50%', transform: 'translateX(-50%)', width: 24, height: 24, background: '#fff', border: '2px solid #818cf8', borderRadius: '50%', cursor: 'grab', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8' }}>
+                            <RotateCw size={12} />
+                          </div>
+                        )}
                       </div>
-                      {isSelected && !isExporting && (
-                        <div onMouseDown={(e) => handleRotateStart(e, block)} style={{ position: 'absolute', bottom: -30, left: '50%', transform: 'translateX(-50%)', width: 24, height: 24, background: '#fff', border: '2px solid #818cf8', borderRadius: '50%', cursor: 'grab', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8' }}>
-                          <RotateCw size={12} />
-                        </div>
-                      )}
                     </Rnd>
                   );
                 })}
