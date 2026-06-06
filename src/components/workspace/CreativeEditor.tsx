@@ -261,9 +261,18 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
       const finalY = (newCyScreen - rect.top) / scale;
       
       let newFontSize = block.fontSize;
-      if (block.type === 'text' && (handle.includes('top') || handle.includes('bottom'))) {
-         const ratio = newW / startW;
-         newFontSize = Math.max(8, Math.round((block.fontSize || 32) * ratio));
+      if (block.type === 'text') {
+         if (handle === 'top' || handle === 'bottom') {
+            const ratioH = newH / startH;
+            newFontSize = Math.max(8, Math.round((block.fontSize || 32) * ratioH));
+            newW = Math.max(20, startW * ratioH);
+         } else if (handle.includes('left') || handle.includes('right')) {
+            const ratioW = newW / startW;
+            // Only scale font on corners. Left/right edge just changes wrapping.
+            if (handle.length > 6) { // It's a corner like topLeft, bottomRight
+               newFontSize = Math.max(8, Math.round((block.fontSize || 32) * ratioW));
+            }
+         }
       }
       
       updateBlock(block.id, { 
@@ -597,7 +606,7 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                         }}
                       >
                         <div
-                          contentEditable={!isExporting && isSelected}
+                          contentEditable={isEditingText}
                           suppressContentEditableWarning
                           onDoubleClick={() => setIsEditingText(true)}
                           onBlur={(e) => {
@@ -630,7 +639,7 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                             <RotateCw size={12} />
                           </div>
                         )}
-                        {isSelected && !isExporting && !isEditingText && ['topLeft', 'topRight', 'bottomLeft', 'bottomRight', 'left', 'right'].map(h => (
+                        {isSelected && !isExporting && !isEditingText && ['topLeft', 'topRight', 'bottomLeft', 'bottomRight', 'top', 'bottom', 'left', 'right'].map(h => (
                           <div key={h} onMouseDown={(e) => handleCustomResize(e, block, h)} style={{ position: 'absolute', width: 12, height: 12, background: '#fff', border: '2px solid #818cf8', borderRadius: '50%', ...getHandleStyle(h) }} />
                         ))}
                       </div>
