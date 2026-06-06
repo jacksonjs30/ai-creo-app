@@ -232,24 +232,32 @@ export async function POST(req: NextRequest) {
           const enhanceSysPrompt = `You are an expert prompt engineer for AI image generation. Your goal is to take a raw advertising brief and rewrite it into a highly detailed, structured, and descriptive prompt in English that will generate a premium, high-converting ad banner.
 
 === FORMAT ADAPTATION (CRITICAL) ===
-Read the raw brief carefully. It contains specific instructions for the ad format (e.g., "DIRECT SALE", "REAL-PHOTO", etc.).
-You MUST adapt your layout and visual structure to match the requested format:
-- IF it's a "DIRECT SALE" format: Enforce a clean split-layout (60% text left, 40% visual right). You MUST include the bullet points as UI cards or list items, a CTA button, and a discount badge.
-- IF it's a "REAL-PHOTO" format: Enforce a full-bleed, realistic cinematic photo (UGC or premium lifestyle). Do NOT split the layout! Do NOT add bullet points! Just place the short text naturally over the image with good contrast.
-- For any other format: Follow the specific layout instructions in the brief.
+Read the raw brief carefully. It contains specific instructions for the ad format (e.g., "DIRECT SALE", "REAL-PHOTO", etc.). You MUST adapt your layout and visual structure to match the requested format:
 
-=== VISUAL STYLE (GENERAL) ===
-– Premium advertising look: clean typography, clear hierarchy, strong contrast.
-– No generic stock photos, no random glowing lines, no thin borders or frames.
-– Keep the composition zoomed out with generous negative space around ALL edges. Nothing should be cropped by the borders.
+🟢 IF IT'S A "DIRECT SALE" FORMAT:
+Enforce the following layout and elements strictly:
+1. SPLIT-LAYOUT: The banner MUST follow a clean split-layout: LEFT SIDE (60% of width) for marketing text, RIGHT SIDE (40% of width) for visual content (laptop/smartphone UI, 3D product, or abstract illustration).
+2. BULLET POINTS: Choose ONE layout randomly:
+   – Option A (VERTICAL): A vertical list of 3–4 bullet points under the subheadline.
+   – Option B (HORIZONTAL): A horizontal strip at the bottom with 3–4 compact items in a row.
+   UI CARDS FOR BULLETS: Place the bullet points inside a sleek, modern UI card (a semi-transparent rounded box, glassmorphism effect, or subtle border) to separate them from the background.
+3. CTA BUTTON & BADGE: A large, bright, solid-colored button at the bottom-left. Optionally add a promotional badge/sticker nearby (e.g., "–20%").
+4. STYLE: Premium SaaS / modern advertising look. Dark or gradient background. Focus on headline, bullets, CTA, and product visual. Avoid decorative clutter.
+
+🟢 IF IT'S A "REAL-PHOTO" FORMAT:
+Enforce a full-bleed, realistic cinematic photo (UGC or premium lifestyle). Do NOT split the layout! Do NOT add bullet points! Just place the short text naturally over the image with good contrast.
+
+🟢 FOR ANY OTHER FORMAT:
+Follow the specific layout instructions in the brief.
 
 === EXACT TEXT RULES (CRITICAL - DO NOT TRANSLATE) ===
 – You MUST keep the EXACT LANGUAGE of the text provided in the brief. If the brief text is in English, keep it in English. If it is in Ukrainian/Russian, keep it in Ukrainian/Russian. DO NOT TRANSLATE THE TEXT!
-– Extract ONLY the absolute shortest phrases from the brief.
+– Extract ONLY the 2–3 absolute shortest phrases from the brief.
+– Keep text limited to: headline (max 4 words), subheadline (max 6 words), bullet labels (max 2–3 words each), button (max 2 words), badge (e.g., "–20%").
 – ALL extracted text MUST be kept EXACTLY as-is, wrapped in quotes. Say: "Render the text exactly as '...' with perfect spelling." 
 
 === OUTPUT ===
-Write one long, visually descriptive prompt. Be uncompromising on following the specific format rules (layout and elements) requested in the raw brief.`;
+Write one long, visually descriptive prompt. Be uncompromising on following the specific format rules requested in the raw brief.`;
           
           const enhanceRes = await openai.chat.completions.create({
             model: 'gpt-4o',
