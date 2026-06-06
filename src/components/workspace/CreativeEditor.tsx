@@ -44,6 +44,7 @@ const resizeHandleStyles = {
 
 function getImageUrl(layout: any): string | null {
   if (!layout) return null;
+  if (layout.imageUrl) return layout.imageUrl;
   if (layout.background?.imageUrl) return layout.background.imageUrl;
   if (typeof layout.backgroundUrl === 'string') return layout.backgroundUrl;
   if (typeof layout === 'string') return layout;
@@ -509,7 +510,7 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                         enableResizing={false}
                         resizeHandleStyles={resizeHandleStyles}
                       >
-                        <div id={`block-${block.id}`} style={{ position: 'relative', width: '100%', height: '100%', transform: `rotate(${block.rotation || 0}deg)`, borderRadius: block.shape === 'circle' ? '999px' : `${block.cornerRadius || 0}px`, background: block.useGradient ? `linear-gradient(135deg, ${block.bgColorRole || '#3b82f6'}, ${block.gradientTo || '#000000'})` : (block.bgColorRole || '#3b82f6'), border: isSelected && !isExporting ? '2px solid #818cf8' : 'none' }}>
+                        <div id={`block-${block.id}`} style={{ position: 'relative', width: '100%', height: '100%', transform: `rotate(${block.rotation || 0}deg)`, borderRadius: block.shape === 'circle' ? '999px' : `${block.cornerRadius || 0}px`, background: block.useGradient ? `linear-gradient(90deg, ${block.bgColorRole || '#3b82f6'} 0%, ${block.gradientPos !== undefined ? block.gradientPos : 50}%, ${block.gradientTo || '#000000'} 100%)` : (block.bgColorRole || '#3b82f6'), border: isSelected && !isExporting ? '2px solid #818cf8' : 'none' }}>
                           {isSelected && !isExporting && (
                             <div onMouseDown={(e) => handleRotateStart(e, block)} style={{ position: 'absolute', bottom: -30, left: '50%', transform: 'translateX(-50%)', width: 24, height: 24, background: '#fff', border: '2px solid #818cf8', borderRadius: '50%', cursor: 'grab', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8' }}>
                               <RotateCw size={12} />
@@ -725,13 +726,26 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                     </label>
                   </Field>
                   {selectedBlock.useGradient && (
-                    <Field label="Второй цвет градиента">
-                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                        <input type="color" value={selectedBlock.gradientTo || '#000000'} onChange={(e) => updateBlock(selectedBlock.id, { gradientTo: e.target.value })} style={{ width: 38, height: 38, border: 'none', background: 'none', cursor: 'pointer', padding: 0 }} />
-                        <input type="text" value={selectedBlock.gradientTo || '#000000'} onChange={(e) => updateBlock(selectedBlock.id, { gradientTo: e.target.value })} style={{ ...inputStyle, flex: 1 }} />
-                        <button onClick={() => pickColor(selectedBlock.id, 'gradientTo')} style={iconBtnStyle} title="Пипетка"><Pipette size={16}/></button>
-                      </div>
-                    </Field>
+                    <>
+                      <Field label="Второй цвет градиента">
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                          <input type="color" value={selectedBlock.gradientTo || '#000000'} onChange={(e) => updateBlock(selectedBlock.id, { gradientTo: e.target.value })} style={{ width: 38, height: 38, border: 'none', background: 'none', cursor: 'pointer', padding: 0 }} />
+                          <input type="text" value={selectedBlock.gradientTo || '#000000'} onChange={(e) => updateBlock(selectedBlock.id, { gradientTo: e.target.value })} style={{ ...inputStyle, flex: 1 }} />
+                          <button onClick={() => pickColor(selectedBlock.id, 'gradientTo')} style={iconBtnStyle} title="Пипетка"><Pipette size={16}/></button>
+                        </div>
+                      </Field>
+                      <Field label="Центр градиента">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <input 
+                            type="range" min="0" max="100" 
+                            value={selectedBlock.gradientPos !== undefined ? selectedBlock.gradientPos : 50}
+                            onChange={(e) => updateBlock(selectedBlock.id, { gradientPos: parseInt(e.target.value) })}
+                            style={{ flex: 1, cursor: 'pointer' }}
+                          />
+                          <span style={{ fontSize: '0.8rem', color: '#8b949e', width: '30px' }}>{selectedBlock.gradientPos !== undefined ? selectedBlock.gradientPos : 50}%</span>
+                        </div>
+                      </Field>
+                    </>
                   )}
                 </>
               )}
