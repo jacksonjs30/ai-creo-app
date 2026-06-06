@@ -437,16 +437,87 @@ IF AD FORMAT = IMAGE (Meme, Infographic, Direct Sale, Photo+Text, etc.):
 ❌ WE DO NOT GENERATE: Video scripts (VO, TBE).
 
 FOR "DIRECT SALE" FORMAT (Special Rules):
-- This is a direct conversion ad. MORE TEXT IS ALLOWED.
-- The ad copy text MUST STRICTLY consist of 5 blocks:
-  1. MAIN HEADLINE (max 6 words).
-  2. SUBHEADLINE (1 short sentence).
-  3. BULLET POINTS (CRITICAL — MANDATORY! Extract 3–4 key benefits, format as a short list).
-  4. PRODUCT (Course / Product name).
-  5. DISCOUNT / CTA (visible discount badge + Button text).
-- In the "Designer Brief":
-  – LEFT SIDE (≈60%) for texts + bullets,
-  – RIGHT SIDE (≈40%) for product UI, 3D render, or metaphor.
+
+This is a direct response / direct conversion ad. MORE TEXT IS ALLOWED, but the layout must stay clean and structured.
+
+TEXT STRUCTURE (MANDATORY – ALWAYS PRESENT):
+The ad copy MUST STRICTLY consist of 5 blocks:
+  1. MAIN HEADLINE (max 6 words) – big, bold, at the top.
+  2. SUBHEADLINE (1 short sentence) – directly under the headline.
+  3. BULLET POINTS (CRITICAL — MANDATORY!) – 3–4 key benefits as a short list.
+  4. PRODUCT LABEL – course/product name or offer label.
+  5. DISCOUNT / CTA – visible badge (promo, benefit, or guarantee) + button text.
+
+BULLET LAYOUT & ICONS (STRUCTURE LIKE REFERENCE BANNERS):
+– BULLETS must be visual, not just plain text.
+– Each bullet point MUST have:
+  • a clear icon (shield, checklist, person, rocket, dashboard, etc.),
+  • a short bold line (2–4 words) as the benefit title,
+  • an optional micro-line in smaller text (explanation, 4–8 words).
+– You can use ONE of two layouts (pick whichever fits better for this concept):
+
+  • Vertical bullets:
+    – A vertical column of 3–4 bullet rows on the LEFT or CENTER-LEFT.
+    – Icons aligned in a straight column, text aligned to the right of each icon.
+  
+  • Horizontal feature row:
+    – A horizontal strip at the BOTTOM of the banner with 3–5 compact feature blocks.
+    – Each block: icon on top, 1–2 word label under it (e.g., “Confidentially”, “Individual approach”, “Real results”).
+
+– It is allowed (and desirable) to combine:
+  • vertical bullets near the left side for main benefits,
+  • and a horizontal micro-feature strip at the very bottom for trust/extra points (as in many reference banners).
+
+LAYOUT / COMPOSITION (STRUCTURE LIKE REFERENCE BANNERS):
+– Use a clear split or asymmetrical layout, inspired by high-performing direct sale banners:
+
+  • OPTION 1 – TEXT LEFT, VISUAL RIGHT:
+    – LEFT SIDE (~60% width): main headline, subheadline, vertical bullets, CTA/button.
+    – RIGHT SIDE (~40% width): strong product visual:
+      ▸ person with product (e.g., holding card, laptop, phone),
+      ▸ or product UI on laptop/phone,
+      ▸ or a clear metaphor (e.g., money leak, dashboards, city background).
+
+  • OPTION 2 – TEXT TOP, VISUAL BOTTOM:
+    – Top section: headline + subheadline + bullets.
+    – Middle/right: product visual (UI, person, metaphor).
+    – Bottom: wide CTA strip with button and small icons/benefits.
+
+– CTA AREA:
+  • CTA must be placed inside a clearly separated block (button, banner strip, or card).
+  • Make the CTA area visually similar to reference banners:
+    – solid shape, rounded corners, arrow or icon,
+    – short text like “Get consultation”, “Start test”, “Download guide”.
+
+– PRODUCT LABEL / PROMO BADGE:
+  • Use a pill/badge element for product name or promo:
+    – e.g., “Online course”, “For business in USA”, “Free consultation”, “Special price”.
+  • Place it near the headline or near the CTA, not randomly.
+
+ICON ROW FOR TRUST / FEATURES:
+– At the very bottom, it is strongly recommended to add a row of 3–5 small icons with labels, similar to:
+  • “Confidential & safe”
+  • “Individual approach”
+  • “Real results”
+  • “Support at every step”
+– These bottom icons should be compact and aligned in one row, visually separated from the main content by spacing or a subtle background strip.
+
+SAFE MARGINS & READABILITY:
+– All text blocks (headline, bullets, CTA) MUST stay inside safe margins (at least 10–15% from each edge of the banner).
+– No text may touch or be cropped by the edges.
+– Keep enough breathing room around each cluster: headline block, bullets block, CTA block, bottom icon row.
+
+SUMMARY FOR DIRECT SALE FORMAT:
+– Think of the banner as a structured sales one-pager:
+  • Top: promise (headline + subheadline),
+  • Middle-left: main benefits as bullet icons,
+  • Middle-right: strong product/person visual,
+  • Bottom: CTA strip + small trust badges.
+– Your DESIGNER BRIEF must explicitly describe:
+  • where each of the 5 text blocks is placed,
+  • where bullet icons go (vertical / horizontal),
+  • where the product/person/ UI visual is placed,
+  • where the CTA block and bottom icon row are located.
 
 FOR "REAL-PHOTO CREO" FORMAT:
 - Realistic lifestyle / UGC photo.
