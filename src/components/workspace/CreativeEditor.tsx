@@ -139,7 +139,7 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
       id: newId,
       type,
       x: CANVAS_SIZE / 2,
-      y: CANVAS_SIZE / 2,
+      y: type === 'text' ? CANVAS_SIZE / 2 - 50 : CANVAS_SIZE / 2,
       w: type === 'text' ? 600 : type === 'image' ? 300 : 400,
       h: type === 'text' ? 'auto' : type === 'image' ? 300 : 400,
       zIndex: blocks.length + 1,
@@ -183,8 +183,11 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
     
+    const node = document.getElementById(`block-${block.id}`);
+    const actualH = block.h === 'auto' ? (node?.offsetHeight || 100) : block.h;
+    
     const centerX = rect.left + (block.x * scale);
-    const centerY = rect.top + (block.y * scale);
+    const centerY = rect.top + (block.type === 'text' ? (block.y + actualH / 2) : block.y) * scale;
 
     const startMouseAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
 
@@ -211,7 +214,7 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
     const actualH = block.h === 'auto' ? node.offsetHeight : block.h;
     
     const startCx = rect.left + (block.x * scale);
-    const startCy = rect.top + (block.y * scale);
+    const startCy = rect.top + (block.type === 'text' ? (block.y + actualH / 2) : block.y) * scale;
     const theta = (block.rotation || 0) * (Math.PI / 180);
     
     let oppLx = 0, oppLy = 0;
@@ -258,8 +261,10 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
       const newCxScreen = oppX + (newCxLocal * Math.cos(theta) - newCyLocal * Math.sin(theta)) * scale;
       const newCyScreen = oppY + (newCxLocal * Math.sin(theta) + newCyLocal * Math.cos(theta)) * scale;
       
-      const finalX = (newCxScreen - rect.left) / scale;
-      const finalY = (newCyScreen - rect.top) / scale;
+      const finalXCenter = (newCxScreen - rect.left) / scale;
+      const finalYCenter = (newCyScreen - rect.top) / scale;
+      const finalX = finalXCenter;
+      const finalY = block.type === 'text' ? (finalYCenter - newH / 2) : finalYCenter;
       
       let newFontSize = block.fontSize;
       if (block.type === 'text') {
@@ -295,9 +300,9 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
 
   const handleDrag = (e: any, d: any, block: any) => {
     const w = parseInt(d.node.style.width) || block.w;
-    const h = parseInt(d.node.style.height) || block.h || 150;
+    const h = block.h === 'auto' ? d.node.offsetHeight : (parseInt(d.node.style.height) || block.h || 150);
     const centerX = d.x + w / 2;
-    const centerY = d.y + h / 2;
+    const centerY = block.type === 'text' ? d.y + h / 2 : d.y + h / 2;
     const newSnap: any = {};
     if (Math.abs(centerX - CANVAS_SIZE / 2) < 4) newSnap.x = CANVAS_SIZE / 2;
     if (Math.abs(centerY - CANVAS_SIZE / 2) < 4) newSnap.y = CANVAS_SIZE / 2;
@@ -306,9 +311,9 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
 
   const handleDragStop = (e: any, d: any, block: any) => {
     const w = parseInt(d.node.style.width) || block.w;
-    const h = parseInt(d.node.style.height) || block.h || 150;
+    const h = block.h === 'auto' ? d.node.offsetHeight : (parseInt(d.node.style.height) || block.h || 150);
     let finalX = d.x + w / 2;
-    let finalY = d.y + h / 2;
+    let finalY = block.type === 'text' ? d.y : d.y + h / 2;
     if (Math.abs(finalX - CANVAS_SIZE / 2) < 4) finalX = CANVAS_SIZE / 2;
     if (Math.abs(finalY - CANVAS_SIZE / 2) < 4) finalY = CANVAS_SIZE / 2;
     updateBlock(block.id, { x: finalX, y: finalY });
@@ -563,7 +568,7 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                     <Rnd
                       key={block.id}
                       scale={scale}
-                      position={{ x: block.x - block.w / 2, y: block.y - (block.h === 'auto' ? 0 : block.h / 2) }}
+                      position={{ x: block.x - block.w / 2, y: block.y }}
                       size={{ width: block.w, height: 'auto' }}
                       lockAspectRatio={false}
                       disableDragging={isEditingText && isSelected}
@@ -581,7 +586,7 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                           w: newW, 
                           h: 'auto',
                           x: pos.x + newW / 2, 
-                          y: pos.y + ref.offsetHeight / 2,
+                          y: pos.y,
                           fontSize: newFontSize
                         });
                       }}
