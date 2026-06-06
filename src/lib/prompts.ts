@@ -528,8 +528,11 @@ ICON ROW FOR TRUST / FEATURES (BOTTOM STRIP):
   • “Real results”
   • “Support at every step”
   • “24/7 online”
-– These bottom icons should be compact and aligned in a single row, visually separated from the main content by spacing or a subtle background strip.
-– This row must stay inside the safe margins and look like a small “trust bar”.
+– These bottom bullets must be the smallest text in the entire layout, but they MUST remain perfectly crisp and readable.
+– Each label in this bottom row MUST have its own clear, distinct icon (not just a generic dot).
+– These bottom icons and labels should be extremely compact and aligned in a single horizontal row.
+– Visually separate them from the main content by spacing or a subtle background strip.
+– This row must stay inside the safe margins and look like a small, premium “trust bar”.
 
 SAFE MARGINS & READABILITY (CRITICAL ANTI-CROP RULES):
 – All text blocks (headline, subheadline, bullets, CTA, labels, bottom icons) MUST stay inside safe margins:
