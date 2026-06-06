@@ -523,13 +523,16 @@ SAFE MARGINS & READABILITY (CRITICAL ANTI-ZOOM RULES):
   • keep CTA and main text perfectly sharp and readable.
 – Use brand-like accent colors for headline emphasis and CTA buttons, while keeping backgrounds clean and controlled.
 
-SUMMARY FOR DIRECT SALE FORMAT:
+SUMMARY FOR DIRECT SALE FORMAT (TABLE COLUMN RULES):
 – Think of the banner as a structured sales one-pager:
   • Top: promise (headline + subheadline),
   • Middle-left or middle-right: main benefits as bullet icons (vertical list),
   • Opposite side: strong product/person visual,
   • Bottom: CTA strip + small trust badges in a horizontal row.
-– Your DESIGNER BRIEF must explicitly describe:
+
+COLUMN RULES:
+– 📄 IMAGE TEXT column: This is where you write ALL the actual ad copy (Headline, Subheadline, Bullets, Label, CTA). Do NOT put the ad copy in the Designer Brief.
+– 📐 DESIGNER BRIEF column: DO NOT put the ad text here. This column is STRICTLY for describing the visual layout and scene. You must explicitly describe:
   • where each of the 5 text blocks is placed,
   • where bullet icons go (vertical / horizontal),
   • where the product/person/ UI visual is placed,
