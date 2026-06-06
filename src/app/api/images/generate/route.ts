@@ -250,6 +250,11 @@ Enforce a full-bleed, realistic cinematic photo (UGC or premium lifestyle). Do N
 🟢 FOR ANY OTHER FORMAT:
 Follow the specific layout instructions in the brief.
 
+=== VISUAL STYLE (GENERAL) ===
+– Premium advertising look: clean typography, clear hierarchy, strong contrast.
+– No generic stock photos, no random glowing lines, no thin borders or frames.
+– SAFE MARGINS (CRITICAL): Keep the composition zoomed out with generous negative space around ALL edges. NO TEXT SHOULD EVER TOUCH THE EDGES OR BE CROPPED.
+
 === EXACT TEXT RULES (CRITICAL - DO NOT TRANSLATE) ===
 – You MUST keep the EXACT LANGUAGE of the text provided in the brief. If the brief text is in English, keep it in English. If it is in Ukrainian/Russian, keep it in Ukrainian/Russian. DO NOT TRANSLATE THE TEXT!
 – Extract ONLY the 2–3 absolute shortest phrases from the brief.
@@ -257,7 +262,7 @@ Follow the specific layout instructions in the brief.
 – ALL extracted text MUST be kept EXACTLY as-is, wrapped in quotes. Say: "Render the text exactly as '...' with perfect spelling." 
 
 === OUTPUT ===
-Write one long, visually descriptive prompt. Be uncompromising on following the specific format rules requested in the raw brief.`;
+Write one long, visually descriptive prompt. Be uncompromising on following the specific format rules requested in the raw brief, and ALWAYS enforce strict safe margins so no text is cropped.`;
           
           const enhanceRes = await openai.chat.completions.create({
             model: 'gpt-4o',
