@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Rnd } from 'react-rnd';
-import { X, Download, Save, LayoutTemplate, Type, Square, Circle, Image as ImageIcon, UploadCloud, Pipette, Trash2, ChevronUp, ChevronDown, Loader2 } from 'lucide-react';
+import { X, Download, Save, LayoutTemplate, Type, Square, Circle, Image as ImageIcon, UploadCloud, Pipette, Trash2, ChevronUp, ChevronDown, Loader2, RotateCw } from 'lucide-react';
 import * as htmlToImage from 'html-to-image';
 
 export interface Asset {
@@ -63,6 +63,7 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
   const [isEditingText, setIsEditingText] = useState(false);
   const [scale, setScale] = useState(0.55);
   const [activeTab, setActiveTab] = useState<'tools' | 'assets'>('tools');
+  const [snapLines, setSnapLines] = useState<{x?: number, y?: number}>({});
   const canvasRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -95,6 +96,12 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
             setSelectedId(newId);
           } catch(err) {}
         }
+      }
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) {
+        const activeEl = document.activeElement;
+        if (activeEl && activeEl.tagName === 'DIV' && activeEl.getAttribute('contenteditable') === 'true') return;
+        if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) return;
+        deleteBlock(selectedId);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -133,7 +140,7 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
       x: CANVAS_SIZE / 2,
       y: CANVAS_SIZE / 2,
       w: type === 'text' ? 600 : type === 'image' ? 300 : 400,
-      h: type === 'text' ? 150 : type === 'image' ? 300 : 400,
+      h: type === 'text' ? 'auto' : type === 'image' ? 300 : 400,
       zIndex: blocks.length + 1,
       ...extra
     };
@@ -166,6 +173,53 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
   const deleteBlock = (id: string) => {
     setBlocks(prev => prev.filter(b => b.id !== id));
     if (selectedId === id) setSelectedId(null);
+  };
+
+  const handleRotateStart = (e: React.MouseEvent, block: any) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const startAngle = block.rotation || 0;
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    
+    const centerX = rect.left + (block.x * scale);
+    const centerY = rect.top + (block.y * scale);
+
+    const startMouseAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const currentMouseAngle = Math.atan2(moveEvent.clientY - centerY, moveEvent.clientX - centerX) * (180 / Math.PI);
+      let diff = currentMouseAngle - startMouseAngle;
+      updateBlock(block.id, { rotation: Math.round(startAngle + diff) });
+    };
+    const onMouseUp = () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  };
+
+  const handleDrag = (e: any, d: any, block: any) => {
+    const w = parseInt(d.node.style.width) || block.w;
+    const h = parseInt(d.node.style.height) || block.h || 150;
+    const centerX = d.x + w / 2;
+    const centerY = d.y + h / 2;
+    const newSnap: any = {};
+    if (Math.abs(centerX - CANVAS_SIZE / 2) < 15) newSnap.x = CANVAS_SIZE / 2;
+    if (Math.abs(centerY - CANVAS_SIZE / 2) < 15) newSnap.y = CANVAS_SIZE / 2;
+    setSnapLines(newSnap);
+  };
+
+  const handleDragStop = (e: any, d: any, block: any) => {
+    const w = parseInt(d.node.style.width) || block.w;
+    const h = parseInt(d.node.style.height) || block.h || 150;
+    let finalX = d.x + w / 2;
+    let finalY = d.y + h / 2;
+    if (Math.abs(finalX - CANVAS_SIZE / 2) < 15) finalX = CANVAS_SIZE / 2;
+    if (Math.abs(finalY - CANVAS_SIZE / 2) < 15) finalY = CANVAS_SIZE / 2;
+    updateBlock(block.id, { x: finalX, y: finalY });
+    setSnapLines({});
   };
 
   const handleExportAndSave = async () => {
@@ -336,6 +390,8 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
               )}
               
               <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
+                {snapLines.x && <div style={{ position: 'absolute', top: 0, bottom: 0, left: snapLines.x, width: 2, background: '#f43f5e', zIndex: 9999, pointerEvents: 'none' }} />}
+                {snapLines.y && <div style={{ position: 'absolute', left: 0, right: 0, top: snapLines.y, height: 2, background: '#f43f5e', zIndex: 9999, pointerEvents: 'none' }} />}
                 {blocks.sort((a,b) => (a.zIndex || 0) - (b.zIndex || 0)).map((block) => {
                   const isSelected = selectedId === block.id;
                   const bx = block.x - block.w / 2;
@@ -350,20 +406,24 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                         scale={scale}
                         position={{ x: bx, y: by }}
                         size={{ width: bw, height: bh }}
-                        onDragStop={(_e, d) => updateBlock(block.id, { x: d.x + bw / 2, y: d.y + bh / 2 })}
+                        onDrag={(e, d) => handleDrag(e, d, block)}
+                        onDragStop={(e, d) => handleDragStop(e, d, block)}
                         onResizeStop={(_e, _dir, ref, _delta, pos) => updateBlock(block.id, { w: parseInt(ref.style.width), h: parseInt(ref.style.height), x: pos.x + parseInt(ref.style.width) / 2, y: pos.y + parseInt(ref.style.height) / 2 })}
                         onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedId(block.id); }}
                         style={{
-                          border: isSelected && !isExporting ? '3px solid #818cf8' : 'none',
-                          borderRadius: block.shape === 'circle' ? '999px' : `${block.cornerRadius || 0}px`,
-                          background: block.bgColorRole || '#3b82f6',
+                          border: isSelected && !isExporting ? '2px solid #818cf8' : 'none',
                           cursor: 'move',
                           zIndex: block.zIndex || 1
                         }}
                         enableResizing={isSelected && !isExporting}
                         resizeHandleStyles={resizeHandleStyles}
                       >
-                        <div style={{ width: '100%', height: '100%' }} />
+                        <div style={{ width: '100%', height: '100%', transform: `rotate(${block.rotation || 0}deg)`, borderRadius: block.shape === 'circle' ? '999px' : `${block.cornerRadius || 0}px`, background: block.useGradient ? `linear-gradient(135deg, ${block.bgColorRole || '#3b82f6'}, ${block.gradientTo || '#000000'})` : (block.bgColorRole || '#3b82f6') }} />
+                        {isSelected && !isExporting && (
+                          <div onMouseDown={(e) => handleRotateStart(e, block)} style={{ position: 'absolute', bottom: -30, left: '50%', transform: 'translateX(-50%)', width: 24, height: 24, background: '#fff', border: '2px solid #818cf8', borderRadius: '50%', cursor: 'grab', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8' }}>
+                            <RotateCw size={12} />
+                          </div>
+                        )}
                       </Rnd>
                     );
                   }
@@ -376,18 +436,26 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                         position={{ x: bx, y: by }}
                         size={{ width: bw, height: bh }}
                         lockAspectRatio
-                        onDragStop={(_e, d) => updateBlock(block.id, { x: d.x + bw / 2, y: d.y + bh / 2 })}
+                        onDrag={(e, d) => handleDrag(e, d, block)}
+                        onDragStop={(e, d) => handleDragStop(e, d, block)}
                         onResizeStop={(_e, _dir, ref, _delta, pos) => updateBlock(block.id, { w: parseInt(ref.style.width), h: parseInt(ref.style.height), x: pos.x + parseInt(ref.style.width) / 2, y: pos.y + parseInt(ref.style.height) / 2 })}
                         onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedId(block.id); }}
                         style={{
-                          border: isSelected && !isExporting ? '3px solid #818cf8' : 'none',
+                          border: isSelected && !isExporting ? '2px solid #818cf8' : 'none',
                           cursor: 'move',
                           zIndex: block.zIndex || 1
                         }}
                         enableResizing={isSelected && !isExporting}
                         resizeHandleStyles={resizeHandleStyles}
                       >
-                        <img src={block.imageUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} alt="" crossOrigin="anonymous" />
+                        <div style={{ width: '100%', height: '100%', transform: `rotate(${block.rotation || 0}deg)` }}>
+                          <img src={block.imageUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} alt="" crossOrigin="anonymous" />
+                        </div>
+                        {isSelected && !isExporting && (
+                          <div onMouseDown={(e) => handleRotateStart(e, block)} style={{ position: 'absolute', bottom: -30, left: '50%', transform: 'translateX(-50%)', width: 24, height: 24, background: '#fff', border: '2px solid #818cf8', borderRadius: '50%', cursor: 'grab', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8' }}>
+                            <RotateCw size={12} />
+                          </div>
+                        )}
                       </Rnd>
                     );
                   }
@@ -397,70 +465,82 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                     <Rnd
                       key={block.id}
                       scale={scale}
-                      position={{ x: bx, y: by }}
-                      size={{ width: bw, height: bh }}
+                      position={{ x: block.x - block.w / 2, y: block.y - (block.h === 'auto' ? 0 : block.h / 2) }}
+                      size={{ width: block.w, height: 'auto' }}
                       lockAspectRatio={false}
                       disableDragging={isEditingText && isSelected}
-                      onDragStop={(_e, d) => updateBlock(block.id, { x: d.x + bw / 2, y: d.y + bh / 2 })}
+                      onDrag={(e, d) => handleDrag(e, d, block)}
+                      onDragStop={(e, d) => handleDragStop(e, d, block)}
                       onResizeStop={(_e, dir, ref, _delta, pos) => {
                         const newW = parseInt(ref.style.width);
-                        const newH = parseInt(ref.style.height);
                         const isCorner = dir.includes('top') || dir.includes('bottom');
                         let newFontSize = block.fontSize || 32;
                         if (isCorner) {
-                          const scaleRatio = newW / bw;
+                          const scaleRatio = newW / block.w;
                           newFontSize = Math.max(8, Math.round(newFontSize * scaleRatio));
                         }
                         updateBlock(block.id, { 
                           w: newW, 
-                          h: newH, 
+                          h: 'auto',
                           x: pos.x + newW / 2, 
-                          y: pos.y + newH / 2,
+                          y: pos.y + ref.offsetHeight / 2,
                           fontSize: newFontSize
                         });
                       }}
                       onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedId(block.id); }}
                       style={{
-                        border: isSelected && !isExporting ? '3px dashed #818cf8' : 'none',
-                        display: 'flex', alignItems: 'center',
-                        justifyContent: block.align === 'center' ? 'center' : block.align === 'left' ? 'flex-start' : 'flex-end',
+                        border: isSelected && !isExporting ? '2px dashed #818cf8' : 'none',
                         cursor: isEditingText && isSelected ? 'text' : 'move',
                         zIndex: block.zIndex || 1,
-                        background: block.bgColorRole || 'transparent',
-                        borderRadius: `${block.cornerRadius || 0}px`,
-                        padding: block.bgColorRole && block.bgColorRole !== 'transparent' ? '16px' : '0'
                       }}
-                      enableResizing={isSelected && !isExporting && !isEditingText}
+                      enableResizing={isSelected && !isExporting && !isEditingText ? { top: false, bottom: false, topLeft: false, topRight: false, bottomLeft: false, bottomRight: false, left: true, right: true } : false}
                       resizeHandleStyles={resizeHandleStyles}
                     >
                       <div
-                        contentEditable={!isExporting && isSelected}
-                        suppressContentEditableWarning
-                        onDoubleClick={() => setIsEditingText(true)}
-                        onBlur={(e) => {
-                          setIsEditingText(false);
-                          updateBlock(block.id, { text: e.currentTarget.innerText });
-                        }}
-                        onMouseDown={(e) => {
-                          if (isEditingText && isSelected) e.stopPropagation();
-                        }}
                         style={{
-                          width: '100%', height: '100%', outline: 'none', 
-                          cursor: isEditingText && isSelected ? 'text' : 'move',
-                          fontSize: `${block.fontSize || 32}px`,
-                          fontFamily: `'${block.fontFamily || 'Montserrat'}', sans-serif`,
-                          fontWeight: block.fontWeight || 600,
-                          color: block.colorRole || '#ffffff',
-                          textAlign: block.align as any || 'center',
-                          lineHeight: 1.15,
-                          textTransform: block.styleHints?.uppercase ? 'uppercase' : 'none',
-                          fontStyle: block.styleHints?.italic ? 'italic' : 'normal',
-                          whiteSpace: 'pre-wrap',
-                          overflow: 'hidden'
+                          width: '100%', height: '100%', transform: `rotate(${block.rotation || 0}deg)`,
+                          display: 'flex', alignItems: 'center',
+                          justifyContent: block.align === 'center' ? 'center' : block.align === 'left' ? 'flex-start' : 'flex-end',
+                          background: block.bgColorRole || 'transparent',
+                          borderRadius: `${block.cornerRadius || 0}px`,
+                          padding: block.bgColorRole && block.bgColorRole !== 'transparent' ? '16px' : '0'
                         }}
                       >
-                        {block.text}
+                        <div
+                          contentEditable={!isExporting && isSelected}
+                          suppressContentEditableWarning
+                          onDoubleClick={() => setIsEditingText(true)}
+                          onBlur={(e) => {
+                            setIsEditingText(false);
+                            updateBlock(block.id, { text: e.currentTarget.innerText });
+                          }}
+                          onMouseDown={(e) => {
+                            if (isEditingText && isSelected) e.stopPropagation();
+                          }}
+                          style={{
+                            width: '100%', outline: 'none', 
+                            cursor: isEditingText && isSelected ? 'text' : 'inherit',
+                            fontSize: `${block.fontSize || 32}px`,
+                            fontFamily: `'${block.fontFamily || 'Montserrat'}', sans-serif`,
+                            fontWeight: block.fontWeight || 600,
+                            color: block.colorRole || '#ffffff',
+                            textAlign: block.align as any || 'center',
+                            lineHeight: 1.15,
+                            textTransform: block.styleHints?.uppercase ? 'uppercase' : 'none',
+                            fontStyle: block.styleHints?.italic ? 'italic' : 'normal',
+                            whiteSpace: 'pre-wrap',
+                            textShadow: block.hasShadow ? '0px 4px 12px rgba(0,0,0,0.5)' : 'none',
+                            overflow: 'hidden'
+                          }}
+                        >
+                          {block.text}
+                        </div>
                       </div>
+                      {isSelected && !isExporting && (
+                        <div onMouseDown={(e) => handleRotateStart(e, block)} style={{ position: 'absolute', bottom: -30, left: '50%', transform: 'translateX(-50%)', width: 24, height: 24, background: '#fff', border: '2px solid #818cf8', borderRadius: '50%', cursor: 'grab', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8' }}>
+                          <RotateCw size={12} />
+                        </div>
+                      )}
                     </Rnd>
                   );
                 })}
@@ -507,13 +587,20 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                       </select>
                     </Field>
                   </div>
-                  <Field label="Цвет текста">
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                      <input type="color" value={selectedBlock.colorRole || '#ffffff'} onChange={(e) => updateBlock(selectedBlock.id, { colorRole: e.target.value })} style={{ width: 38, height: 38, border: 'none', background: 'none', cursor: 'pointer', padding: 0 }} />
-                      <input type="text" value={selectedBlock.colorRole || '#ffffff'} onChange={(e) => updateBlock(selectedBlock.id, { colorRole: e.target.value })} style={{ ...inputStyle, flex: 1 }} />
-                      <button onClick={() => pickColor(selectedBlock.id, 'colorRole')} style={iconBtnStyle} title="Пипетка"><Pipette size={16}/></button>
-                    </div>
-                  </Field>
+                  <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <Field label="Цвет текста" style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <input type="color" value={selectedBlock.colorRole || '#ffffff'} onChange={(e) => updateBlock(selectedBlock.id, { colorRole: e.target.value })} style={{ width: 38, height: 38, border: 'none', background: 'none', cursor: 'pointer', padding: 0 }} />
+                        <button onClick={() => pickColor(selectedBlock.id, 'colorRole')} style={iconBtnStyle} title="Пипетка"><Pipette size={16}/></button>
+                      </div>
+                    </Field>
+                    <Field label="Тень" style={{ flex: 1 }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '0.5rem 0' }}>
+                        <input type="checkbox" checked={selectedBlock.hasShadow || false} onChange={(e) => updateBlock(selectedBlock.id, { hasShadow: e.target.checked })} />
+                        <span style={{ fontSize: '0.8rem', color: '#e6edf3' }}>Включить тень</span>
+                      </label>
+                    </Field>
+                  </div>
                 </>
               )}
 
@@ -525,6 +612,26 @@ export function CreativeEditor({ layout, assets = [], onClose, onSave, onUploadA
                     <button onClick={() => pickColor(selectedBlock.id, 'bgColorRole')} style={iconBtnStyle} title="Пипетка"><Pipette size={16}/></button>
                   </div>
                 </Field>
+              )}
+              
+              {selectedBlock.type === 'shape' && (
+                <>
+                  <Field label="Градиент">
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '0.5rem' }}>
+                      <input type="checkbox" checked={selectedBlock.useGradient || false} onChange={(e) => updateBlock(selectedBlock.id, { useGradient: e.target.checked })} />
+                      <span style={{ fontSize: '0.8rem', color: '#e6edf3' }}>Использовать градиент</span>
+                    </label>
+                  </Field>
+                  {selectedBlock.useGradient && (
+                    <Field label="Второй цвет градиента">
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <input type="color" value={selectedBlock.gradientTo || '#000000'} onChange={(e) => updateBlock(selectedBlock.id, { gradientTo: e.target.value })} style={{ width: 38, height: 38, border: 'none', background: 'none', cursor: 'pointer', padding: 0 }} />
+                        <input type="text" value={selectedBlock.gradientTo || '#000000'} onChange={(e) => updateBlock(selectedBlock.id, { gradientTo: e.target.value })} style={{ ...inputStyle, flex: 1 }} />
+                        <button onClick={() => pickColor(selectedBlock.id, 'gradientTo')} style={iconBtnStyle} title="Пипетка"><Pipette size={16}/></button>
+                      </div>
+                    </Field>
+                  )}
+                </>
               )}
               
               {selectedBlock.type === 'shape' && selectedBlock.shape === 'rect' && (
