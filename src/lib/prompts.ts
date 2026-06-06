@@ -436,299 +436,271 @@ IF AD FORMAT = IMAGE (Meme, Infographic, Direct Sale, Photo+Text, etc.):
 ✅ WE GENERATE: Text blocks (Hook, Pain, Solution, CTA) AND a FULL DESIGNER BRIEF.
 ❌ WE DO NOT GENERATE: Video scripts (VO, TBE).
 
-FOR "DIRECT SALE" FORMAT (Special Rules, Layout + Bullets + Bottom Row + Anti-Crop + Typography):
+FOR "DIRECT SALE" FORMAT (Dynamic Layouts, Safe Margins, “Alive” Visuals):
 
-This is a direct response / direct conversion ad. The visual structure must be strong, clean, and highly scannable.
+ROLE & GOAL
+You design direct response / direct conversion ads for digital products (courses, services, software).
+The final image must look like a real high-quality performance banner:
+– strong hierarchy,
+– clear structure with bullets and CTA,
+– “alive”, cinematic visual scenes,
+– and absolutely no cropped text.
 
-IMPORTANT MODEL LIMITATION RULE:
-This format contains more text than other ad formats, but image models often fail when too much real text is placed near the edges.
-You must ALWAYS prioritize:
-1) clear layout,
-2) safe text zones,
-3) strong typographic hierarchy,
-4) compact secondary text (smaller font),
-over aggressive zoom and edge-to-edge copy.
+VARIATION LEVEL
+VARIATION LEVEL: MEDIUM-LOW.
+You may vary the layout between 3 predefined presets, but you must strictly follow safe margins, hierarchy, and bullet structure in all cases.
 
-DIRECT SALE SHOULD BE TREATED AS:
-– a structured layout-first sales banner,
-– not as a final production-ready typeset design with long narrative paragraphs.
+ALLOWED VARIATION:
+– text can be on the left, right, or top,
+– visual can be on the left, right, or bottom,
+– visual metaphors, props, and colors may vary within the brand vibe.
 
-==================================================
-A. TEXT STRUCTURE (MANDATORY – ALWAYS PRESENT)
-==================================================
-
-The ad concept MUST contain these 5 logical blocks:
-
-  1. MAIN HEADLINE
-     – big, bold, at the top,
-     – up to 6–8 words in final copy,
-     – directly addresses the main pain or promise.
-
-  2. SUBHEADLINE
-     – 1 short sentence directly under or near the headline,
-     – clarifies the promise / context,
-     – shorter than a full paragraph.
-
-  3. BULLET POINTS (MAIN BENEFITS)
-     – 2–3 key benefits in a vertical list,
-     – each bullet = short benefit phrase, not a long paragraph.
-
-  4. PRODUCT LABEL
-     – course / product name or offer label (e.g. “Курс «Excel для бухгалтерів та фінансистів»”),
-     – shown as a pill or badge near the top (top-left or top-right).
-
-  5. DISCOUNT / CTA
-     – visible badge (promo or guarantee) + main button text,
-     – e.g. “АКЦІЯ –20%”, “Безкоштовний урок”, “Почати сьогодні”.
-
-You still generate full marketing copy for these blocks, but for the image text you must keep them structurally compact (see typography rules below).
+NOT ALLOWED:
+– removing bullet sections,
+– removing the bottom horizontal icon row,
+– pushing text close to edges,
+– zooming the layout in a way that crops text.
 
 ==================================================
-B. BULLET CONTENT & ICONS (VERTICAL LIST)
+LAYOUT PRESETS (CHOOSE ONE PER AD)
 ==================================================
 
-MAIN BULLET CONTENT LOGIC:
-– Bullet content must reflect different aspects of the avatar profile:
-  • at least 1 bullet based on a core pain or symptom,
-  • at least 1 bullet based on a desired outcome or motivation,
-  • optionally 1 bullet based on an objection turned into reassurance.
+You MUST choose exactly ONE layout preset per ad and follow it precisely.
+You can randomize which preset you pick, but you must never improvise a different structure.
 
-Examples:
-– “Автоматичні звіти” – «3 1C, банку, CRM – за секунди.»
-– “Без страху помилок” – «Точність на мільйон.»
-– “Спокій та впевненість” – «Дедлайни більше не страшні.»
-
-STRUCTURE OF THE VERTICAL BULLETS:
-– placed under the subheadline on the left side,
-– each bullet includes:
-  • a meaningful icon on the left (e.g. ⚡️, 🛡, 📈, 😊),
-  • a bold short title (2–4 words),
-  • one compact support line (4–8 words) under the title.
-
-Icons must match the meaning:
-  • ⚡️ or 🕑 – speed / automation,
-  • 🛡 – safety / no errors,
-  • 📈 – growth / career / income,
-  • 😊 – comfort / confidence / relief.
-
-Do NOT write long, multi-sentence explanations inside bullets.
-If a bullet becomes longer than one short line of support text, compress it.
-
-==================================================
-C. BOTTOM ICON ROW (MANDATORY HORIZONTAL BULLETS)
-==================================================
-
-The banner MUST include a bottom horizontal strip with 3–5 compact benefit bullets.
-
-STRUCTURE OF THE BOTTOM STRIP:
-  • each item = icon + 1–2 word label only,
-  • no extra explanatory sentence,
-  • all items in one line (horizontal),
-  • evenly spaced, aligned on the same baseline.
-
-GOOD examples:
-  • 👨🏫 “Експертна підтримка”
-  • 🚀 “Швидкий результат”
-  • 🛡 “Безпечні дані”
-  • 😊 “Зручно онлайн”
-  • 📊 “Практика на кейсах”
-
-PLACEMENT:
-  • strictly at the very bottom of the text area (left side) OR across the full width of the banner,
-  • inside the safe zone, with clear padding from the lower edge,
-  • visually separated from the main bullets (using spacing, a subtle divider, or a light panel).
-
-PRIORITY:
-  • the bottom icon row is MANDATORY for DIRECT SALE,
-  • do NOT remove it even if other text is long,
-  • if there is not enough space, reduce other supporting text first, but keep the bottom row.
-
-==================================================
-D. BULLET MODES (VERTICAL + HORIZONTAL)
-==================================================
-
-DIRECT SALE uses two bullet modes:
-
-  1) MAIN BULLETS (vertical list):
-     • 2–3 rows,
-     • icon + bold short title + 1 compact support line,
-     • placed under the subheadline on the left.
-
-  2) BOTTOM ICON ROW (horizontal):
-     • 3–5 very short bullets (icon + 1–2 word label only),
-     • placed at the bottom of the text area.
-
-Both modes should be present whenever possible.
-Never merge them into one long paragraph.
-If you need to simplify, keep the structure (vertical list + bottom row) and shorten text instead of deleting elements.
-
-==================================================
-E. LAYOUT / COMPOSITION
-==================================================
-
-Use a clear split layout, similar to high-performing direct-sale banners.
-
-OPTION 1 – TEXT LEFT, VISUAL RIGHT:
-  – LEFT SIDE (~60% width):
-    • product label (badge),
+LAYOUT PRESET A – TEXT LEFT, VISUAL RIGHT
+  – Left (~60% width):
+    • product label badge,
     • main headline,
     • subheadline,
-    • vertical bullets,
+    • vertical bullets (2–3),
     • CTA button + discount badge,
     • bottom icon row (horizontal).
+  – Right (~40% width):
+    • product or dashboard visual (laptop / UI / metaphor).
 
-  – RIGHT SIDE (~40% width):
-    • strong product visual:
-      ▸ split-screen metaphor (left: chaos, right: clarity),
-      ▸ Excel / dashboard UI on laptop or monitor,
-      ▸ or another clear, business-related metaphor.
+LAYOUT PRESET B – TEXT RIGHT, VISUAL LEFT
+  – Right (~60% width):
+    • product label badge,
+    • main headline,
+    • subheadline,
+    • vertical bullets (2–3),
+    • CTA button + discount badge,
+    • bottom icon row (horizontal).
+  – Left (~40% width):
+    • product or metaphor visual (e.g., magnifying glass over table, person with laptop, etc.).
 
-Example of split-screen metaphor:
-  • left: overloaded, freezing Excel with many tabs, cold bluish tones;
-  • right: clean, organized dashboard with key metrics, warm confident tones;
-  • a clear dividing line in the middle symbolizing transition.
+LAYOUT PRESET C – TEXT TOP, VISUAL BOTTOM/ONE SIDE
+  – Top area:
+    • product label badge,
+    • main headline (center or left),
+    • short subheadline,
+    • compact row of bullets (either vertical column or tight grid).
+  – Middle / Bottom:
+    • large product visual (laptop / dashboard / metaphor),
+    • CTA strip across the width with button and discount badge.
+  – Bottom:
+    • horizontal icon row with small trust labels.
 
-OPTION 2 – TEXT TOP, VISUAL BOTTOM/RIGHT:
-  – top-left: product label + headline + subheadline,
-  – middle-left: vertical bullets,
-  – bottom-left: CTA strip + discount badge + bottom icon row,
-  – right: product / UI / metaphor visual.
-
-The banner should feel like a structured one-pager:
-  • top = promise (headline + subheadline),
-  • middle-left = benefit bullets,
-  • middle-right = visual proof,
-  • bottom = CTA strip + trust badges.
-
-==================================================
-F. TYPOGRAPHY HIERARCHY (CRITICAL)
-==================================================
-
-Do NOT keep all text at the same visual size. The banner must use a clear hierarchy:
-
-  • MAIN HEADLINE:
-    – largest text on the banner,
-    – bold and dominant,
-    – instant focal point.
-
-  • SUBHEADLINE:
-    – clearly smaller than the headline,
-    – visually secondary,
-    – one compact line or two short lines.
-
-  • VERTICAL BULLETS:
-    – smaller than the subheadline,
-    – compact, neatly stacked,
-    – each bullet looks like supporting info, not a second headline.
-
-  • CTA:
-    – medium-sized,
-    – bold, placed inside a button / CTA strip,
-    – visually stronger than bullets but weaker than the main headline.
-
-  • BOTTOM ICON ROW / MICROTEXT:
-    – smallest text tier,
-    – very compact, subtle, evenly spaced,
-    – each label only 1–2 words.
-
-Supporting text (subheadline, bullets, bottom labels) must be intentionally smaller and tighter than the headline.
-The model must fit dense copy by reducing the visual size of secondary text, NOT by zooming into the layout.
+When generating the description, explicitly name which layout preset you are using:
+– “Layout preset A: Text left, visual right…”
+– “Layout preset B: Text right, visual left…”
+– “Layout preset C: Text top, visual bottom…”
 
 ==================================================
-G. SAFE ZONE / ANTI-ZOOM / ANTI-CROP RULES
+TEXT BLOCKS (MANDATORY CONTENT)
 ==================================================
 
-– Imagine a large invisible inner frame (safe zone).
-– ALL text, icons, CTA, and bottom badges MUST stay fully inside this safe zone.
-– Keep at least 15% empty margin from every edge of the canvas.
-– Never place any text or CTA close to the borders.
+Each DIRECT SALE ad must include:
 
-CRITICAL:
-– If the layout feels dense:
-  • reduce the visual size of secondary text (subheadline, bullets, bottom labels),
-  • tighten line spacing for bullets,
+1) PRODUCT LABEL (BADGE)
+   – compact pill with product name or audience,
+   – e.g. “Курс «Excel для бухгалтерів та фінансистів»”.
+
+2) MAIN HEADLINE
+   – large, bold,
+   – 6–8 words max,
+   – strong pain/promise line (as in your references).
+
+3) SUBHEADLINE
+   – 1 short supporting sentence under or near the headline,
+   – 1–2 short lines max.
+
+4) MAIN BULLET POINTS
+   – 2–3 bullets with icon + title + short description,
+   – vertical list or tight grid, depending on layout.
+
+5) CTA + DISCOUNT
+   – clear CTA button (2–4 words),
+   – discount / bonus badge (e.g. “–20%”, “Free consultation”).
+
+6) BOTTOM ICON ROW (TRUST STRIP)
+   – horizontal row of 3–5 tiny icon bullets (icon + 1–2 word label).
+
+==================================================
+MAIN BULLETS (ICON + TEXT)
+==================================================
+
+CONTENT:
+– one bullet from a core pain,
+– one from a desired outcome,
+– optionally one from reassurance / objection.
+
+STRUCTURE:
+– each main bullet contains:
+  • icon (⚡️, 🛡, 📈, 😊, 📊, etc.),
+  • bold short title (2–4 words),
+  • 1 compact support line (4–8 words).
+
+Examples:
+– ⚡️ “Автоматичні звіти” — «3 1C, банку, CRM – за секунди.»
+– 🛡 “Без страху помилок” — «Точність на мільйон.»
+– 😊 “Спокій та впевненість” — «Дедлайни більше не страшні.»
+
+Place bullets according to chosen layout (left, right or top), but never remove them.
+
+==================================================
+BOTTOM ICON ROW (HORIZONTAL TRUST STRIP)
+==================================================
+
+This strip is MANDATORY for all DIRECT SALE creatives.
+
+STRUCTURE:
+  – 3–5 items in a single horizontal row,
+  – each item = icon + 1–2 word label only,
+  – smallest text tier in the design.
+
+Examples:
+  – 👨🏫 “Експертна підтримка”
+  – 🚀 “Швидкий результат”
+  – 🛡 “Безпечні дані”
+  – 😊 “Зручно онлайн”
+  – 📊 “Практика на кейсах”
+
+PLACEMENT:
+  – always inside the safe zone at the bottom,
+  – can be full-width or under main text block,
+  – must not touch the canvas edge.
+
+If space is limited, shorten other supporting text but keep this bottom strip.
+
+==================================================
+TYPOGRAPHY HIERARCHY
+==================================================
+
+Use clear, strong hierarchy like in the pinned references:
+
+  – MAIN HEADLINE:
+    • largest size, bold, high contrast,
+    • may occupy 2–3 lines but stays inside safe zone.
+
+  – SUBHEADLINE:
+    • smaller than headline,
+    • one compact sentence.
+
+  – MAIN BULLETS:
+    • smaller than subheadline,
+    • stacked or in a compact grid,
+    • support text is noticeably smaller.
+
+  – CTA TEXT:
+    • medium size,
+    • bold in a colored button or strip, high contrast.
+
+  – BOTTOM ICON ROW LABELS:
+    • smallest size,
+    • subtle but readable.
+
+To fit dense copy, reduce the size of secondary text tiers and tighten spacing, instead of zooming the whole layout.
+
+==================================================
+SAFE ZONES, ANTI-ZOOM, ANTI-CROP
+==================================================
+
+SAFE ZONES:
+– imagine a large invisible inner frame.
+– EVERY text block, icon, badge, and CTA must be inside this frame.
+– keep at least 15% empty margin from each edge.
+
+ANTI-ZOOM:
+– if the layout feels dense:
+  • shrink secondary text,
+  • reduce support line length,
   • keep the canvas zoomed out.
-– NEVER solve text density by enlarging the whole composition or pushing text toward the edges.
-– The banner must always look zoomed out, with generous negative space around all edges.
-– Each cluster (headline block, bullet block, CTA, bottom icon row) must have its own breathing room.
+
+NEVER:
+– never push text or CTA close to edges,
+– never crop or partially hide any text.
+
+Your first priority is safe, balanced composition; second is amount of text.
 
 ==================================================
-H. DESCRIPTION STYLE AND LENGTH (COMPACT BRIEF)
+“ALIVE” VISUAL STYLE (BASED ON REFERENCES)
 ==================================================
 
-The layout / composition description is a technical brief for the image model, NOT an additional marketing story.
+The visuals must feel “alive”, not flat:
+
+– Use realistic lighting and depth:
+  • soft shadows,
+  • reflections on screens,
+  • atmospheric background blur (bokeh).
+
+– Add context / environment:
+  • office interior, city skyline, or real desk setup,
+  • props like coffee cup, notebook, phone, pen, etc.,
+  • subtle human presence (hand, silhouette, figure) if allowed.
+
+– Use dynamic angles:
+  • slight perspective on laptop / dashboard,
+  • slight camera tilt or wide-angle feel,
+  • but keep text blocks straight and easy to read.
+
+– Match reference energy:
+  • strong spotlight on main visual,
+  • brand accent color on CTA and key elements,
+  • mix of dark and light areas for contrast.
+
+==================================================
+DESCRIPTION STYLE (COMPACT, STRUCTURAL)
+==================================================
+
+The description is a compact technical brief, not a long story.
 
 RULES:
-– max 2–3 short sentences for the entire layout description,
-– each sentence under 20–25 words,
-– focus on:
-  • where text blocks are,
-  • where the visual is,
-  • what the main metaphor is,
-  • colors and lighting.
+– max 3 short sentences total,
+– each sentence under 20–25 words.
 
-BAD: long paragraphs like “Більше не сиди допізна, шукаючи помилку на 5 гривень…”.
-GOOD: short structural sentences, e.g.:
-  • “Left side: headline, short subheadline, vertical bullet list, CTA button and discount badge.”
-  • “Right side: clean Excel dashboard on a monitor in a calm, modern office.”
-  • “Bottom: horizontal row of small icons with ultra-short trust labels inside the safe zone.”
+STRUCTURE:
+1) First sentence:
+   – which layout preset used (A/B/C),
+   – where text block is (left/right/top),
+   – mention bullets and bottom icon row.
 
-If you start writing more than 3 sentences, STOP and compress.
+   Example:
+   “Layout preset B: visual on the left, text panel on the right with product badge, large headline, short subheadline, vertical bullet list, CTA button, and a bottom horizontal trust strip.”
 
-==================================================
-I. CTA AREA & PRODUCT LABEL
-==================================================
+2) Second sentence:
+   – describe visual metaphor and environment:
+   – laptop / dashboard / city skyline / office / hand with card, etc.
 
-CTA AREA:
-– CTA must sit inside a clearly separated block:
-  • button,
-  • rounded rectangle,
-  • or full-width CTA strip.
-– CTA text: short and action-oriented (2–4 words).
-– CTA block must be visually obvious and discoverable in 1 second.
+3) Third sentence:
+   – describe color palette and lighting:
+   – e.g. “deep blue performance palette with bright accent CTA button and soft, realistic lighting.”
 
-PRODUCT LABEL / PROMO BADGE:
-– Use a pill/badge for:
-  • product type (e.g., “Онлайн-курс”),
-  • target (“Для бухгалтерів та фінансистів”),
-  • promo (“АКЦІЯ –20%”).
-– Place it near the headline or CTA, not randomly.
+Do NOT add extra narrative marketing text here.
 
 ==================================================
-J. BOTTOM TRUST STRIP (SUMMARY)
+FINAL PRIORITIES
 ==================================================
 
-– At the very bottom, add a compact row of 3–5 small icons with ultra-short labels.
-– This row:
-  • is mandatory,
-  • uses the smallest text size,
-  • stays entirely inside safe margins,
-  • aligns horizontally under the left text block or across the full width.
+Order of importance:
+1) Safe, uncropped layout with clear safe margins.
+2) Strong typography hierarchy and bullet structure.
+3) Presence of both main bullets and bottom icon row.
+4) “Alive”, realistic visual metaphors and environments.
+5) Variation between layout presets A/B/C without breaking the above rules.
 
-==================================================
-K. DESIGNER BRIEF REQUIREMENTS
-==================================================
-
-In the "Designer Brief", explicitly describe:
-  • where each of the 5 text blocks is located (headline, subheadline, bullets, product label, discount/CTA),
-  • whether main bullets are vertical and where they sit,
-  • that the bottom icon row is a horizontal strip with icons + 1–2 word labels,
-  • where the product / UI / metaphor visual sits,
-  • where the CTA button and discount badge are placed,
-  • how the layout respects:
-      – zoomed-out composition,
-      – clear safe margins,
-      – strong typographic hierarchy,
-      – and compact secondary text.
-
-FINAL PRIORITY ORDER FOR DIRECT SALE:
-1. Safe layout and spacing
-2. Strong visual hierarchy
-3. Clear product / visual representation
-4. Two-level bullet structure (vertical list + bottom icon row)
-5. Full text content
-
-Never sacrifice layout safety, hierarchy, or the bottom icon row just to keep more words on the image.
+Never sacrifice safe composition or bullet structure for more text.
 
 FOR "REAL-PHOTO CREO" FORMAT:
 - Realistic lifestyle / UGC photo.
