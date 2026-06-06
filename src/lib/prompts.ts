@@ -430,14 +430,12 @@ For each creative, describe ONE clear visual scene that literally shows:
   Never copy or slightly tweak the visual brief from the previous row.
 
 ==================================================
-4. FORMAT ADAPTATION
+4. FORMAT-SPECIFIC ADAPTATION RULES (CRITICAL)
 ==================================================
-IF AD FORMAT = IMAGE (Meme, Infographic, Direct Sale, Photo+Text, etc.):
-✅ WE GENERATE: Text blocks (Hook, Pain, Solution, CTA) AND a FULL DESIGNER BRIEF.
-❌ WE DO NOT GENERATE: Video scripts (VO, TBE).
+READ CAREFULLY: You must strictly follow the rules for the EXACT format requested: "${params.format}".
+Do NOT apply rules from other formats!
 
-FOR "DIRECT SALE" FORMAT (Special Rules):
-
+🟢 IF THE REQUESTED FORMAT IS "Прямий продаж (в лоб)" OR "Direct Sale":
 This is a direct response / direct conversion ad. MORE TEXT IS ALLOWED, but the layout must stay clean and structured.
 
 TEXT STRUCTURE (MANDATORY – ALWAYS PRESENT):
@@ -450,160 +448,56 @@ The ad copy MUST STRICTLY consist of 5 blocks:
 
 BULLET LAYOUT & ICONS (LIKE REFERENCE BANNERS):
 – BULLETS must be visual, not just plain text.
-– Each bullet point MUST have:
-  • a clear icon that matches the meaning of the bullet,
-  • a short bold line (2–4 words) as the benefit title,
-  • an optional micro-line in smaller text (explanation, 4–8 words).
-
-ICON MEANING EXAMPLES:
-  • Shield – safety, protection, no mistakes, legality.
-  • Clock / Lightning – speed, automation, fast result.
-  • Graph / Chart – growth, analytics, control over numbers.
-  • Person / Team – support, human help, curator.
-  • Checklist – structure, order, clear process.
-  • Smile-like character – calm, confidence, comfort.
-
-Icons must NOT look like emoji; they should be graphic symbols that visually express the specific meaning of each bullet.
-
-BULLET LAYOUT OPTIONS:
-You can use ONE of two layouts (pick whichever fits better for this concept), and it is allowed to combine them:
-
-  • Vertical bullets:
-    – A vertical column of 3–4 bullet rows.
-    – Placed on the LEFT or CENTER-LEFT (or under the headline, depending on the layout).
-    – Icons aligned in a straight column; text aligned to the right of each icon.
-
-  • Horizontal feature row:
-    – A horizontal strip at the BOTTOM of the banner with 3–5 compact feature blocks.
-    – Each block: icon on top, 1–2 word label under it (for example, “Confidentially”, “Individual approach”, “Real results”).
+– Each bullet point MUST have a clear icon that matches the meaning of the bullet, a short bold line (2–4 words) as the benefit title, and an optional micro-line in smaller text.
+– Icons must NOT look like emoji; they should be graphic symbols.
 
 COMBINATION (RECOMMENDED):
 – For DIRECT SALE it is RECOMMENDED to combine both:
   • vertical bullets for the main 2–3 benefits,
   • and a bottom horizontal micro-feature strip for trust / extra points (such as “Confidential & safe”, “Support at every step”, etc.).
 
-LAYOUT / COMPOSITION (STRUCTURE LIKE REFERENCE BANNERS):
-– Use a clear split or asymmetrical layout, inspired by high-performing direct sale banners:
-
-  • OPTION 1 – TEXT LEFT, VISUAL RIGHT:
-    – LEFT SIDE (~60% width): product label, main headline, subheadline, vertical bullets, CTA/button, bottom icon row.
-    – RIGHT SIDE (~40% width): strong product visual:
-      ▸ a person with the product (e.g., holding a card, laptop, phone),
-      ▸ or product UI on a laptop/phone,
-      ▸ or a clear metaphor (e.g., money leak, dashboards, city background),
-      ▸ or any other visual that clearly represents the product idea or the creative brief.
-    – The left side can smoothly transition into the right side using a gradient.
-
-  • OPTION 2 – TEXT RIGHT, VISUAL LEFT:
-    – RIGHT SIDE (~60% width): product label, main headline, subheadline, bullets, CTA/button, bottom icon row.
-    – LEFT SIDE (~40% width): product / metaphor visual (e.g., magnifying glass over a table, person with a laptop, etc.),
-      or any other visual that clearly represents the product idea or the creative brief.
-    – The left side can smoothly transition into the right side using a gradient.
-
-  • OPTION 3 – TEXT TOP, VISUAL BOTTOM:
-    – Top section: product label, headline, subheadline, bullets.
-    – Middle/right: product visual (UI, person, metaphor).
-    – Bottom: wide CTA strip with a button and small icons / benefits in a horizontal row.
-
-– In all options:
-  • keep text blocks grouped in a clean panel,
-  • keep the visual as a strong, “alive” scene that supports the promise.
-
-CTA AREA:
-  • The CTA must be placed inside a clearly separated block (button, banner strip, or card).
-  • Make the CTA area visually similar to the reference banners:
-    – solid shape, rounded corners, arrow or icon,
-    – short text like “Get consultation”, “Start test”, “Download guide”, “Освой Excel за тиждень”.
-  • The promotion or discount must be shown as a separate bright badge, consistent with the creative brief.
-
-PRODUCT LABEL / PROMO BADGE:
-  • Use a pill / badge element for the product name or promo:
-    – e.g., “Online course”, “For business in USA”, “PRODUCT / COURSE NAME”, “Free consultation”, “Special price”.
-  • Place it near the headline or near the CTA, not randomly.
-
 ICON ROW FOR TRUST / FEATURES (BOTTOM STRIP):
-– At the very bottom, it is strongly recommended to add a row of 3–5 small icons with labels, for example:
-  • “Confidential & safe”
-  • “Individual approach”
-  • “Real results”
-  • “Support at every step”
-  • “24/7 online”
+– At the very bottom, it is strongly recommended to add a row of 3–5 small icons with labels (e.g. “Confidential & safe”, “Individual approach”).
 – These bottom bullets must be the smallest text in the entire layout, but they MUST remain perfectly crisp and readable.
-– Each label in this bottom row MUST have its own clear, distinct icon (not just a generic dot).
-– These bottom icons and labels should be extremely compact and aligned in a single horizontal row.
-– Visually separate them from the main content by spacing or a subtle background strip.
-– This row must stay inside the safe margins and look like a small, premium “trust bar”.
+– Each label in this bottom row MUST have its own clear, distinct icon.
 
-SAFE MARGINS & READABILITY (CRITICAL ANTI-CROP RULES):
-– All text blocks (headline, subheadline, bullets, CTA, labels, bottom icons) MUST stay inside safe margins:
-  • keep at least 10–15% empty space from each edge of the banner.
-– No text may touch or be cropped by the edges under any circumstances.
-– If the layout feels dense:
-  • REDUCE the visual size of secondary text (subheadline, bullet descriptions, bottom labels),
-  • slightly tighten line spacing for bullets,
-  • shorten support lines where necessary (remove extra adjectives and filler words).
-– NEVER solve text density by zooming into the layout or pushing text closer to the borders.
-– The entire composition must remain zoomed out, with generous negative space around:
-  • outer edges,
-  • the headline block,
-  • the bullets block,
-  • the CTA block,
-  • the bottom icon row.
-
-“ALIVE” / “JUICY” VISUAL STYLE:
-– Visuals must feel alive, juicy, and realistic, not flat:
-
-  • LIGHT:
-    – use soft, directional light with gentle shadows,
-    – add subtle reflections on screens, glossy surfaces, or glass,
-    – avoid flat, evenly lit scenes; create depth with contrast.
-
-  • DEPTH & PERSPECTIVE:
-    – show laptops, phones, dashboards under a slight perspective angle,
-    – use background blur or atmospheric depth (sharp foreground, softer background),
-    – include layers: foreground object, mid-ground subject, background environment,
-    – create realistic scenes and emphasize them with shadows so the image has volume.
-
-  • CONTEXT & PROPS:
-    – add realistic environment details: desk items, coffee cup, notebook, pen, plants, office interior, city skyline, etc.,
-    – optionally include partial human presence (hand, silhouette, person holding a card/device) if allowed,
-    – keep the scene dynamic but not cluttered.
-
-  • COLOR:
-    – use a clear brand-like palette: 1–2 main colors + 1 accent for the CTA,
-    – make the CTA, badges and key words pop with higher contrast, and you may highlight them with shadows or directional light,
-    – avoid muddy or oversaturated chaos; keep it clean and modern.
-
-– While the visual is alive and rich, keep all text blocks:
-  • sharp,
-  • perfectly readable,
-  • fully inside the safe zone.
-
-SUMMARY FOR DIRECT SALE FORMAT (TABLE COLUMN RULES):
-– Think of the banner as a structured sales one-pager:
-  • Top: promise (headline + subheadline),
-  • Middle: main benefits as bullet icons (vertical list) near one side,
-  • Opposite side: strong product / person / UI visual,
-  • Bottom: CTA strip + small trust badges in a horizontal row.
+LAYOUT / COMPOSITION (STRUCTURE LIKE REFERENCE BANNERS):
+– Use a clear split or asymmetrical layout:
+  • OPTION 1 – TEXT LEFT, VISUAL RIGHT
+  • OPTION 2 – TEXT RIGHT, VISUAL LEFT
+  • OPTION 3 – TEXT TOP, VISUAL BOTTOM
 
 COLUMN RULES (CRITICAL FOR TEXT MATCHING):
 – The text in the 📄 IMAGE TEXT column MUST exactly match the text inside the 📐 DESIGNER BRIEF column. Do NOT generate two different sets of ad copy.
 – 📄 IMAGE TEXT column: Write ONLY the exact ad copy here (Headline, Subheadline, Bullets, Label, CTA), formatted cleanly with <br>.
 – 📐 DESIGNER BRIEF column: Describe the visual layout AND include the exact same text for each block so the designer knows what goes where.
-  Example:
-  MAIN HEADLINE (Top Left): "YOUR TEXT HERE"
-  SUBHEADLINE (Under Headline): "YOUR TEXT HERE"
-  BULLETS (Vertical list on left):
-  1. ⚡️ Title - Description
-  VISUAL: person with laptop on the right...
-  (Make sure the text here is 100% identical to the IMAGE TEXT column).
 
-FOR "REAL-PHOTO CREO" FORMAT:
-- Realistic lifestyle / UGC photo.
-- Keep text extremely minimal (ONE compact text block). NO bullets.
-- The text block (headline + mini subline) must be placed in safe areas and must not touch image edges.
+🟢 IF THE REQUESTED FORMAT IS "Карусель (5-10 слайдів)":
+- You MUST break down EACH of the ${params.count} concepts into a sequence of 5 to 10 SLIDES!
+- In the "📄 IMAGE TEXT" and "📐 DESIGNER BRIEF" columns, do NOT just write one image description. 
+- You must write out the content for EVERY single slide using this structure inside the cell:
+  [Slide 1]
+  Text: [text for slide 1]
+  Visual: [visual for slide 1]
+  <br><br>
+  [Slide 2]
+  Text: [text for slide 2]
+  Visual: [visual for slide 2]
+  (And so on for 5 to 10 slides).
+- Slide 1: Hook / Attention grabber.
+- Slides 2-4: Developing the pain or story.
+- Slides 5-8: Solution and outcomes.
+- Final Slide: Strong CTA.
 
-IF AD FORMAT = VIDEO:
+🟢 IF THE REQUESTED FORMAT IS "Крео з фото/графікою + текст" OR "Текст на білому фоні (статична картинка)" OR "Реалістичне фото-крео (Real-Photo Creo)":
+- These are CLEAN and MINIMAL formats.
+- ❌ STRICTLY NO BULLET POINTS. Do not use bullets or horizontal rows of icons!
+- TEXT STRUCTURE: Just a Hook (main headline), 1 short sentence (subheadline or explanation), and a clear CTA button.
+- Layout: The text must be placed in safe areas, with a lot of negative space.
+- Visual: A realistic lifestyle photo, graphic, or minimalistic solid background.
+- Keep text extremely minimal.
+
+🟢 IF THE REQUESTED FORMAT IS A VIDEO (e.g. "Відео-крео на основі JTBD + CJM", "Крео в стилі Specsavers", "Відео-відгук", "Коротке демо-відео"):
 ✅ WE GENERATE: Idea/Hook AND a FULL EDITOR SCRIPT (broken down by seconds: Video visuals, VO, TBE, Music).
 - VO (Voice Over) must be a single cohesive story.
 - TBE (Text By Eye) does NOT duplicate the VO, but highlights key punchlines, numbers, or CTA.
