@@ -530,14 +530,17 @@ SUMMARY FOR DIRECT SALE FORMAT (TABLE COLUMN RULES):
   • Opposite side: strong product/person visual,
   • Bottom: CTA strip + small trust badges in a horizontal row.
 
-COLUMN RULES:
-– 📄 IMAGE TEXT column: This is where you write ALL the actual ad copy (Headline, Subheadline, Bullets, Label, CTA). Do NOT put the ad copy in the Designer Brief.
-– 📐 DESIGNER BRIEF column: DO NOT put the ad text here. This column is STRICTLY for describing the visual layout and scene. You must explicitly describe:
-  • where each of the 5 text blocks is placed,
-  • where bullet icons go (vertical / horizontal),
-  • where the product/person/ UI visual is placed,
-  • where the CTA block and bottom icon row are located,
-  • that all text stays inside the safe zone and secondary text becomes smaller/tighter instead of being pushed to the edges.
+COLUMN RULES (CRITICAL FOR TEXT MATCHING):
+– The text in the 📄 IMAGE TEXT column MUST exactly match the text inside the 📐 DESIGNER BRIEF column. Do NOT generate two different sets of ad copy.
+– 📄 IMAGE TEXT column: Write ONLY the exact ad copy here (Headline, Subheadline, Bullets, Label, CTA), formatted cleanly with <br>.
+– 📐 DESIGNER BRIEF column: Describe the visual layout AND include the exact same text for each block so the designer knows what goes where.
+  Example:
+  MAIN HEADLINE (Top Left): "YOUR TEXT HERE"
+  SUBHEADLINE (Under Headline): "YOUR TEXT HERE"
+  BULLETS (Vertical list on left):
+  1. ⚡️ Title - Description
+  VISUAL: person with laptop on the right...
+  (Make sure the text here is 100% identical to the IMAGE TEXT column).
 
 FOR "REAL-PHOTO CREO" FORMAT:
 - Realistic lifestyle / UGC photo.
