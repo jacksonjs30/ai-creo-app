@@ -2,7 +2,7 @@
 
 import { usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, Users, FileSearch, PenTool, ImagePlay, Activity, Blocks, Image as ImageIcon } from 'lucide-react';
+import { LayoutDashboard, Users, FileSearch, PenTool, ImagePlay, Activity, Blocks, Image as ImageIcon, FileText } from 'lucide-react';
 import { use } from 'react';
 
 const STEPS = [
@@ -11,7 +11,8 @@ const STEPS = [
   { id: 'avatars', label: '3. Avatar Research', icon: Users },
   { id: 'studio', label: '4. Creative Studio', icon: PenTool },
   { id: 'gallery', label: '5. Галерея Креативов', icon: ImageIcon },
-  { id: 'assets', label: '6. Asset Production', icon: ImagePlay },
+  { id: 'adtexts', label: '6. Тексты объявлений', icon: FileText },
+  { id: 'assets', label: '7. Asset Production', icon: ImagePlay },
   { id: 'feedback', label: '7. Feedback Loop', icon: Activity },
   { id: 'integrations', label: '8. Integrations / API', icon: Blocks },
 ];
@@ -65,7 +66,10 @@ export default function ProjectLayout({
               const Icon = step.icon;
               // If we are deep inside a route (e.g. /avatar/0), don't highlight the tabs strictly,
               // or highlight 'avatars' if we are in avatar route.
-              const isActive = pathname === `/project/${id}` ? currentTab === step.id : (pathname.includes('/avatar/') && step.id === 'avatars');
+              const isActive =
+                pathname === `/project/${id}`
+                  ? currentTab === step.id
+                  : pathname.includes('/avatar/') && step.id === 'avatars';
               
               return (
                 <Link 

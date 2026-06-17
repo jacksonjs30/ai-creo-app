@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { get, set } from 'idb-keyval';
 import { CreativeCard, extractOverlay } from './CreativeCard';
 import { CreativeEditor } from './CreativeEditor';
-import { Image as ImageIcon } from 'lucide-react';
+import { Image as ImageIcon, FileText } from 'lucide-react';
 
 const robustParseTableLine = (line: string): string[] => {
   const parts = line.split('|');
@@ -107,9 +108,18 @@ export default function ProjectGallery({ id }: { id: string }) {
 
   return (
     <div className="card" style={{ padding: '2rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem' }}>
-        <ImageIcon size={24} color="var(--primary)" />
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Галерея Креативов</h2>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <ImageIcon size={24} color="var(--primary)" />
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Галерея Креативов</h2>
+        </div>
+        <Link
+          href={`/project/${id}?tab=adtexts`}
+          className="btn btn-secondary"
+          style={{ fontSize: '0.875rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+        >
+          <FileText size={16} /> Тексты объявлений →
+        </Link>
       </div>
 
       {items.length === 0 ? (

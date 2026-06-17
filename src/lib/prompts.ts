@@ -695,6 +695,224 @@ ${brief}
 `;
   },
 
+  /**
+   * 6. ТЕКСТЫ ОБЪЯВЛЕНИЙ (AD COPY GENERATION)
+   * Генерирует 3 варианта рекламного текста под конкретный аватар и платформу.
+   * Каждый вариант использует разную копирайтерскую структуру.
+   */
+  GENERATE_AD_TEXTS_PROMPT: (params: {
+    productName: string;
+    productDescription?: string;
+    keyOutcome?: string;
+    avatarData: any;
+    platform: 'meta' | 'google' | 'tiktok' | 'other';
+    language: 'uk' | 'en' | 'ru';
+    globalRefinement?: string;
+    localRefinement?: string;
+    variantIndex?: number; // если задан — генерируем только один вариант
+    structureOverride?: string; // конкретная структура для одного варианта
+  }) => {
+    const langLabel = params.language === 'uk' ? 'Українська' : params.language === 'en' ? 'English' : 'Русский';
+
+    const platformRules = {
+      meta: `
+ПЛАТФОРМА: Meta (Facebook / Instagram)
+Для КАЖДОГО варианта сгенерируй:
+- "primaryText": основной текст объявления, 2–4 предложения (без жёстких символьных ограничений)
+- "headline": заголовок до 35 символов
+
+Правила Meta: текст должен цеплять в ленте. Первые 1–2 предложения — самые сильные, т.к. они видны без «Ещё».
+`,
+      google: `
+ПЛАТФОРМА: Google Ads
+Для КАЖДОГО варианта сгенерируй:
+- "headline": заголовок СТРОГО до 30 символов (включая пробелы). Если длиннее — текст будет обрезан.
+- "description": описание СТРОГО до 90 символов (включая пробелы). Если длиннее — текст будет обрезан.
+
+Правила Google: максимально конкретно, без воды, с ключевым обещанием и призывом. Считай символы!
+`,
+      tiktok: `
+ПЛАТФОРМА: TikTok / Reels / Shorts
+Для КАЖДОГО варианта сгенерируй:
+- "hook": первая строка / субтайтл (первое, что видит зритель до «See more»), 1 предложение, максимально цепляющее
+- "caption": подпись к ролику, 1–2 коротких предложения + опциональный хэштег-якорь
+
+Правила TikTok: хук — это 3-секундный крючок. Он должен ОСТАНОВИТЬ скролл. Говори как человек, не как реклама.
+`,
+      other: `
+ПЛАТФОРМА: Другое (универсальный формат)
+Для КАЖДОГО варианта сгенерируй:
+- "primaryText": 1–2 абзаца (2–4 предложения), короткий рекламный формат без жёстких лимитов
+- "headline": заголовок, 1 предложение
+
+Формат свободный, но текст должен оставаться лаконичным и рекламным.
+`,
+    };
+
+    const structures = ['PAS', 'Hook→Value→CTA', 'AIDA', 'BAB'];
+
+    // Для полной генерации 3 вариантов — задаём разные структуры
+    const fullGenStructures = [
+      { index: 1, name: 'PAS', description: 'Problem → Agitation → Solution: чётко сформулированная боль → усиление последствий → продукт как логичный ответ' },
+      { index: 2, name: 'Hook → Value → CTA', description: 'Hook: цепляющее первое предложение (боль/ситуация/контраст) → Value: 1–2 предложения про решение и результат → CTA: явный призыв' },
+      { index: 3, name: 'AIDA', description: 'Attention: сильный хук → Interest: почему это важно → Desire: что человек получает → Action: CTA' },
+    ];
+
+    // Для перегенерации одного — выбираем структуру
+    const singleStructure = params.structureOverride || structures[Math.floor(Math.random() * structures.length)];
+
+    const isFullGeneration = !params.variantIndex;
+
+    const avatarSummary = `
+СЕГМЕНТ: ${params.avatarData?.segmentName || 'Неизвестный сегмент'}
+ОПИСАНИЕ: ${params.avatarData?.summary || ''}
+ПОРТРЕТ: ${params.avatarData?.portrait || ''}
+
+JTBD (задачи, что хочет сделать): ${JSON.stringify((params.avatarData?.jtbd || []).slice(0, 6))}
+БОЛИ: ${JSON.stringify((params.avatarData?.pains || []).slice(0, 7))}
+СТРАХИ: ${JSON.stringify((params.avatarData?.fears || []).slice(0, 5))}
+СИМПТОМЫ: ${JSON.stringify((params.avatarData?.symptoms || []).slice(0, 5))}
+МАРКЕРЫ ПОВЕДЕНИЯ: ${JSON.stringify((params.avatarData?.behaviorMarkers || []).slice(0, 5))}
+МОТИВАЦИИ: ${JSON.stringify((params.avatarData?.motivations || []).slice(0, 5))}
+ВОЗРАЖЕНИЯ: ${JSON.stringify((params.avatarData?.objections || []).slice(0, 5))}
+РЕЗУЛЬТАТЫ: ${JSON.stringify(params.avatarData?.outcomes || {})}
+CJM-сценарии: ${JSON.stringify((params.avatarData?.cjm || []).slice(0, 3))}
+`.trim();
+
+    return `ТЫ — ТОПОВЫЙ КОПИРАЙТЕР С 15 ГОДАМИ ОПЫТА В PERFORMANCE-РЕКЛАМЕ.
+Твоя задача — написать рекламные тексты для продукта, которые попадают точно в психологический профиль аудитории.
+
+=== ДАННЫЕ ПРОДУКТА ===
+Продукт: ${params.productName}
+${params.productDescription ? `Описание: ${params.productDescription}` : ''}
+${params.keyOutcome ? `Главный обещанный результат: ${params.keyOutcome}` : ''}
+
+=== ДАННЫЕ АВАТАРА (ЦЕЛЕВАЯ АУДИТОРИЯ) ===
+${avatarSummary}
+
+${platformRules[params.platform]}
+
+=== ЯЗЫК ГЕНЕРАЦИИ ===
+ОБЯЗАТЕЛЬНО пиши ВСЕ тексты объявлений на языке: ${langLabel}
+Сохраняй живой язык и сленг аватара, не переводи буквально.
+
+=== ПРАВИЛА НАПИСАНИЯ ТЕКСТОВ (СТРОГО) ===
+
+1. НАЧАЛО ТЕКСТА:
+   - Всегда начинай с хука или призыва, который отражает суть продукта и боли сегмента:
+     • вопрос по боли
+     • контраст «до/после»
+     • прямое обращение к ситуации
+   - КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНЫ начала: «В современном мире…», «Каждый из нас знает…», «Представьте, что…», «Сегодня мы расскажем…», «Если вы…», «Многие из нас…»
+
+2. ФОКУС НА ВЫГОДАХ:
+   - Говори о результате и решении для этого аватара, а не о «инновационном сервисе»
+   - 1–2 конкретные боли → 1–2 конкретных результата. НЕ пытайся запихнуть все боли сразу
+
+3. CTA:
+   - В конце каждого текста — чёткий призыв к действию
+   - Примеры: «Оставьте заявку», «Попробуйте бесплатно», «Начните сегодня», «Создайте первый проект»
+
+4. ВЫБОР ЭЛЕМЕНТОВ АВАТАРА:
+   - Для каждого варианта ВЫБЕРИ 1–2 боли и 1–2 результата из массивов выше
+   - НЕ используй все сразу — текст должен фокусироваться на одной линии
+   - Для разных вариантов выбирай РАЗНЫЕ боли и результаты
+
+5. ЗАПРЕТ ШАБЛОННОСТИ:
+   - Не начинай разные варианты с одинаковых слов
+   - Не используй фразы: «Устали от…», «Хватит терпеть…», «Наше решение…»
+
+${params.globalRefinement ? `
+=== ГЛОБАЛЬНЫЕ УТОЧНЕНИЯ ПОЛЬЗОВАТЕЛЯ (ВЫСОКИЙ ПРИОРИТЕТ) ===
+${params.globalRefinement}
+Эти уточнения ОБЯЗАТЕЛЬНО учти при написании ВСЕХ вариантов.
+` : ''}
+
+${params.localRefinement ? `
+=== ЛОКАЛЬНЫЕ УТОЧНЕНИЯ ДЛЯ ЭТОГО ВАРИАНТА (НАИВЫСШИЙ ПРИОРИТЕТ) ===
+${params.localRefinement}
+Эти уточнения имеют НАИВЫСШИЙ приоритет и применяются к этому конкретному варианту.
+` : ''}
+
+${isFullGeneration ? `
+=== ЗАДАЧА: СГЕНЕРИРУЙ 3 ВАРИАНТА ===
+Для каждого варианта используй РАЗНУЮ копирайтерскую структуру:
+
+Вариант 1 — структура PAS: ${fullGenStructures[0].description}
+Вариант 2 — структура Hook→Value→CTA: ${fullGenStructures[1].description}
+Вариант 3 — структура AIDA: ${fullGenStructures[2].description}
+
+Каждый вариант должен:
+- Фокусироваться на РАЗНЫХ болях/результатах из массивов аватара
+- Начинаться по-разному (разные хуки)
+- Использовать разный угол подачи
+` : `
+=== ЗАДАЧА: СГЕНЕРИРУЙ 1 ВАРИАНТ (ПЕРЕГЕНЕРАЦИЯ) ===
+Это вариант №${params.variantIndex}. Используй структуру: ${singleStructure}
+Структура ${singleStructure}: ${
+      singleStructure === 'PAS' ? 'Problem → Agitation → Solution' :
+      singleStructure === 'AIDA' ? 'Attention → Interest → Desire → Action' :
+      singleStructure === 'BAB' ? 'Before → After → Bridge' :
+      'Hook → Value → CTA'
+    }
+Создай СВЕЖИЙ вариант, отличающийся по углу подачи и выбранным болям.
+`}
+
+=== ФОРМАТ ОТВЕТА (СТРОГО JSON) ===
+Верни ТОЛЬКО валидный JSON. Никаких вводных слов, никакого текста вне JSON.
+Используй кавычки «елочки» внутри текстов только если нужна прямая речь, но НЕ в JSON-ключах.
+Не используй реальные переносы строк внутри строковых значений — используй \\n.
+
+${isFullGeneration ? `{
+  "variants": [
+    {
+      "variantIndex": 1,
+      "structure": "PAS",
+      ${params.platform === 'meta' ? '"primaryText": "...", "headline": "..."' :
+        params.platform === 'google' ? '"headline": "до 30 символов", "description": "до 90 символов"' :
+        params.platform === 'tiktok' ? '"hook": "...", "caption": "..."' :
+        '"primaryText": "...", "headline": "..."'},
+      "usedPains": ["краткое описание боли 1"],
+      "usedOutcomes": ["краткое описание результата 1"]
+    },
+    {
+      "variantIndex": 2,
+      "structure": "Hook→Value→CTA",
+      ${params.platform === 'meta' ? '"primaryText": "...", "headline": "..."' :
+        params.platform === 'google' ? '"headline": "до 30 символов", "description": "до 90 символов"' :
+        params.platform === 'tiktok' ? '"hook": "...", "caption": "..."' :
+        '"primaryText": "...", "headline": "..."'},
+      "usedPains": ["краткое описание боли 2"],
+      "usedOutcomes": ["краткое описание результата 2"]
+    },
+    {
+      "variantIndex": 3,
+      "structure": "AIDA",
+      ${params.platform === 'meta' ? '"primaryText": "...", "headline": "..."' :
+        params.platform === 'google' ? '"headline": "до 30 символов", "description": "до 90 символов"' :
+        params.platform === 'tiktok' ? '"hook": "...", "caption": "..."' :
+        '"primaryText": "...", "headline": "..."'},
+      "usedPains": ["краткое описание боли 3"],
+      "usedOutcomes": ["краткое описание результата 3"]
+    }
+  ]
+}` : `{
+  "variants": [
+    {
+      "variantIndex": ${params.variantIndex},
+      "structure": "${singleStructure}",
+      ${params.platform === 'meta' ? '"primaryText": "...", "headline": "..."' :
+        params.platform === 'google' ? '"headline": "до 30 символов", "description": "до 90 символов"' :
+        params.platform === 'tiktok' ? '"hook": "...", "caption": "..."' :
+        '"primaryText": "...", "headline": "..."'},
+      "usedPains": ["..."],
+      "usedOutcomes": ["..."]
+    }
+  ]
+}`}
+`;
+  },
+
   VISION_LAYOUT_PROMPT: (draftJson: string, briefText: string) => {
     return `
 You are an expert AI layout designer with advanced vision capabilities.

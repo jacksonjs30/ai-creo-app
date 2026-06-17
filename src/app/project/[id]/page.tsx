@@ -7,12 +7,14 @@ import { Users, BrainCircuit, ChevronRight, RefreshCw, Copy, CheckCircle2, PenTo
 import GenerateCreative from '@/components/workspace/GenerateCreative';
 import ScriptStudio from '@/components/workspace/ScriptStudio';
 import ProjectGallery from '@/components/workspace/ProjectGallery';
+import AdTexts from '@/components/workspace/AdTexts';
 
 export default function ProjectDashboard({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeSection = searchParams.get('tab') || 'avatars';
+  const initialAvatarIdx = searchParams.get('avatarIdx') !== null ? Number(searchParams.get('avatarIdx')) : undefined;
 
   const [avatars, setAvatars] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -302,13 +304,20 @@ export default function ProjectDashboard({ params }: { params: Promise<{ id: str
                   <p style={{ lineHeight: 1.6, color: 'var(--foreground)' }}>
                     {avatar.portrait}
                   </p>
-                  <div style={{ marginTop: '1rem' }}>
+                  <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                     <Link
                       href={`/project/${id}/avatar/${idx}`}
                       className="btn btn-secondary"
                       style={{ fontSize: '0.875rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
                     >
                       Показать полный JTBD и сценарии CJM <ChevronRight size={15} />
+                    </Link>
+                    <Link
+                      href={`/project/${id}?tab=adtexts&avatarIdx=${idx}`}
+                      className="btn btn-secondary"
+                      style={{ fontSize: '0.875rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                    >
+                      <FileText size={15} /> Тексты объявлений
                     </Link>
                   </div>
                 </div>
@@ -354,6 +363,17 @@ export default function ProjectDashboard({ params }: { params: Promise<{ id: str
             {studioTab === 'generate' && <GenerateCreative id={id} />}
             {studioTab === 'scripts' && <ScriptStudio id={id} />}
           </div>
+        </div>
+      )}
+
+      {activeSection === 'adtexts' && (
+        <div className="card" style={{ padding: '2rem' }}>
+          <AdTexts
+            id={id}
+            avatars={avatars}
+            projectBrief={projectBrief}
+            initialAvatarIdx={initialAvatarIdx}
+          />
         </div>
       )}
     </div>

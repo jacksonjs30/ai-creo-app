@@ -13,6 +13,9 @@
     },
     "src/app/api/avatar/regenerate-item/route.ts": {
       "maxDuration": 60
+    },
+    "src/app/api/generate-ad-texts/route.ts": {
+      "maxDuration": 60
     }
   }
 }
