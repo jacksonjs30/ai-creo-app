@@ -407,8 +407,8 @@ function VariantContent({ variant, platform, avatarName, copiedField, onCopy }: 
     <div>
       {(platform === 'meta' || platform === 'other') && (
         <>
-          {renderField('Primary Text', variant.primaryText, `primary_${variant.variantIndex}`)}
           {renderField('Headline', variant.headline, `headline_${variant.variantIndex}`)}
+          {renderField('Primary Text', variant.primaryText, `primary_${variant.variantIndex}`)}
         </>
       )}
 
