@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   FileText,
   Sparkles,
@@ -603,6 +603,25 @@ export default function AdTexts({ id, avatars, projectBrief, initialAvatarIdx }:
   const [isGenerating, setIsGenerating] = useState(false);
   const [regeneratingIdx, setRegeneratingIdx] = useState<number | null>(null);
   const [globalError, setGlobalError] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isFirstMount = useRef(true);
+  const isTempProject = id === 'temp-id';
+
+  // ── Restore saved state from projectBrief.adTexts on mount ──
+  useEffect(() => {
+    const saved = projectBrief?.adTexts;
+    if (saved) {
+      if (saved.platform) setPlatform(saved.platform);
+      if (saved.language) setLanguage(saved.language);
+      if (saved.globalRefinement) setGlobalRefinement(saved.globalRefinement);
+      if (Array.isArray(saved.variants)) setVariants(saved.variants);
+      if (saved.avatarIdx !== undefined && saved.avatarIdx !== null) {
+        setSelectedAvatarIdx(saved.avatarIdx);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // run once on mount
 
   // Sync initialAvatarIdx if it changes (e.g. navigating from avatar card)
   useEffect(() => {
@@ -618,6 +637,64 @@ export default function AdTexts({ id, avatars, projectBrief, initialAvatarIdx }:
     projectBrief?.name ||
     (typeof projectBrief?.product === 'string' ? projectBrief.product : '') ||
     'Продукт';
+
+  // ── Save to Supabase ──
+  const saveVariants = useCallback(
+    async (variantsToSave: (AdVariant | null)[], avatarIdx: number | null) => {
+      if (isTempProject) return; // skip for temp projects
+      const hasRealVariants = variantsToSave.some((v) => v && !v.hasError);
+      if (!hasRealVariants) return;
+
+      setSaveStatus('saving');
+      try {
+        const adTexts = {
+          platform,
+          language,
+          globalRefinement,
+          avatarIdx,
+          variants: variantsToSave,
+          savedAt: new Date().toISOString(),
+        };
+        // Merge into existing brief (don't overwrite other brief fields)
+        const updatedBrief = { ...(projectBrief || {}), adTexts };
+
+        const res = await fetch('/api/projects', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, brief: updatedBrief }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setSaveStatus('saved');
+          setTimeout(() => setSaveStatus('idle'), 3000);
+        } else {
+          setSaveStatus('error');
+          setTimeout(() => setSaveStatus('idle'), 4000);
+        }
+      } catch {
+        setSaveStatus('error');
+        setTimeout(() => setSaveStatus('idle'), 4000);
+      }
+    },
+    [id, platform, language, globalRefinement, projectBrief, isTempProject]
+  );
+
+  // ── Debounced auto-save when variants change ──
+  useEffect(() => {
+    // Skip the very first mount (we just loaded from DB, no need to save back)
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      saveVariants(variants, selectedAvatarIdx);
+    }, 1500);
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [variants]);
 
   // ── Generate all 3 variants ──
   const handleGenerate = useCallback(async () => {
@@ -777,33 +854,69 @@ export default function AdTexts({ id, avatars, projectBrief, initialAvatarIdx }:
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '0.75rem',
+          justifyContent: 'space-between',
           paddingBottom: '1.25rem',
           borderBottom: '1px solid #e2e8f0',
         }}
       >
-        <div
-          style={{
-            width: '44px',
-            height: '44px',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-          }}
-        >
-          <FileText size={22} color="white" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div
+            style={{
+              width: '44px',
+              height: '44px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <FileText size={22} color="white" />
+          </div>
+          <div>
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a', lineHeight: 1.2 }}>
+              Тексты объявлений
+            </h2>
+            <p style={{ color: '#64748b', fontSize: '0.875rem', marginTop: '2px' }}>
+              Генерация 3 вариантов рекламного текста на основе данных аватара
+            </p>
+          </div>
         </div>
-        <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a', lineHeight: 1.2 }}>
-            Тексты объявлений
-          </h2>
-          <p style={{ color: '#64748b', fontSize: '0.875rem', marginTop: '2px' }}>
-            Генерация 3 вариантов рекламного текста на основе данных аватара
-          </p>
-        </div>
+
+        {/* Save status indicator */}
+        {saveStatus !== 'idle' && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              padding: '0.375rem 0.75rem',
+              borderRadius: '20px',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              background:
+                saveStatus === 'saved' ? '#f0fdf4' :
+                saveStatus === 'error' ? '#fef2f2' : '#f8fafc',
+              color:
+                saveStatus === 'saved' ? '#16a34a' :
+                saveStatus === 'error' ? '#dc2626' : '#64748b',
+              border: `1px solid ${
+                saveStatus === 'saved' ? '#bbf7d0' :
+                saveStatus === 'error' ? '#fca5a5' : '#e2e8f0'
+              }`,
+              transition: 'all 0.3s',
+            }}
+          >
+            {saveStatus === 'saving' && (
+              <RefreshCw size={13} style={{ animation: 'spin 1s linear infinite' }} />
+            )}
+            {saveStatus === 'saved' && <CheckCircle2 size={13} />}
+            {saveStatus === 'error' && <AlertCircle size={13} />}
+            {saveStatus === 'saving' ? 'Сохранение…' :
+             saveStatus === 'saved' ? 'Сохранено' : 'Ошибка сохранения'}
+          </div>
+        )}
       </div>
 
       {/* Filters panel */}
