@@ -608,18 +608,31 @@ export default function AdTexts({ id, avatars, projectBrief, initialAvatarIdx }:
   const isFirstMount = useRef(true);
   const isTempProject = id === 'temp-id';
 
-  // ── Restore saved state from projectBrief.adTexts on mount ──
+  // ── Restore saved state: fetch fresh from DB on mount ──
   useEffect(() => {
-    const saved = projectBrief?.adTexts;
-    if (saved) {
-      if (saved.platform) setPlatform(saved.platform);
-      if (saved.language) setLanguage(saved.language);
-      if (saved.globalRefinement) setGlobalRefinement(saved.globalRefinement);
-      if (Array.isArray(saved.variants)) setVariants(saved.variants);
-      if (saved.avatarIdx !== undefined && saved.avatarIdx !== null) {
-        setSelectedAvatarIdx(saved.avatarIdx);
-      }
-    }
+    if (isTempProject) return; // nothing saved for temp projects
+
+    fetch(`/api/projects?id=${id}`)
+      .then((r) => r.json())
+      .then((data) => {
+        const saved = data?.brief?.adTexts;
+        if (!saved) return;
+        if (saved.platform) setPlatform(saved.platform);
+        if (saved.language) setLanguage(saved.language);
+        if (saved.globalRefinement) setGlobalRefinement(saved.globalRefinement);
+        if (Array.isArray(saved.variants)) setVariants(saved.variants);
+        // Only set avatarIdx from saved if no initialAvatarIdx was passed via URL
+        if (
+          saved.avatarIdx !== undefined &&
+          saved.avatarIdx !== null &&
+          (initialAvatarIdx === undefined || initialAvatarIdx === null)
+        ) {
+          setSelectedAvatarIdx(saved.avatarIdx);
+        }
+      })
+      .catch(() => {
+        // Silently ignore — the component will just start empty
+      });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // run once on mount
 
