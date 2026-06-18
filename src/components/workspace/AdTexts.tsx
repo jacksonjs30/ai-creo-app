@@ -37,6 +37,9 @@ interface AdVariant {
   hasError?: boolean;
 }
 
+// Only string fields of AdVariant that the user can edit
+type EditableAdField = 'primaryText' | 'headline' | 'description' | 'hook' | 'caption';
+
 interface AdTextsProps {
   id: string;
   avatars: any[];
@@ -106,6 +109,7 @@ interface VariantCardProps {
   onLocalRefinementChange: (val: string) => void;
   onRegenerate: () => void;
   isRegenerating: boolean;
+  onFieldChange: (field: EditableAdField, value: string) => void;
 }
 
 function VariantCard({
@@ -117,6 +121,7 @@ function VariantCard({
   onLocalRefinementChange,
   onRegenerate,
   isRegenerating,
+  onFieldChange,
 }: VariantCardProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
@@ -303,6 +308,7 @@ function VariantCard({
             avatarName={avatarName}
             copiedField={copiedField}
             onCopy={handleCopy}
+            onFieldChange={onFieldChange}
           />
         )}
       </div>
@@ -320,18 +326,27 @@ interface VariantContentProps {
   avatarName: string;
   copiedField: string | null;
   onCopy: (text: string, field: string) => void;
+  onFieldChange: (field: EditableAdField, value: string) => void;
 }
 
-function VariantContent({ variant, platform, avatarName, copiedField, onCopy }: VariantContentProps) {
+function VariantContent({ variant, platform, avatarName, copiedField, onCopy, onFieldChange }: VariantContentProps) {
+  // Auto-resize textarea to fit content
+  const autoResize = (el: HTMLTextAreaElement) => {
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  };
+
   const renderField = (
     label: string,
     value: string | undefined,
-    fieldKey: string,
-    options?: { mono?: boolean; charLimit?: number }
+    fieldKey: EditableAdField,
+    options?: { charLimit?: number }
   ) => {
-    if (!value) return null;
-    const warning = options?.charLimit ? googleCharWarning(value, options.charLimit) : null;
-    const isOver = warning && value.length > (options?.charLimit ?? Infinity);
+    if (value === undefined || value === null) return null;
+    const currentVal = value;
+    const warning = options?.charLimit ? googleCharWarning(currentVal, options.charLimit) : null;
+    const isOver = !!(warning && currentVal.length > (options?.charLimit ?? Infinity));
+    const isMultiline = fieldKey === 'primaryText' || fieldKey === 'caption';
 
     return (
       <div style={{ marginBottom: '1rem' }}>
@@ -367,12 +382,12 @@ function VariantContent({ variant, platform, avatarName, copiedField, onCopy }: 
               </span>
             )}
             <button
-              onClick={() => onCopy(value, fieldKey)}
+              onClick={() => onCopy(currentVal, String(fieldKey))}
               style={{
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
-                color: copiedField === fieldKey ? '#22c55e' : '#94a3b8',
+                color: copiedField === String(fieldKey) ? '#22c55e' : '#94a3b8',
                 display: 'flex',
                 alignItems: 'center',
                 padding: '2px',
@@ -380,25 +395,52 @@ function VariantContent({ variant, platform, avatarName, copiedField, onCopy }: 
               }}
               title="Скопировать"
             >
-              {copiedField === fieldKey ? <CheckCircle2 size={13} /> : <Copy size={13} />}
+              {copiedField === String(fieldKey) ? <CheckCircle2 size={13} /> : <Copy size={13} />}
             </button>
           </div>
         </div>
-        <div
+        <textarea
+          value={currentVal}
+          rows={isMultiline ? 5 : 2}
+          onChange={(e) => {
+            onFieldChange(fieldKey, e.target.value);
+            autoResize(e.target);
+          }}
+          onFocus={(e) => autoResize(e.target)}
+          ref={(el) => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } }}
           style={{
+            width: '100%',
             background: '#f8fafc',
             border: `1px solid ${isOver ? '#fca5a5' : '#e2e8f0'}`,
             borderRadius: '8px',
             padding: '0.75rem 1rem',
-            fontSize: options?.mono ? '0.85rem' : '0.9rem',
+            fontSize: '0.9rem',
             lineHeight: 1.6,
             color: '#1e293b',
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-word',
+            fontFamily: 'inherit',
+            resize: 'vertical',
+            minHeight: isMultiline ? '100px' : '44px',
+            transition: 'border-color 0.2s, box-shadow 0.2s',
+            outline: 'none',
+            overflowY: 'hidden',
           }}
-        >
-          {value}
-        </div>
+          onMouseEnter={(e) => {
+            (e.target as HTMLTextAreaElement).style.borderColor = '#94a3b8';
+          }}
+          onMouseLeave={(e) => {
+            const el = e.target as HTMLTextAreaElement;
+            el.style.borderColor = isOver ? '#fca5a5' : '#e2e8f0';
+          }}
+          onFocusCapture={(e) => {
+            (e.target as HTMLTextAreaElement).style.borderColor = 'var(--primary)';
+            (e.target as HTMLTextAreaElement).style.boxShadow = '0 0 0 2px rgba(59,130,246,0.15)';
+          }}
+          onBlurCapture={(e) => {
+            const el = e.target as HTMLTextAreaElement;
+            el.style.borderColor = isOver ? '#fca5a5' : '#e2e8f0';
+            el.style.boxShadow = 'none';
+          }}
+        />
       </div>
     );
   };
@@ -407,26 +449,22 @@ function VariantContent({ variant, platform, avatarName, copiedField, onCopy }: 
     <div>
       {(platform === 'meta' || platform === 'other') && (
         <>
-          {renderField('Headline', variant.headline, `headline_${variant.variantIndex}`)}
-          {renderField('Primary Text', variant.primaryText, `primary_${variant.variantIndex}`)}
+          {renderField('Headline', variant.headline, 'headline')}
+          {renderField('Primary Text', variant.primaryText, 'primaryText')}
         </>
       )}
 
       {platform === 'google' && (
         <>
-          {renderField('Headline', variant.headline, `headline_${variant.variantIndex}`, {
-            charLimit: 30,
-          })}
-          {renderField('Description', variant.description, `desc_${variant.variantIndex}`, {
-            charLimit: 90,
-          })}
+          {renderField('Headline', variant.headline, 'headline', { charLimit: 30 })}
+          {renderField('Description', variant.description, 'description', { charLimit: 90 })}
         </>
       )}
 
       {platform === 'tiktok' && (
         <>
-          {renderField('Hook', variant.hook, `hook_${variant.variantIndex}`)}
-          {renderField('Caption', variant.caption, `caption_${variant.variantIndex}`)}
+          {renderField('Hook', variant.hook, 'hook')}
+          {renderField('Caption', variant.caption, 'caption')}
         </>
       )}
 
@@ -715,6 +753,16 @@ export default function AdTexts({ id, avatars, projectBrief, initialAvatarIdx }:
     setLocalRefinements((prev) => {
       const next = [...prev];
       next[idx] = val;
+      return next;
+    });
+  };
+
+  // Update a single field inside a specific variant (for manual editing)
+  const updateVariantField = (cardIdx: number, field: EditableAdField, value: string) => {
+    setVariants((prev) => {
+      const next = [...prev];
+      const existing = next[cardIdx];
+      if (existing) next[cardIdx] = { ...existing, [field]: value };
       return next;
     });
   };
@@ -1069,6 +1117,7 @@ export default function AdTexts({ id, avatars, projectBrief, initialAvatarIdx }:
             onLocalRefinementChange={(val) => updateLocalRefinement(cardIdx, val)}
             onRegenerate={() => handleRegenerate(cardIdx)}
             isRegenerating={regeneratingIdx === cardIdx}
+            onFieldChange={(field, value) => updateVariantField(cardIdx, field as EditableAdField, value)}
           />
         ))}
       </div>
