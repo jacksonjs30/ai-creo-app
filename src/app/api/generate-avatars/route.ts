@@ -7,15 +7,22 @@ export const maxDuration = 300;
 // ВАЖНО: responseSchema намеренно НЕ используется — со сложной вложенной схемой
 // gemini-2.5-flash уходит в думающий режим на 4+ минуты. Без схемы: 20-40 сек.
 // Промпты уже задают точный формат JSON — модель его соблюдает без принуждения.
-async function callGemini(apiKey: string, prompt: string): Promise<any> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-  
+
+// Цепочка моделей: при 403/400 на одной — автоматически пробуем следующую.
+const GEMINI_MODELS = [
+  'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
+];
+
+async function callGeminiModel(apiKey: string, model: string, prompt: string): Promise<any> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
   const body = {
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: {
-      responseMimeType: 'application/json'
-      // Без responseSchema — быстрая генерация свободного JSON
-    }
+    generationConfig: {}
+    // responseMimeType: 'application/json' — убран: требует отдельного разрешения Google Cloud и дает 403.
+    // Модель и так выдает JSON по инструкции в промпте, парсим через regex.
   };
 
   const res = await fetch(url, {
@@ -26,17 +33,44 @@ async function callGemini(apiKey: string, prompt: string): Promise<any> {
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(`Gemini API error ${res.status}: ${err?.error?.message || res.statusText}`);
+    const status = res.status;
+    const message = err?.error?.message || res.statusText;
+    // При ошибках доступа/недоступности модели — пробрасываем с кодом для fallback
+    const error: any = new Error(`Gemini API error ${status}: ${message}`);
+    error.status = status;
+    throw error;
   }
 
   const data = await res.json();
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!text) throw new Error('Empty response from Gemini');
-  
+
   // Извлекаем JSON из ответа (модель иногда добавляет ```json ... ```)
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) throw new Error('No JSON object found in response');
   return JSON.parse(jsonMatch[0]);
+}
+
+async function callGemini(apiKey: string, prompt: string): Promise<any> {
+  let lastError: any;
+  for (const model of GEMINI_MODELS) {
+    try {
+      console.log(`Trying model: ${model}`);
+      const result = await callGeminiModel(apiKey, model, prompt);
+      console.log(`Success with model: ${model}`);
+      return result;
+    } catch (err: any) {
+      lastError = err;
+      // Fallback только при ошибках доступа (403) или модели недоступна (400, 404)
+      if (err.status === 403 || err.status === 400 || err.status === 404) {
+        console.warn(`Model ${model} unavailable (${err.status}), trying next...`);
+        continue;
+      }
+      // Прочие ошибки (500, таймаут и т.д.) — пробрасываем сразу
+      throw err;
+    }
+  }
+  throw lastError;
 }
 
 export async function POST(request: Request) {

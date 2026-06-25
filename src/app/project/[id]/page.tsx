@@ -8,6 +8,7 @@ import GenerateCreative from '@/components/workspace/GenerateCreative';
 import ScriptStudio from '@/components/workspace/ScriptStudio';
 import ProjectGallery from '@/components/workspace/ProjectGallery';
 import AdTexts from '@/components/workspace/AdTexts';
+import FeedbackLoop from '@/components/workspace/FeedbackLoop';
 
 export default function ProjectDashboard({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -236,12 +237,7 @@ export default function ProjectDashboard({ params }: { params: Promise<{ id: str
         </div>
       )}
 
-      {activeSection === 'feedback' && (
-        <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>Feedback Loop</h2>
-          <p style={{ color: 'var(--text-muted)' }}>Аналитика и самообучение ИИ на основе результатов (в разработке).</p>
-        </div>
-      )}
+
 
       {activeSection === 'integrations' && (
         <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
@@ -374,6 +370,12 @@ export default function ProjectDashboard({ params }: { params: Promise<{ id: str
             projectBrief={projectBrief}
             initialAvatarIdx={initialAvatarIdx}
           />
+        </div>
+      )}
+
+      {activeSection === 'feedback' && (
+        <div className="card" style={{ padding: '2rem' }}>
+          <FeedbackLoop id={id} />
         </div>
       )}
     </div>

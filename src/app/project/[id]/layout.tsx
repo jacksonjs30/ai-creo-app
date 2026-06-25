@@ -13,8 +13,8 @@ const STEPS = [
   { id: 'gallery', label: '5. Галерея Креативов', icon: ImageIcon },
   { id: 'adtexts', label: '6. Тексты объявлений', icon: FileText },
   { id: 'assets', label: '7. Asset Production', icon: ImagePlay },
-  { id: 'feedback', label: '7. Feedback Loop', icon: Activity },
-  { id: 'integrations', label: '8. Integrations / API', icon: Blocks },
+  { id: 'feedback', label: '8. Отчетность / Feedback', icon: Activity },
+  { id: 'integrations', label: '9. Integrations / API', icon: Blocks },
 ];
 
 export default function ProjectLayout({
