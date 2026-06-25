@@ -31,9 +31,6 @@ export async function POST(req: NextRequest) {
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
           generationConfig: {
             temperature: 0.2, // Low temp for analytical consistency
-            thinkingConfig: {
-              thinkingBudget: 0,
-            },
           },
         }),
       }
@@ -49,11 +46,14 @@ export async function POST(req: NextRequest) {
 
     let parsed = null;
     try {
-      const cleaned = rawText
-        .replace(/^```(?:json)?\s*/i, '')
-        .replace(/```\s*$/i, '')
-        .trim();
-      parsed = JSON.parse(cleaned);
+      // Find the first '{' and last '}' to extract JSON even if there is conversational text around it
+      const startIdx = rawText.indexOf('{');
+      const endIdx = rawText.lastIndexOf('}');
+      if (startIdx === -1 || endIdx === -1) {
+        throw new Error('JSON boundaries not found in response');
+      }
+      const jsonStr = rawText.substring(startIdx, endIdx + 1);
+      parsed = JSON.parse(jsonStr);
     } catch (parseError) {
       console.error('[feedback-loop-insights] JSON parse error:', parseError);
       console.error('[feedback-loop-insights] Raw response:', rawText.substring(0, 500));

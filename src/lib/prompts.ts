@@ -337,14 +337,17 @@ CONTRAST: It was HELL vs now it is GOOD.
 RECOGNIZABILITY: People recognize themselves in the text.
 
 📊 OUTPUT STRUCTURE
-Present the result as follows for each variant:
+OUTPUT AS A STRICT MARKDOWN TABLE. The table must contain exactly the columns specified below. Use <br> for line breaks inside cells.
 
-VARIANT #[Number]:
-Concept: [Name]
-Image Text (if IMAGE): [Text]
-Brief for Designer (if IMAGE): [All details: Brand-guideline, Color palette, Element placement, Visual, Size, Reference]
-Script (if VIDEO): [Text]
-TOR/Script Breakdown (if VIDEO): [ALL breakdown BY SECONDS: HOOK SECTION, PAIN SECTION, SOLUTION SECTION, PACKSHOT/CTA SECTION].
+IF FORMAT IS IMAGE / MEME / INFOGRAPHIC:
+| № | Concept | 📄 IMAGE TEXT | 📐 DESIGNER BRIEF |
+|---|---------|---------------|-------------------|
+| 1 | [Name] | [Hook]<br>[Explanation]<br>[CTA] | [Visual scene description, CJM moment, colors, layout, composition, camera angle] |
+
+IF FORMAT IS VIDEO:
+| № | Concept | Script (VO / Dialogues) | 🎬 EDITOR SCRIPT / TIMELINE |
+|---|---------|-------------------------|-----------------------------|
+| 1 | [Name] | [Dictator text / VO script] | [0–5s] Video: [Desc]<br>VO: [Text]<br>TBE: [Text]<br>Music: [Desc] |
 
 ✅ CHECKLIST BEFORE OUTPUT
 Product and segment defined?
