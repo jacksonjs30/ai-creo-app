@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Download, RefreshCw, Loader2, Eye, Trash2, Edit2 } from 'lucide-react';
+import { Download, RefreshCw, Loader2, Eye, Trash2, Edit2, Share } from 'lucide-react';
+import { FacebookPublishModal } from './FacebookPublishModal';
 
 export interface CreativeOverlay {
   headline: string;
@@ -34,11 +35,12 @@ export function extractOverlay(cells: string[]): CreativeOverlay {
 }
 
 export function CreativeCard({
-  index, imageUrl,
+  index, imageUrl, overlay,
   isReplacing, disabled, onReplace, onDelete, onEdit
 }: CreativeCardProps) {
   const [hovered, setHovered] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [showFBModal, setShowFBModal] = useState(false);
 
   // Open full-size image in new tab with a solid dark background wrapper
   const handleOpenFull = () => {
@@ -176,6 +178,18 @@ export function CreativeCard({
           )}
 
           <button
+            onClick={() => setShowFBModal(true)}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem',
+              background: '#0866FF', color: 'white', border: 'none',
+              borderRadius: '7px', padding: '0.42rem 0', fontSize: '0.68rem', fontWeight: 700,
+              cursor: 'pointer', width: '100%', textAlign: 'center', whiteSpace: 'normal', lineHeight: '1.1'
+            }}
+          >
+            <Share size={13} style={{ flexShrink: 0 }} /> Опубликовать в FB
+          </button>
+
+          <button
             onClick={handleDownload}
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem',
@@ -230,6 +244,17 @@ export function CreativeCard({
         }}>
           <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Скачиваю…
         </div>
+      )}
+
+      {/* FB Publish Modal */}
+      {showFBModal && (
+        <FacebookPublishModal 
+          isOpen={showFBModal} 
+          onClose={() => setShowFBModal(false)} 
+          imageUrl={imageUrl} 
+          defaultHeadline={overlay?.headline}
+          defaultPrimaryText={overlay?.body}
+        />
       )}
     </div>
   );
