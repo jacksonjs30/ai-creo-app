@@ -26,6 +26,7 @@ export default function FeedbackLoop({ id }: FeedbackLoopProps) {
   const [insights, setInsights] = useState<any>(null);
 
   const [hasSelectedCampaign, setHasSelectedCampaign] = useState(false);
+  const [periodType, setPeriodType] = useState('Последняя неделя');
 
   useEffect(() => {
     // Initial fetch removed. Wait for user to select campaign and click load.
@@ -94,10 +95,25 @@ export default function FeedbackLoop({ id }: FeedbackLoopProps) {
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', background: '#f8fafc', padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
         <div style={{ flex: 1 }}>
           <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Период</label>
-          <select style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
-            <option>Последние 7 дней (01 Июн - 07 Июн)</option>
-            <option>Последние 30 дней</option>
+          <select 
+            value={periodType}
+            onChange={(e) => setPeriodType(e.target.value)}
+            style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1', marginBottom: periodType === 'Свой период' ? '0.5rem' : '0' }}
+          >
+            <option value="Последние 3 дня">Последние 3 дня</option>
+            <option value="Последняя неделя">Последняя неделя</option>
+            <option value="Последний месяц">Последний месяц</option>
+            <option value="Последний квартал">Последний квартал</option>
+            <option value="Последний год">Последний год</option>
+            <option value="Весь период">Весь период</option>
+            <option value="Свой период">Свой период (Календарь)</option>
           </select>
+          {periodType === 'Свой период' && (
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <input type="date" style={{ flex: 1, padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }} />
+              <input type="date" style={{ flex: 1, padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }} />
+            </div>
+          )}
         </div>
         <div style={{ flex: 1 }}>
           <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Кампании</label>
