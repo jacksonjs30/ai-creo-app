@@ -25,8 +25,10 @@ export default function FeedbackLoop({ id }: FeedbackLoopProps) {
   const [insightsLoading, setInsightsLoading] = useState(false);
   const [insights, setInsights] = useState<any>(null);
 
+  const [hasSelectedCampaign, setHasSelectedCampaign] = useState(false);
+
   useEffect(() => {
-    fetchData();
+    // Initial fetch removed. Wait for user to select campaign and click load.
   }, [id]);
 
   const fetchData = async () => {
@@ -44,6 +46,7 @@ export default function FeedbackLoop({ id }: FeedbackLoopProps) {
       if (res.ok) {
         const json = await res.json();
         setData(json);
+        setHasSelectedCampaign(true);
       }
     } catch (e) {
       console.error(e);
@@ -82,8 +85,6 @@ export default function FeedbackLoop({ id }: FeedbackLoopProps) {
     );
   }
 
-  if (!data) return <div>Ошибка загрузки данных.</div>;
-
   const winnersCount = data.creatives_summary?.filter((c: any) => c.status === 'winner').length || 0;
   const losersCount = data.creatives_summary?.filter((c: any) => c.status === 'loser').length || 0;
   
@@ -105,9 +106,28 @@ export default function FeedbackLoop({ id }: FeedbackLoopProps) {
             <option>camp_1, camp_2</option>
           </select>
         </div>
+        <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+          <button 
+            className="btn btn-primary"
+            onClick={fetchData}
+            style={{ padding: '0.6rem 1.5rem', borderRadius: '6px', height: '42px' }}
+          >
+            Применить
+          </button>
+        </div>
       </div>
 
-      {/* Summary Banner */}
+      {!hasSelectedCampaign ? (
+        <div style={{ textAlign: 'center', padding: '4rem 2rem', background: '#f8fafc', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+          <Activity size={48} color="#94a3b8" style={{ margin: '0 auto 1rem' }} />
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#334155', marginBottom: '0.5rem' }}>Выберите кампании для анализа</h3>
+          <p style={{ color: '#64748b', maxWidth: '400px', margin: '0 auto' }}>
+            Чтобы рассчитать Baseline (средний результат), выберите одну или несколько рекламных кампаний с одинаковой целью.
+          </p>
+        </div>
+      ) : (
+        <>
+          {/* Summary Banner */}
       <div style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)', padding: '1.5rem', borderRadius: '16px', marginBottom: '2rem', border: '1px solid #bbf7d0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#166534', marginBottom: '0.5rem' }}>Итоги периода (Baseline)</h3>
@@ -273,6 +293,8 @@ export default function FeedbackLoop({ id }: FeedbackLoopProps) {
           </tbody>
         </table>
       </div>
-    </div>
+    </>
+  )}
+</div>
   );
 }
