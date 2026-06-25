@@ -10,7 +10,8 @@ import {
   Minus,
   HelpCircle,
   AlertCircle,
-  Info
+  Info,
+  BrainCircuit
 } from 'lucide-react';
 
 interface FeedbackLoopProps {
