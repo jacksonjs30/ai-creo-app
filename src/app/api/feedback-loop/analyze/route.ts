@@ -83,32 +83,49 @@ export async function POST(req: NextRequest) {
       avg_CR_reg
     };
 
-    // 4. Assign Statuses and Deltas
-    const finalCreatives = creativesWithAggregatedMetrics.map(c => {
-      let status = 'learning';
+    // 4. Assign Statuses and Deltas using Ranking (Top 10% min 2 winners)
+    
+    // First, map everyone to calculate deltas
+    const creativesWithDeltas = creativesWithAggregatedMetrics.map(c => {
       let deltas = { CTR: null as number | null, CPL: null as number | null, CR_reg: null as number | null };
-      
-      if (c.aggregated.impressions === 0) {
-        status = 'learning';
-      } else if (!c.isEligible) {
-        status = 'learning';
-      } else {
-        // Calculate deltas
-        if (c.aggregated.CTR !== null && avg_CTR) deltas.CTR = (c.aggregated.CTR / avg_CTR) - 1;
-        if (c.aggregated.CPL !== null && avg_CPL) deltas.CPL = (c.aggregated.CPL / avg_CPL) - 1;
-        if (c.aggregated.CR_reg !== null && avg_CR_reg) deltas.CR_reg = (c.aggregated.CR_reg / avg_CR_reg) - 1;
+      if (c.aggregated.CTR !== null && avg_CTR) deltas.CTR = (c.aggregated.CTR / avg_CTR) - 1;
+      if (c.aggregated.CPL !== null && avg_CPL) deltas.CPL = (c.aggregated.CPL / avg_CPL) - 1;
+      if (c.aggregated.CR_reg !== null && avg_CR_reg) deltas.CR_reg = (c.aggregated.CR_reg / avg_CR_reg) - 1;
+      return { ...c, deltas };
+    });
 
-        // Assign Winner/Loser
-        if (c.aggregated.CTR !== null && avg_CTR && c.aggregated.CPL !== null && avg_CPL) {
-          if (c.aggregated.CTR >= avg_CTR * 1.2 && c.aggregated.CPL <= avg_CPL * 0.8) {
-            status = 'winner';
-          } else if (c.aggregated.CPL >= avg_CPL * 1.2 || c.aggregated.CTR <= avg_CTR * 0.8) {
-            status = 'loser';
+    // Rank Eligible Creatives by CPL (lower is better, assuming they all have CPL if they are eligible)
+    const eligibleForRanking = creativesWithDeltas.filter(c => c.isEligible).sort((a, b) => {
+      const cplA = a.aggregated.CPL ?? Infinity;
+      const cplB = b.aggregated.CPL ?? Infinity;
+      return cplA - cplB;
+    });
+
+    const targetWinnersCount = Math.min(
+      eligibleForRanking.length, 
+      Math.max(2, Math.ceil(eligibleForRanking.length * 0.1))
+    );
+
+    // Assign statuses based on rank
+    const winnerIds = new Set(eligibleForRanking.slice(0, targetWinnersCount).map(c => c.id));
+
+    const finalCreatives = creativesWithDeltas.map(c => {
+      let status = 'learning';
+      
+      if (c.aggregated.impressions > 0 && c.isEligible) {
+        if (winnerIds.has(c.id)) {
+          status = 'winner';
+        } else {
+          // Check for loser condition on the remaining
+          if (c.aggregated.CTR !== null && avg_CTR && c.aggregated.CPL !== null && avg_CPL) {
+            if (c.aggregated.CPL >= avg_CPL * 1.2 || c.aggregated.CTR <= avg_CTR * 0.8) {
+              status = 'loser';
+            } else {
+              status = 'neutral';
+            }
           } else {
             status = 'neutral';
           }
-        } else {
-          status = 'neutral';
         }
       }
 
