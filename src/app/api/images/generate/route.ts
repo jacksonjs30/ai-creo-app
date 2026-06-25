@@ -287,6 +287,7 @@ TEXT:
 – Use at most ONE main text block, placed either at the top-left or at the bottom-left, not both.
 – This block can contain a headline and a very short supporting line or CTA, grouped together.
 – Place the text on top of the photo with strong contrast and readability.
+– IMPORTANT PADDING: Start the text block well inside the canvas (at least 15% padding from the left, right, top, and bottom edges). Never let text touch the border.
 
 🟢 IF THE FORMAT IS ANY OTHER (not "DIRECT SALE" and not "REAL-PHOTO"):
 
@@ -294,6 +295,7 @@ TEXT:
 – DO NOT invent bullet lists unless the brief explicitly asks for bullets.
 – Keep a clear visual hierarchy: main headline > supporting line > CTA.
 – Use a composition that fits the described format.
+– IMPORTANT PADDING: Ensure all text is placed with a generous margin (at least 15% from all edges of the canvas). Text must never touch or get cropped by the borders.
 
 ==================================================
 VISUAL STYLE & SAFE MARGINS (CRITICAL FOR DALL-E)

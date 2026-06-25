@@ -462,51 +462,6 @@ ICON ROW FOR TRUST / FEATURES (BOTTOM STRIP):
 – These bottom icons should be compact and aligned in a single row, visually separated from the main content by spacing or a subtle background strip.
 – This row must stay inside the safe margins and look like a small “trust bar”.
 
-SAFE MARGINS & READABILITY (CRITICAL ANTI-CROP RULES):
-– All text blocks (headline, subheadline, bullets, CTA, labels, bottom icons) MUST stay inside safe margins:
-  • keep at least 10–15% empty space from each edge of the banner.
-– No text may touch or be cropped by the edges under any circumstances.
-– If the layout feels dense:
-  • REDUCE the visual size of secondary text (subheadline, bullet descriptions, bottom labels),
-  • slightly tighten line spacing for bullets,
-  • shorten support lines where necessary (remove extra adjectives and filler words).
-– NEVER solve text density by zooming into the layout or pushing text closer to the borders.
-– The entire composition must remain zoomed out, with generous negative space around:
-  • outer edges,
-  • the headline block,
-  • the bullets block,
-  • the CTA block,
-  • the bottom icon row.
-
-“ALIVE” / “JUICY” VISUAL STYLE:
-– Visuals must feel alive, juicy, and realistic, not flat:
-
-  • LIGHT:
-    – use soft, directional light with gentle shadows,
-    – add subtle reflections on screens, glossy surfaces, or glass,
-    – avoid flat, evenly lit scenes; create depth with contrast.
-
-  • DEPTH & PERSPECTIVE:
-    – show laptops, phones, dashboards under a slight perspective angle,
-    – use background blur or atmospheric depth (sharp foreground, softer background),
-    – include layers: foreground object, mid-ground subject, background environment,
-    – create realistic scenes and emphasize them with shadows so the image has volume.
-
-  • CONTEXT & PROPS:
-    – add realistic environment details: desk items, coffee cup, notebook, pen, plants, office interior, city skyline, etc.,
-    – optionally include partial human presence (hand, silhouette, person holding a card/device) if allowed,
-    – keep the scene dynamic but not cluttered.
-
-  • COLOR:
-    – use a clear brand-like palette: 1–2 main colors + 1 accent for the CTA,
-    – make the CTA, badges and key words pop with higher contrast, and you may highlight them with shadows or directional light,
-    – avoid muddy or oversaturated chaos; keep it clean and modern.
-
-– While the visual is alive and rich, keep all text blocks:
-  • sharp,
-  • perfectly readable,
-  • fully inside the safe zone.
-
 SUMMARY FOR DIRECT SALE FORMAT:
 – Think of the banner as a structured sales one-pager:
   • Top: promise (headline + subheadline),
@@ -519,7 +474,30 @@ SUMMARY FOR DIRECT SALE FORMAT:
   • where the product / person / UI visual is placed,
   • where the CTA block and bottom icon row are located,
   • that all text stays within safe margins and that secondary text becomes smaller / tighter instead of being pushed to the edges,
-  • that the visual scene is “alive”, realistic, and rich in depth and light.
+  • that the visual scene is "alive", realistic, and rich in depth and light.
+
+==================================================
+GLOBAL DESIGN RULES (APPLY TO ALL IMAGE FORMATS):
+==================================================
+
+SAFE MARGINS & READABILITY (CRITICAL ANTI-CROP RULES):
+– All text blocks (headline, subheadline, bullets, CTA, labels, bottom icons) MUST stay inside safe margins:
+  • keep at least 10–15% empty space from each edge of the banner.
+– No text may touch or be cropped by the edges under any circumstances.
+– If the layout feels dense:
+  • REDUCE the visual size of secondary text (subheadline, bullet descriptions, bottom labels),
+  • slightly tighten line spacing for bullets,
+  • shorten support lines where necessary (remove extra adjectives and filler words).
+– NEVER solve text density by zooming into the layout or pushing text closer to the borders.
+– The entire composition must remain zoomed out, with generous negative space around outer edges.
+
+"ALIVE" / "JUICY" VISUAL STYLE:
+– Visuals must feel alive, juicy, and realistic, not flat:
+  • LIGHT: use soft, directional light with gentle shadows, add subtle reflections, avoid flat, evenly lit scenes.
+  • DEPTH & PERSPECTIVE: use background blur or atmospheric depth (sharp foreground, softer background), create realistic scenes and emphasize them with shadows so the image has volume.
+  • CONTEXT & PROPS: add realistic environment details (desk items, office interior, city skyline), keep the scene dynamic but not cluttered.
+  • COLOR: use a clear brand-like palette, avoid muddy or oversaturated chaos; keep it clean and modern.
+– While the visual is alive and rich, keep all text blocks sharp, perfectly readable, and fully inside the safe zone.
 `;
   },
 
