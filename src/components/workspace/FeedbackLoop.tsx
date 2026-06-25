@@ -19,7 +19,7 @@ interface FeedbackLoopProps {
 }
 
 export default function FeedbackLoop({ id }: FeedbackLoopProps) {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any>(null);
   
   const [insightsLoading, setInsightsLoading] = useState(false);
@@ -133,7 +133,8 @@ export default function FeedbackLoop({ id }: FeedbackLoopProps) {
           <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#166534', marginBottom: '0.5rem' }}>Итоги периода (Baseline)</h3>
           <p style={{ color: '#15803d', margin: 0, fontWeight: 500 }}>
             Средний CPL: <strong style={{fontSize: '1.1rem'}}>${data.baseline?.avg_CPL?.toFixed(2) || 'N/A'}</strong> | 
-            Средний CTR: <strong style={{fontSize: '1.1rem'}}>{(data.baseline?.avg_CTR * 100).toFixed(2) || 'N/A'}%</strong>
+            Средний CTR: <strong style={{fontSize: '1.1rem'}}>{(data.baseline?.avg_CTR * 100).toFixed(2) || 'N/A'}%</strong> | 
+            Средний CR: <strong style={{fontSize: '1.1rem'}}>{(data.baseline?.avg_CR_reg * 100).toFixed(2) || 'N/A'}%</strong>
           </p>
           <div style={{ display: 'flex', gap: '1.5rem', marginTop: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -258,10 +259,14 @@ export default function FeedbackLoop({ id }: FeedbackLoopProps) {
                   {/* Metrics */}
                   <td style={{ padding: '1rem', verticalAlign: 'top' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.85rem' }}>
+                      <div><strong>Impr:</strong> {c.metrics?.impressions}</div>
+                      <div><strong>Clicks:</strong> {c.metrics?.clicks}</div>
                       <div><strong>Spend:</strong> ${c.metrics?.spend?.toFixed(2)}</div>
                       <div><strong>Regs:</strong> {c.metrics?.registrations}</div>
+                      <div><strong>CPC:</strong> ${c.metrics?.CPC?.toFixed(2) || '-'}</div>
                       <div><strong>CPL:</strong> ${c.metrics?.CPL?.toFixed(2) || '-'}</div>
                       <div><strong>CTR:</strong> {c.metrics?.CTR ? (c.metrics.CTR * 100).toFixed(2) + '%' : '-'}</div>
+                      <div><strong>CR:</strong> {c.metrics?.CR_reg ? (c.metrics.CR_reg * 100).toFixed(2) + '%' : '-'}</div>
                     </div>
                   </td>
 
