@@ -337,7 +337,8 @@ The prompt MUST:
 – Explicitly describe the chosen layout (split versus full-bleed),
 – Respect the format logic above (bullets ONLY for DIRECT SALE; NO bullets for REAL-PHOTO),
 – CRITICAL: Explicitly include exact keywords like "zoomed out composition", "wide-angle", "generous negative space around all edges", and "all text is strictly confined to the inner center, away from borders" to force the image model to prevent text cropping.
-– Emphasize the main message, supporting text, and CTA as the primary focal points of the banner.`;
+– Emphasize the main message, supporting text, and CTA as the primary focal points of the banner.
+– IF THE RAW BRIEF CONTAINS A "🔴 КРИТИЧЕСКОЕ ПРАВИЛО ОТ ПОЛЬЗОВАТЕЛЯ" OR "🔴 КРИТИЧНЕ ПРАВИЛО ВІД КОРИСТУВАЧА" BLOCK, YOU MUST INTEGRATE IT INTO YOUR FINAL PROMPT WITH ABSOLUTE MAXIMUM PRIORITY OVERRIDING ANY OTHER DEFAULT STYLES OR COLORS.`;
           
           const enhanceRes = await openai.chat.completions.create({
             model: 'gpt-4o',
@@ -349,11 +350,16 @@ The prompt MUST:
             max_tokens: 800,
           });
           
-          if (enhanceRes.choices[0]?.message?.content) {
-            prompt = enhanceRes.choices[0].message.content;
+          let enhancedPromptText = enhanceRes.choices[0]?.message?.content?.trim();
+          if (enhancedPromptText) {
+            prompt = enhancedPromptText;
+            // Re-inject the user's strict rule at the very end of the enhanced prompt to ensure DALL-E doesn't miss it
+            if (userNotes && userNotes.trim().length > 0) {
+              prompt += `\n\nCRITICAL USER INSTRUCTION (OVERRIDE ALL PREVIOUS STYLE LOGIC): ${sanitize(userNotes.trim())}`;
+            }
           }
-        } catch (err) {
-          console.error('Error enhancing prompt:', err);
+        } catch (enhanceErr) {
+          console.error('Error enhancing prompt:', enhanceErr);
           // Fallback to original prompt if enhancement fails
         }
       }
