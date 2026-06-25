@@ -365,6 +365,7 @@ Requested number of variants generated?
 🌐 ADDITIONAL RULES
 Language: Generate ALL final creatives and TOR exclusively in ${params.language}.
 
+${(params.format && (params.format.toLowerCase().includes('продаж') || params.format.toLowerCase().includes('direct'))) ? `
 ==================================================
 FOR "DIRECT SALE" FORMAT (Special Rules):
 ==================================================
@@ -475,6 +476,7 @@ SUMMARY FOR DIRECT SALE FORMAT:
   • where the CTA block and bottom icon row are located,
   • that all text stays within safe margins and that secondary text becomes smaller / tighter instead of being pushed to the edges,
   • that the visual scene is "alive", realistic, and rich in depth and light.
+` : ''}
 
 ==================================================
 GLOBAL DESIGN RULES (APPLY TO ALL IMAGE FORMATS):
