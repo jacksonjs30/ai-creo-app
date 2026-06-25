@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
         created_at: c.created_at,
         status,
         metrics: c.aggregated,
-        deltas_vs_baseline: deltas,
+        deltas_vs_baseline: c.deltas,
         meta: c.meta,
       };
     });
