@@ -85,8 +85,8 @@ export default function FeedbackLoop({ id }: FeedbackLoopProps) {
     );
   }
 
-  const winnersCount = data.creatives_summary?.filter((c: any) => c.status === 'winner').length || 0;
-  const losersCount = data.creatives_summary?.filter((c: any) => c.status === 'loser').length || 0;
+  const winnersCount = data?.creatives_summary?.filter((c: any) => c.status === 'winner').length || 0;
+  const losersCount = data?.creatives_summary?.filter((c: any) => c.status === 'loser').length || 0;
   
   return (
     <div className="feedback-loop">
