@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { newText, oldBrief, format, avatarName, productName } = body;
+    const { newText, oldBrief, format, avatarName, productName, userNotes } = body;
     
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
@@ -33,10 +33,17 @@ ${newText}
 ${oldBrief}
 """
 
+${userNotes ? `🔴 КРИТИЧЕСКОЕ ПРАВИЛО ОТ ПОЛЬЗОВАТЕЛЯ (АБСОЛЮТНЫЙ ПРИОРИТЕТ):
+Пользователь передал следующие строгие уточнения для брифа:
+"${userNotes}"
+ВНЕДРИ ЭТИ ИЗМЕНЕНИЯ В ОБНОВЛЕННЫЙ БРИФ ЛЮБОЙ ЦЕНОЙ, ДАЖЕ ЕСЛИ ОНИ ПРОТИВОРЕЧАТ СТАРОМУ БРИФУ ИЛИ ФОРМАТУ.
+` : ''}
+
 ПРАВИЛА:
 1. Выведи ТОЛЬКО обновленный бриф для дизайнера. Никаких вводных слов, пояснений или markdown форматирования вне самого брифа.
 2. Сохрани оригинальное форматирование брифа (списки, жирный шрифт и т.д.).
 3. Обнови только те части, которые зависят от текста (например, описание заголовка/хука, размещение текста, акценты), сохраняя стиль.
+4. ОБЯЗАТЕЛЬНО учти "Критическое правило от пользователя" (если оно есть выше).
     `;
 
     console.log('Updating design brief for format:', format, 'Avatar:', avatarName);

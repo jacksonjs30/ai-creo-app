@@ -202,7 +202,8 @@ export default function ScriptStudio({ id }: { id: string }) {
           oldBrief,
           format: script.format,
           avatarName: script.avatarName,
-          productName: script.productName || project?.name
+          productName: script.productName || project?.name,
+          userNotes: rowNotes[rowKey] || ''
         })
       });
       const data = await res.json();
