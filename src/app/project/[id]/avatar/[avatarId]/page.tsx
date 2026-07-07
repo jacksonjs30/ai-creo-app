@@ -8,6 +8,7 @@ import {
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import * as XLSX from 'xlsx';
 
 export default function AvatarPage() {
   const params = useParams();
@@ -132,7 +133,7 @@ export default function AvatarPage() {
       }).join('\n\n');
     };
 
-    const finalRows = rowLabels.map((label, rowIndex) => {
+    const finalData = rowLabels.map((label, rowIndex) => {
       const rowData = [label];
 
       allAvatars.forEach(a => {
@@ -159,43 +160,21 @@ export default function AvatarPage() {
         rowData.push(value);
       });
 
-      return rowData.map(cell => `"${String(cell || '').replace(/"/g, '""')}"`).join('\t');
+      return rowData;
     });
 
-    const tsvContent = finalRows.join('\n');
-
-    const copyToClipboard = async () => {
-      try {
-        if (navigator.clipboard && window.isSecureContext) {
-          await navigator.clipboard.writeText(tsvContent);
-          setIsCopied(true);
-          setTimeout(() => setIsCopied(false), 2000);
-        } else {
-          throw new Error('Clipboard API not available');
-        }
-      } catch (err) {
-        console.error('Failed to copy via navigator.clipboard', err);
-        const textArea = document.createElement("textarea");
-        textArea.value = tsvContent;
-        textArea.style.position = "fixed";
-        textArea.style.left = "-999999px";
-        textArea.style.top = "-999999px";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        try {
-          document.execCommand('copy');
-          setIsCopied(true);
-          setTimeout(() => setIsCopied(false), 2000);
-        } catch (err2) {
-          console.error('Fallback copy failed', err2);
-          alert('Не удалось скопировать данные. Пожалуйста, проверьте разрешения браузера.');
-        }
-        textArea.remove();
-      }
-    };
-
-    copyToClipboard();
+    try {
+      const worksheet = XLSX.utils.aoa_to_sheet(finalData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Avatars");
+      XLSX.writeFile(workbook, `${project?.name || 'Project'}_Avatars.xlsx`);
+      
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to save Excel file', err);
+      alert('Ошибка при скачивании файла. Попробуйте еще раз.');
+    }
   };
 
   const handleManualAdd = (section: string) => {
@@ -326,7 +305,7 @@ export default function AvatarPage() {
             <div style={{ display: 'flex', gap: '0.75rem' }}>
               <button onClick={handleCopyToExcel} className="btn" style={{ background: 'white', border: '1px solid #e2e8f0', padding: '0.85rem 1rem', color: isCopied ? '#10b981' : '#64748b' }}>
                 {isCopied ? <CheckCircle2 size={18} /> : <Copy size={18} />}
-                <span style={{ marginLeft: '0.5rem', fontWeight: 600 }}>Выгрузить в таблицу</span>
+                <span style={{ marginLeft: '0.5rem', fontWeight: 600 }}>{isCopied ? 'Скачано!' : 'Выгрузить в таблицу'}</span>
               </button>
               <Link href={`/project/${params.id}/generate`} className="btn btn-primary" style={{ padding: '0.85rem 1.5rem', textDecoration: 'none' }}>Генерация креативов →</Link>
             </div>
