@@ -136,6 +136,7 @@ export default function AvatarPage() {
       const rowData = [label];
 
       allAvatars.forEach(a => {
+        if (!a) return;
         let value = "";
         if (rowIndex === 0) value = `Сегмент #${allAvatars.indexOf(a) + 1}`;
         else if (rowIndex === 1) value = a.segmentName || "";
@@ -158,15 +159,43 @@ export default function AvatarPage() {
         rowData.push(value);
       });
 
-      return rowData.map(cell => `"${cell.replace(/"/g, '""')}"`).join('\t');
+      return rowData.map(cell => `"${String(cell || '').replace(/"/g, '""')}"`).join('\t');
     });
 
     const tsvContent = finalRows.join('\n');
 
-    navigator.clipboard.writeText(tsvContent).then(() => {
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    });
+    const copyToClipboard = async () => {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(tsvContent);
+          setIsCopied(true);
+          setTimeout(() => setIsCopied(false), 2000);
+        } else {
+          throw new Error('Clipboard API not available');
+        }
+      } catch (err) {
+        console.error('Failed to copy via navigator.clipboard', err);
+        const textArea = document.createElement("textarea");
+        textArea.value = tsvContent;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          document.execCommand('copy');
+          setIsCopied(true);
+          setTimeout(() => setIsCopied(false), 2000);
+        } catch (err2) {
+          console.error('Fallback copy failed', err2);
+          alert('Не удалось скопировать данные. Пожалуйста, проверьте разрешения браузера.');
+        }
+        textArea.remove();
+      }
+    };
+
+    copyToClipboard();
   };
 
   const handleManualAdd = (section: string) => {
