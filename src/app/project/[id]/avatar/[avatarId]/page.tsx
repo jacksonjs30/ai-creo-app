@@ -3,7 +3,7 @@
 import {
   ArrowLeft, Brain, Target, ShieldAlert, Heart, MessageSquare,
   Footprints, Flame, AlertCircle, CheckCircle2, Star, Plus, RefreshCw, Trash2, Loader2,
-  Edit3, GripVertical
+  Edit3, GripVertical, Copy
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
@@ -19,6 +19,7 @@ export default function AvatarPage() {
   const [workingKey, setWorkingKey] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<{ section: string, idx: number, data: any } | null>(null);
   const [draggedItem, setDraggedItem] = useState<{ section: string, idx: number } | null>(null);
+  const [isCopied, setIsCopied] = useState(false);
 
   const allAvatarsRef = useRef<any[]>([]);
 
@@ -96,6 +97,76 @@ export default function AvatarPage() {
     if (section === 'outcomes') updated.outcomes.items = items; else updated[section] = items;
     saveUpdatedAvatar(updated);
     setDraggedItem(null);
+  };
+
+  const handleCopyToExcel = () => {
+    if (allAvatars.length === 0) return;
+
+    const maxCJMs = Math.max(...allAvatars.map(a => (a.cjm || []).length));
+
+    const rowLabels = [
+      "СЕГМЕНТ",
+      "Название",
+      "Резюме",
+      "Портрет",
+      "JTBD (Задачи)",
+      "Боли",
+      "Страхи",
+      "Симптомы",
+      "Маркеры поведения",
+      "Мотивации",
+      "Возражения",
+    ];
+
+    for (let i = 0; i < maxCJMs; i++) {
+      rowLabels.push(`CJM Сценарий ${i + 1}`);
+    }
+
+    const formatList = (list: any[], labelKey: string) => {
+      if (!list || !Array.isArray(list)) return "";
+      return list.map((item, i) => {
+        const ratingNum = item.frequency_rating || 0;
+        const stars = "⭐".repeat(Math.min(5, Math.max(0, Math.round(ratingNum))));
+        const ratingStr = stars ? ` ${stars}` : "";
+        return `${i + 1}. ${item[labelKey]}${ratingStr}\n${item.context ? `(${item.context})` : ""}`;
+      }).join('\n\n');
+    };
+
+    const finalRows = rowLabels.map((label, rowIndex) => {
+      const rowData = [label];
+
+      allAvatars.forEach(a => {
+        let value = "";
+        if (rowIndex === 0) value = `Сегмент #${allAvatars.indexOf(a) + 1}`;
+        else if (rowIndex === 1) value = a.segmentName || "";
+        else if (rowIndex === 2) value = a.summary || "";
+        else if (rowIndex === 3) value = a.portrait || "";
+        else if (rowIndex === 4) value = formatList(a.jtbd, 'job');
+        else if (rowIndex === 5) value = formatList(a.pains, 'pain');
+        else if (rowIndex === 6) value = formatList(a.fears, 'fear');
+        else if (rowIndex === 7) value = formatList(a.symptoms, 'symptom');
+        else if (rowIndex === 8) value = formatList(a.behaviorMarkers, 'marker');
+        else if (rowIndex === 9) value = formatList(a.motivations, 'motivation');
+        else if (rowIndex === 10) value = formatList(a.objections, 'objection');
+        else {
+          const cjmIndex = rowIndex - 11;
+          const cjm = a.cjm && a.cjm[cjmIndex];
+          if (cjm) {
+            value = `${cjm.title ? `**${cjm.title}**\n` : ""}${cjm.scenario}`;
+          }
+        }
+        rowData.push(value);
+      });
+
+      return rowData.map(cell => `"${cell.replace(/"/g, '""')}"`).join('\t');
+    });
+
+    const tsvContent = finalRows.join('\n');
+
+    navigator.clipboard.writeText(tsvContent).then(() => {
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    });
   };
 
   const handleManualAdd = (section: string) => {
@@ -223,7 +294,13 @@ export default function AvatarPage() {
               <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 900, color: '#1e293b' }}>{avatar.segmentName}</h1>
               <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginTop: '0.4rem', fontWeight: 500 }}>Полное исследование сегмента аудитории. Вы можете править любой параметр</p>
             </div>
-            <Link href={`/project/${params.id}/generate`} className="btn btn-primary" style={{ padding: '0.85rem 1.5rem', textDecoration: 'none' }}>Генерация креативов →</Link>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button onClick={handleCopyToExcel} className="btn" style={{ background: 'white', border: '1px solid #e2e8f0', padding: '0.85rem 1rem', color: isCopied ? '#10b981' : '#64748b' }}>
+                {isCopied ? <CheckCircle2 size={18} /> : <Copy size={18} />}
+                <span style={{ marginLeft: '0.5rem', fontWeight: 600 }}>Выгрузить в таблицу</span>
+              </button>
+              <Link href={`/project/${params.id}/generate`} className="btn btn-primary" style={{ padding: '0.85rem 1.5rem', textDecoration: 'none' }}>Генерация креативов →</Link>
+            </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
