@@ -319,7 +319,7 @@ ${params.existingConcepts && params.existingConcepts.length > 0 ? `ПОПЕРЕ�
 
 ВАЖЛИВО ДЛЯ КАРТИНОК!
 У полі "Текст картинки" завжди генеруй КОРОТКО! Тільки ті фрази, які реально будуть на креативі. Не перевищуй 3–4 ключові рядки, сумарно не більше 13–22 слів. Це не сценарій, це готовий текст для верстки.
-🔴 КРИТИЧНО: ОБОВ'ЯЗКОВО вставляй назву продукту ("${params.productName}") безпосередньо всередину тексту для картинки (наприклад, у заклик до дії, поруч зі знижкою або в заголовок). Без назви продукту креатив не буде прийнятий!
+🔴 КРИТИЧНО: ОБОВ'ЯЗКОВО вставляй назву продукту ("${params.productName}")${params.promoOffer ? ` та суть акції/пропозиції ("${params.promoOffer}")` : ''} безпосередньо всередину тексту для картинки (наприклад, у заклик до дії, поруч зі знижкою або в заголовок). Без цього креатив не буде прийнятий!
 
 У "Брифі для дизайнера" розпиши все решта: розміщення кожного блоку, шрифти, акценти, фон, колір, порядок, CTA, референси, розмір. 
 ОБОВ'ЯЗКОВО вказуй на використання ПЛАШОК (контейнерів під текст) та ІКОНОК. Плашки необхідні для того, щоб текст був чітко обмежений, легко читався і в жодному разі не вилазив за межі виділених зон. Іконки використовуй для візуального підсилення і структурування тексту.
@@ -458,7 +458,7 @@ The ad copy MUST STRICTLY consist of 5 blocks:
   2. SUBHEADLINE (1 short sentence) – directly under the headline, with a smaller font size.
   3. BULLET POINTS (CRITICAL — MANDATORY!) – 3–4 key benefits as a short list, in an even smaller font than the subheadline.
   4. PRODUCT LABEL (CRITICAL) – You MUST explicitly write the course / product name "${params.productName}" here, using the same font size as description / bullet text.
-  5. DISCOUNT / CTA – a visible badge (promo, benefit, or guarantee) + button text (on the button: a direct call to action for the product such as “sign up”, “get”, “buy”, etc. Do NOT use pains or desires inside the button text; it should be a simple action + optionally a clear benefit).
+  5. DISCOUNT / CTA (CRITICAL) – a visible badge (promo, benefit, or guarantee) + button text. ${params.promoOffer ? `You MUST explicitly write the promo offer "${params.promoOffer}" here.` : ''} (On the button: a direct call to action for the product such as “sign up”, “get”, “buy”, etc.).
 
 BULLET LAYOUT & ICONS (LIKE REFERENCE BANNERS):
 – BULLETS must be visual, not just plain text.
