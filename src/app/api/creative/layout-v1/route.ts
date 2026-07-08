@@ -63,14 +63,14 @@ export async function POST(req: NextRequest) {
     }
     const openai = new OpenAI({ apiKey: openAiApiKey });
 
-    // Ensure we explicitly forbid text in the background image
+    // Ensure text is rendered according to the scene description
     const bgPrompt = `
-      Create a clean, professional advertising background image.
+      Create a clean, professional advertising image.
       SCENE DESCRIPTION: ${document.backgroundHint || 'Clean modern gradient background.'}
       COLORS: Use colors transitioning from ${document.brandPalette?.bgGradientFrom || '#E0E7FF'} to ${document.brandPalette?.bgGradientTo || '#F3E8FF'}.
-      STRICT RULE 1: DO NOT generate any text, letters, words, or numbers on this image.
-      STRICT RULE 2: Leave plenty of clean, empty space for overlaying text later.
-      STRICT RULE 3: Do not generate any logos or UI elements.
+      STRICT RULE 1: Render the exact text specified in the scene description. Place all text strictly inside distinct badges, plates, or containers to ensure it is clearly legible and does not overflow or blend into the background.
+      STRICT RULE 2: Include graphic icons next to the text bullets as specified in the scene description.
+      STRICT RULE 3: Do not generate any UI elements unless specified in the scene description.
     `.trim();
 
     console.log('[layout-v1] Requesting background image with prompt:', bgPrompt);

@@ -162,31 +162,41 @@ export default function ScriptStudio({ id }: { id: string }) {
   };
 
   const updateTableCell = async (scriptId: string, rIdx: number, cIdx: number, newValue: string) => {
-    const newScripts = [...scripts];
-    const sIdx = newScripts.findIndex(s => s.id === scriptId);
-    if (sIdx === -1) return;
+    let finalScripts: any[] | null = null;
     
-    const targetScript = newScripts[sIdx];
-    const lines = targetScript.content.split('\n');
-    const tableLines = lines.filter((l: string) => l.trim().startsWith('|'));
-    if (tableLines.length === 0) return;
-    
-    const firstTableIdx = lines.indexOf(tableLines[0]);
-    const lastTableIdx = lines.indexOf(tableLines[tableLines.length - 1]);
-    const before = lines.slice(0, firstTableIdx).join('\n');
-    const after = lines.slice(lastTableIdx + 1).join('\n');
-    
-    const parsedData = tableLines.map((line: string) => {
-      return robustParseTableLine(line);
+    setScripts(prevScripts => {
+      const newScripts = [...prevScripts];
+      const sIdx = newScripts.findIndex(s => s.id === scriptId);
+      if (sIdx === -1) return prevScripts;
+      
+      const targetScript = { ...newScripts[sIdx] };
+      const lines = targetScript.content.split('\n');
+      const tableLines = lines.filter((l: string) => l.trim().startsWith('|'));
+      if (tableLines.length === 0) return prevScripts;
+      
+      const firstTableIdx = lines.indexOf(tableLines[0]);
+      const lastTableIdx = lines.indexOf(tableLines[tableLines.length - 1]);
+      const before = lines.slice(0, firstTableIdx).join('\n');
+      const after = lines.slice(lastTableIdx + 1).join('\n');
+      
+      const parsedData = tableLines.map((line: string) => {
+        return robustParseTableLine(line);
+      });
+      
+      const targetRowIdx = rIdx + 2; // header and separator
+      if (parsedData[targetRowIdx] && parsedData[targetRowIdx][cIdx] !== undefined) {
+        parsedData[targetRowIdx][cIdx] = newValue.replace(/\n/g, '<br>');
+        const tableStr = parsedData.map((r: string[]) => `| ${r.join(' | ')} |`).join('\n');
+        targetScript.content = `${before}\n${tableStr}\n${after}`.trim();
+        newScripts[sIdx] = targetScript;
+        finalScripts = newScripts;
+        return newScripts;
+      }
+      return prevScripts;
     });
-    
-    const targetRowIdx = rIdx + 2; // header and separator
-    if (parsedData[targetRowIdx] && parsedData[targetRowIdx][cIdx] !== undefined) {
-      parsedData[targetRowIdx][cIdx] = newValue.replace(/\n/g, '<br>');
-      const tableStr = parsedData.map((r: string[]) => `| ${r.join(' | ')} |`).join('\n');
-      targetScript.content = `${before}\n${tableStr}\n${after}`.trim();
-      setScripts(newScripts);
-      await set(`projectScripts_${id}`, newScripts);
+
+    if (finalScripts) {
+      await set(`projectScripts_${id}`, finalScripts);
     }
   };
 
@@ -264,9 +274,15 @@ export default function ScriptStudio({ id }: { id: string }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      const updatedScripts = [data.script, ...scripts];
-      setScripts(updatedScripts);
-      await set(`projectScripts_${id}`, updatedScripts);
+      let finalScripts: any[] | null = null;
+      setScripts(prevScripts => {
+        const updatedScripts = [data.script, ...prevScripts];
+        finalScripts = updatedScripts;
+        return updatedScripts;
+      });
+      if (finalScripts) {
+        await set(`projectScripts_${id}`, finalScripts);
+      }
     } catch (e: any) {
       alert('Ошибка при регенерации: ' + e.message);
     } finally {
@@ -292,18 +308,25 @@ export default function ScriptStudio({ id }: { id: string }) {
       if (!res.ok) throw new Error(data.error);
 
       // Сохраняем URL видео в скрипт
-      const newScripts = [...scripts];
-      const scriptIndex = newScripts.findIndex(s => s.id === script.id);
-      if (scriptIndex !== -1) {
-        newScripts[scriptIndex] = { ...newScripts[scriptIndex], videoUrl: data.videoUrl };
-        setScripts(newScripts);
-        await set(`projectScripts_${id}`, newScripts);
+      let finalScripts: any[] | null = null;
+      setScripts(prevScripts => {
+        const newScripts = [...prevScripts];
+        const scriptIndex = newScripts.findIndex(s => s.id === script.id);
+        if (scriptIndex !== -1) {
+          newScripts[scriptIndex] = { ...newScripts[scriptIndex], videoUrl: data.videoUrl };
+          finalScripts = newScripts;
+          return newScripts;
+        }
+        return prevScripts;
+      });
 
+      if (finalScripts) {
+        await set(`projectScripts_${id}`, finalScripts);
         if (id && id !== 'temp-id') {
           fetch('/api/projects', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id, brief: { ...(project?.brief || {}), scripts: newScripts } })
+            body: JSON.stringify({ id, brief: { ...(project?.brief || {}), scripts: finalScripts } })
           }).catch(console.error);
         }
       }
