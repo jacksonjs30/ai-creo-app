@@ -274,6 +274,20 @@ export default function GenerateCreatives({ params }: { params: Promise<{ id: st
                   setProductName(e.target.value);
                   localStorage.setItem(`savedProductName_${id}`, e.target.value);
                 }}
+                onBlur={async (e) => {
+                  const newName = e.target.value;
+                  if (id && id !== 'temp-id' && newName.trim()) {
+                    try {
+                      await fetch('/api/projects', {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id, name: newName })
+                      });
+                    } catch (err) {
+                      console.error('Failed to sync project name', err);
+                    }
+                  }
+                }}
                 style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
               />
             </div>
