@@ -253,8 +253,9 @@ Carefully read the brief and detect the requested format.
 Use a strict split-layout with marketing text and bullets.
 
 LAYOUT:
-– LEFT SIDE (about 60% width): All marketing text — headline, subheadline, bullet points, CTA button.
-– RIGHT SIDE (about 40% width): Visual content — realistic product mockups (laptop or smartphone showing the UI), cinematic 3D product imagery, or abstract thematic illustration matching the product.
+– Since the image must be a perfect SQUARE (1:1), use a balanced, integrated composition.
+– Text can be placed on a clean background or semi-transparent card overlay.
+– The product/visual content should be prominently featured alongside or behind the text.
 
 TEXT BLOCKS:
 – MAIN HEADLINE: 1–2 lines, large bold sans-serif font at the top-left. This is the main promise or result for the audience.
@@ -304,9 +305,8 @@ VISUAL STYLE & SAFE MARGINS (CRITICAL FOR DALL-E)
 – Premium advertising look: clean typography, clear hierarchy, strong contrast.
 – No generic stock-photo clichés, no random glowing lines, no thin frames around the whole banner.
 – SAFE MARGINS (MANDATORY TO PREVENT CROPPING):
-  • You MUST explicitly instruct the image generator to use a "zoomed out", "wide-angle shot", with "generous negative space around all edges".
-  • Specify that there is an "invisible inner frame" 15% away from the edges, and all text MUST be kept strictly inside this inner frame.
-  • Tell the image generator: "NO TEXT OR ICONS MAY TOUCH OR BE CROPPED BY THE CANVAS BORDERS. Leave plenty of empty padding on all four sides."
+  • Instruct the image generator to keep all text slightly away from the absolute edges.
+  • The layout MUST be a perfect square (1:1 aspect ratio). Do not add empty horizontal margins.
 
 ==================================================
 EXACT TEXT RULES (CRITICAL – DO NOT TRANSLATE)

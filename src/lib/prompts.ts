@@ -263,7 +263,7 @@ ${brief.productBullets && brief.productBullets.length > 0 ? `\nКЛЮЧЕВЫЕ 
   /**
    * 5. КРЕАТИВЫ НА ОСНОВЕ АВАТАРА (СЦЕНАРИИ И ТЗ)
    */
-          GENERATE_CREATIVES_PROMPT: (params: { 
+            GENERATE_CREATIVES_PROMPT: (params: { 
     productName: string, 
     avatarData: any, 
     format: string, 
