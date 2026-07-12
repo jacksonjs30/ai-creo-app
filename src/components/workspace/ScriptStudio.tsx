@@ -39,6 +39,9 @@ export default function ScriptStudio({ id }: { id: string }) {
   const [generatingImages, setGeneratingImages] = useState<{ scriptId: string, rowIdx: number, action: 'add' | 'replace', imgIdx?: number }[]>([]);
   const [isGeneratingVideo, setIsGeneratingVideo] = useState<string | null>(null);
   const [isUpdatingBrief, setIsUpdatingBrief] = useState<string | null>(null);
+  
+  // State for inline text editing
+  const [activeEditCell, setActiveEditCell] = useState<string | null>(null);
   const [rowNotes, setRowNotes] = useState<Record<string, string>>({});
   
   const [editingLayout, setEditingLayout] = useState<{ scriptId: string, rowIdx: number, imgIdx: number, layoutData: any } | null>(null);
@@ -1063,36 +1066,81 @@ export default function ScriptStudio({ id }: { id: string }) {
                                       />
                                     </div>
                                   )}
-                                  <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '1rem', fontSize: '0.9rem', color: '#334155', lineHeight: 1.6, borderRight: cIdx < headerRow.length - 1 ? '1px solid #e2e8f0' : 'none', wordBreak: 'break-word', textAlign: (headerRow.length === 4 && cIdx === 0) ? 'center' : 'left', position: 'relative' }}>
-                                    {isUpdatingThisBrief && (
-                                      <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
-                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', color: '#4338ca', fontWeight: 600 }}>
-                                          <Loader2 size={24} className="animate-spin" />
-                                          <span>Обновление ТЗ ИИ...</span>
+                                    <div 
+                                      onClick={() => {
+                                        if (!activeEditCell && (isTextCol || isBriefCol)) {
+                                          setActiveEditCell(`${script.id}_${dataRowIdx}_${cIdx}`);
+                                        }
+                                      }}
+                                      style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '1rem', fontSize: '0.9rem', color: '#334155', lineHeight: 1.6, borderRight: cIdx < headerRow.length - 1 ? '1px solid #e2e8f0' : 'none', wordBreak: 'break-word', textAlign: (headerRow.length === 4 && cIdx === 0) ? 'center' : 'left', position: 'relative', cursor: (isTextCol || isBriefCol) && activeEditCell !== `${script.id}_${dataRowIdx}_${cIdx}` ? 'pointer' : 'default' }}
+                                      title={(isTextCol || isBriefCol) && activeEditCell !== `${script.id}_${dataRowIdx}_${cIdx}` ? 'Кликните, чтобы редактировать' : ''}
+                                    >
+                                      {isUpdatingThisBrief && (
+                                        <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
+                                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', color: '#4338ca', fontWeight: 600 }}>
+                                            <Loader2 size={24} className="animate-spin" />
+                                            <span>Обновление ТЗ ИИ...</span>
+                                          </div>
                                         </div>
-                                      </div>
-                                    )}
-                                    {isTextCol && !script.format?.toLowerCase().includes('відео') && !script.format?.toLowerCase().includes('видео') ? (
-                                      <textarea
-                                        defaultValue={cell.replace(/<br\s*\/?>/gi, '\n')}
-                                        onBlur={(e) => {
-                                          const newText = e.target.value;
-                                          const oldText = cell.replace(/<br\s*\/?>/gi, '\n');
-                                          if (newText !== oldText) {
-                                            updateTableCell(script.id, dataRowIdx, cIdx, newText);
-                                            handleBriefAIUpdate(script, dataRowIdx, newText, row[3]);
-                                          }
-                                        }}
-                                        style={{ flex: 1, width: '100%', minHeight: '120px', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '6px', resize: 'vertical', outline: 'none', fontFamily: 'inherit', fontSize: '0.9rem' }}
-                                      />
-                                    ) : (
-                                      <div className="markdown-content" style={{ opacity: isUpdatingThisBrief ? 0.3 : 1 }}>
-                                        <ReactMarkdown remarkPlugins={remarkPluginsList} rehypePlugins={rehypePluginsList}>
-                                          {cell}
-                                        </ReactMarkdown>
-                                      </div>
-                                    )}
-                                  </div>
+                                      )}
+                                      {activeEditCell === `${script.id}_${dataRowIdx}_${cIdx}` ? (
+                                        <textarea
+                                          autoFocus
+                                          defaultValue={cell.replace(/<br\s*\/?>/gi, '\n')}
+                                          onBlur={(e) => {
+                                            setActiveEditCell(null);
+                                            const newText = e.target.value;
+                                            const oldText = cell.replace(/<br\s*\/?>/gi, '\n');
+                                            
+                                            if (newText !== oldText) {
+                                              updateTableCell(script.id, dataRowIdx, cIdx, newText);
+                                              
+                                              // Smart Bidirectional Sync
+                                              // Find what was changed
+                                              let start = 0;
+                                              while (start < oldText.length && start < newText.length && oldText[start] === newText[start]) start++;
+                                              let endOld = oldText.length - 1;
+                                              let endNew = newText.length - 1;
+                                              while (endOld >= start && endNew >= start && oldText[endOld] === newText[endNew]) {
+                                                endOld--;
+                                                endNew--;
+                                              }
+                                              const removed = oldText.substring(start, endOld + 1);
+                                              const added = newText.substring(start, endNew + 1);
+                                              
+                                              // If the removed snippet is significant (>= 3 chars or is a word)
+                                              if (removed.trim().length >= 2) {
+                                                const otherColIdx = isTextCol ? 3 : 2;
+                                                const otherText = row[otherColIdx];
+                                                if (otherText && otherText.includes(removed)) {
+                                                  // Apply the same replacement to the other column
+                                                  const updatedOtherText = otherText.replace(removed, added);
+                                                  updateTableCell(script.id, dataRowIdx, otherColIdx, updatedOtherText);
+                                                } else if (isTextCol) {
+                                                  // Fallback to AI update if it's the Text column and we couldn't find an exact match to replace
+                                                  handleBriefAIUpdate(script, dataRowIdx, newText, row[3]);
+                                                }
+                                              } else if (isTextCol) {
+                                                // If the change was too small to auto-sync safely, fallback to AI update
+                                                handleBriefAIUpdate(script, dataRowIdx, newText, row[3]);
+                                              }
+                                            }
+                                          }}
+                                          style={{ flex: 1, width: '100%', minHeight: '180px', padding: '0.5rem', border: '2px solid #6366f1', borderRadius: '6px', resize: 'vertical', outline: 'none', fontFamily: 'inherit', fontSize: '0.9rem', background: '#fff', boxShadow: '0 0 0 3px rgba(99, 102, 241, 0.1)' }}
+                                        />
+                                      ) : (
+                                        <div className="markdown-content" style={{ opacity: isUpdatingThisBrief ? 0.3 : 1, flex: 1 }}>
+                                          <ReactMarkdown remarkPlugins={remarkPluginsList} rehypePlugins={rehypePluginsList}>
+                                            {cell}
+                                          </ReactMarkdown>
+                                          {(isTextCol || isBriefCol) && (
+                                            <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: '#f1f5f9', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', color: '#64748b', opacity: 0.7, pointerEvents: 'none' }}>
+                                              ✏️ Кликните для ред.
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
                                   </React.Fragment>
                                 );
                               })}
