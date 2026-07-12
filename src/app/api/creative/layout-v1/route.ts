@@ -75,30 +75,48 @@ export async function POST(req: NextRequest) {
 
     console.log('[layout-v1] Requesting background image with prompt:', bgPrompt);
 
-    const imageRes = await openai.images.generate({
-      model: 'gpt-image-1',
-      prompt: bgPrompt,
-      n: 1,
-      size: '1024x1024',
-      quality: 'medium' as any, // Use medium quality since background doesn't need text
+    const ideogramApiKey = process.env.IDEOGRAM_API_KEY;
+    if (!ideogramApiKey) {
+      throw new Error('IDEOGRAM_API_KEY is missing');
+    }
+
+    const ideogramRes = await fetch('https://api.ideogram.ai/v1/ideogram-v4/generate', {
+      method: 'POST',
+      headers: {
+        'Api-Key': ideogramApiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        text_prompt: bgPrompt,
+        aspect_ratio: '1:1',
+      })
     });
 
-    const imgData = imageRes.data?.[0];
-    if (!imgData?.b64_json) throw new Error('gpt-image-1 did not return b64_json.');
+    if (!ideogramRes.ok) {
+      const errText = await ideogramRes.text();
+      throw new Error(`Ideogram API Error: ${ideogramRes.status} ${errText}`);
+    }
+
+    const ideogramData = await ideogramRes.json();
+    const bgImageUrl = ideogramData?.data?.[0]?.url;
+
+    if (!bgImageUrl) throw new Error('Ideogram API did not return image url.');
 
     // Gemini Vision step removed by user request
     let finalDocument = document;
-    finalDocument.blocks = []; // User requested NO HTML layers, just pure DALL-E image with baked-in text
+    finalDocument.blocks = []; // User requested NO HTML layers, just pure image with baked-in text
 
     // 4. Upload Background to Supabase
-    console.log('[layout-v1] Uploading image to Supabase...');
+    console.log('[layout-v1] Fetching and uploading image to Supabase...');
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       { cookies: { getAll: async () => (await cookies()).getAll(), setAll: () => {} } }
     );
 
-    const buffer = Buffer.from(imgData.b64_json, 'base64');
+    const imageFetchRes = await fetch(bgImageUrl);
+    if (!imageFetchRes.ok) throw new Error('Failed to download image from Ideogram');
+    const buffer = Buffer.from(await imageFetchRes.arrayBuffer());
     const fileName = `backgrounds/layout_v1_${Date.now()}_${Math.random().toString(36).substring(2, 9)}.png`;
 
     const { error: uploadError } = await supabase.storage

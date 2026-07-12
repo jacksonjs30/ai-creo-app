@@ -368,40 +368,48 @@ The prompt MUST:
         prompt = prompt.substring(0, 3900) + '...';
       }
 
-      let b64ImageData: string;
+      let buffer: any;
       try {
-        const response = await openai.images.generate({
-          model: 'gpt-image-1',
-          prompt,
-          n: 1,
-          size: '1024x1024',
-          quality: quality as any,
+        const ideogramApiKey = process.env.IDEOGRAM_API_KEY;
+        if (!ideogramApiKey) {
+          throw new Error('IDEOGRAM_API_KEY не найден.');
+        }
+
+        const ideogramRes = await fetch('https://api.ideogram.ai/v1/ideogram-v4/generate', {
+          method: 'POST',
+          headers: {
+            'Api-Key': ideogramApiKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            text_prompt: prompt,
+            aspect_ratio: '1:1', // По умолчанию используем 1:1, как и было 1024x1024
+          })
         });
 
-        const imgData = response.data?.[0];
-        if (!imgData?.b64_json) throw new Error('gpt-image-1 не вернул b64_json.');
-        b64ImageData = imgData.b64_json;
+        if (!ideogramRes.ok) {
+          const errText = await ideogramRes.text();
+          throw new Error(`Ideogram API Error: ${ideogramRes.status} ${errText}`);
+        }
 
-      } catch (openAiError: any) {
-        const msg: string = openAiError?.message || '';
-        console.error('[images/generate] OpenAI error:', msg);
+        const ideogramData = await ideogramRes.json();
+        const imageUrl = ideogramData?.data?.[0]?.url;
 
-        if (msg.includes('does not exist') || msg.includes('model_not_found')) {
-          return NextResponse.json({ error: `Модель gpt-image-1 недоступна. Перевірте ключ OpenAI.\n${msg}` }, { status: 400 });
+        if (!imageUrl) {
+          throw new Error('Ideogram API не вернул URL картинки.');
         }
-        if (msg.includes('billing') || msg.includes('quota') || msg.includes('insufficient')) {
-          return NextResponse.json({ error: `Недостатньо кредитів OpenAI. Поповніть баланс.\n${msg}` }, { status: 402 });
+
+        const imageFetchRes = await fetch(imageUrl);
+        if (!imageFetchRes.ok) {
+          throw new Error('Не удалось скачать сгенерированную картинку от Ideogram.');
         }
-        if (msg.includes('safety')) {
-          return NextResponse.json({
-            error: `OpenAI заблокував запит: контент концепції несумісний з правилами генерації зображень.\nСпробуйте іншу концепцію або перефразуйте ТЗ.\n\n${msg}`
-          }, { status: 400 });
-        }
-        throw openAiError;
+
+        const arrayBuf = await imageFetchRes.arrayBuffer();
+        buffer = Buffer.from(arrayBuf);
+      } catch (err: any) {
+        console.error('[images/generate] Ideogram error:', err);
+        return NextResponse.json({ error: err.message || 'Ошибка генерации изображения Ideogram' }, { status: 500 });
       }
-
-      
-      let buffer: any = Buffer.from(b64ImageData, 'base64');
 
       if (logoUrl) {
         try {
