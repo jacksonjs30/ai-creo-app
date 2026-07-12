@@ -994,7 +994,7 @@ export default function ScriptStudio({ id }: { id: string }) {
                                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                                   {/* Generate images button */}
                                   <button
-                                    onClick={() => handleGenerateRowImage(script, dataRowIdx, row, 'add', undefined, 2)}
+                                    onClick={() => handleGenerateRowImage(script, dataRowIdx, row, 'add', undefined, 1)}
                                     disabled={isGenThisRow}
                                     style={{
                                       display: 'flex', alignItems: 'center', gap: '0.4rem',
