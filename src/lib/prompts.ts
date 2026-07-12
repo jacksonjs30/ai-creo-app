@@ -263,7 +263,7 @@ ${brief.productBullets && brief.productBullets.length > 0 ? `\nКЛЮЧЕВЫЕ 
   /**
    * 5. КРЕАТИВЫ НА ОСНОВЕ АВАТАРА (СЦЕНАРИИ И ТЗ)
    */
-        GENERATE_CREATIVES_PROMPT: (params: { 
+          GENERATE_CREATIVES_PROMPT: (params: { 
     productName: string, 
     avatarData: any, 
     format: string, 
@@ -335,14 +335,17 @@ CONTRAST: It was HELL vs now it is GOOD.
 RECOGNIZABILITY: People recognize themselves in the text.
 
 📊 OUTPUT STRUCTURE 
-Present the result as follows for each variant:
+STRICTLY output the result as a Markdown Table. Do not use block format.
 
-VARIANT #[Number]: 
-Concept: [Name] 
-Image Text (if IMAGE): [Text] 
-Brief for Designer (if IMAGE): [All details: Brand-guideline, Color palette, Element placement, Visual, Size, Reference] 
-Script (if VIDEO): [Text] 
-TOR/Script Breakdown (if VIDEO): [ALL breakdown BY SECONDS: HOOK SECTION, PAIN SECTION, SOLUTION SECTION, PACKSHOT/CTA SECTION].
+IF FORMAT = IMAGE:
+| № | Концепція | 📄 ТЕКСТ КАРТИНКИ | 🎨 БРИФ ДЛЯ ДИЗАЙНЕРА |
+|---|---|---|---|
+| [Number] | [Name] | [Text] | [All details] |
+
+IF FORMAT = VIDEO:
+| № | Концепція | 📝 СЦЕНАРИЙ | 🎬 РАСКАДРОВКА |
+|---|---|---|---|
+| [Number] | [Name] | [Text] | [ALL breakdown BY SECONDS] |
 
 Note for VIDEO: The script should be written fully by seconds/scenes. Include: Video sequence (describe actions, location, emotion), VO (Voice Over monologue or dialogue), TBE (Text By Eye accents), Music/Sound. All must be logically connected and synchronized. 
 Note for IMAGES: Write the entire TOR for the designer with clear sections: Brand-guideline, Color palette (Background, Text, Accents), Element placement (Header, Pain, Solution, CTA, Discount, Logo), Visual, Size, Reference.

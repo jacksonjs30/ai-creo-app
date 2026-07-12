@@ -82,7 +82,8 @@ export default function GenerateCreatives({ params }: { params: Promise<{ id: st
 
         if (loadedProject) {
            setProject(loadedProject);
-           const name = loadedProject.productName || loadedProject.name || loadedProject.product_name || '';
+           const savedName = localStorage.getItem(`savedProductName_${id}`);
+           const name = savedName || loadedProject.productName || loadedProject.name || loadedProject.product_name || '';
            setProductName(name);
         }
         if (loadedAvatars.length > 0) {
@@ -269,7 +270,10 @@ export default function GenerateCreatives({ params }: { params: Promise<{ id: st
                 required
                 disabled={isGenerating}
                 value={productName} 
-                onChange={e => setProductName(e.target.value)}
+                onChange={e => {
+                  setProductName(e.target.value);
+                  localStorage.setItem(`savedProductName_${id}`, e.target.value);
+                }}
                 style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
               />
             </div>
