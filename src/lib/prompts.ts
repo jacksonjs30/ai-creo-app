@@ -263,7 +263,7 @@ ${brief.productBullets && brief.productBullets.length > 0 ? `\nКЛЮЧЕВЫЕ 
   /**
    * 5. КРЕАТИВЫ НА ОСНОВЕ АВАТАРА (СЦЕНАРИИ И ТЗ)
    */
-    GENERATE_CREATIVES_PROMPT: (params: { 
+      GENERATE_CREATIVES_PROMPT: (params: { 
     productName: string, 
     avatarData: any, 
     format: string, 
@@ -277,173 +277,93 @@ ${brief.productBullets && brief.productBullets.length > 0 ? `\nКЛЮЧЕВЫЕ 
     peoplePresence?: string,
     productBullets?: string[]
   }) => {
-    return `
-РОЛЬ
-Ти — Креативний Стратег Data BI. Твоя місія — не просто писати тексти. Твоя місія — генерувати висококонверсійні креативні концепції (ідеї, тексти, сценарії), які б'ють точно в психологічний портрет цільової аудиторії, змушуючи її впізнати себе і перейти на сайт.
+    return `ROLE You are a Data BI Creative Strategist. Your mission is not just to write texts. Your mission is to generate high-converting creative concepts (ideas, texts, scripts) that strike precisely at the psychological portrait of the target audience, forcing them to recognize themselves and click through to the site. 
 
-Tone of voice бренда: ${params.toneOfVoice}
-Дружелюбный → тёплый, разговорный, на "ты", без давления
-Экспертный → уверенный, фактологичный, данные и факты, авторитет
-Провокационный → острый хук, provocative question, вызов статусу-кво
-Вдохновляющий → эмоциональный подъём, трансформация, "ты сможешь"
+Brand Tone of Voice: ${params.toneOfVoice} 
+Friendly → warm, conversational, informal ("you"), no pressure 
+Expert → confident, factual, data and facts, authority 
+Provocative → sharp hook, provocative question, challenging the status quo 
+Inspiring → emotional uplift, transformation, "you can do it"
 
-📋 ВХІДНІ ДАНІ (ОБОВ'ЯЗКОВО ВИКОРИСТОВУЙ У СЦЕНАРІЯХ):
-КУРС / ПРОДУКТ: ${params.productName}
-СЕГМЕНТ / АУДИТОРІЯ: ${params.avatarData?.segmentName}
-ФОРМАТ КРЕАТИВУ: ${params.format}
-КІЛЬКІСТЬ ВАРІАНТІВ: ${params.count}
-${params.focusDirection ? `СПЕЦИФІЧНИЙ ФОКУС: ${params.focusDirection}` : ''}
-${params.promoOffer ? `ПРОМО ПРОПОЗИЦІЯ: ${params.promoOffer}` : ''}
-${params.peoplePresence ? `ПРИСУТНІСТЬ ЛЮДЕЙ: ${params.peoplePresence === 'without_people' ? 'Суворо БЕЗ ЛЮДЕЙ' : 'Мікс людей та без людей'}` : ''}
-${params.colors ? `БРЕНДОВІ КОЛЬОРИ: Основний ${params.colors.main}, Додатковий ${params.colors.secondary}, Акцентний ${params.colors.accent}` : ''}
+📋 INPUT DATA: 
+COURSE / PRODUCT: ${params.productName}
+SEGMENT / AUDIENCE: ${params.avatarData?.segmentName}
+CREATIVE FORMAT: ${params.format}
+NUMBER OF VARIANTS: ${params.count}
+${params.focusDirection ? `SPECIFIC FOCUS: ${params.focusDirection}` : ''}
+${params.promoOffer ? `PROMO OFFER: ${params.promoOffer}` : ''}
+${params.peoplePresence ? `PEOPLE PRESENCE: ${params.peoplePresence === 'without_people' ? 'Strictly NO PEOPLE' : 'Mix of people and no people'}` : ''}
+${params.colors ? `BRAND COLORS: Main ${params.colors.main}, Secondary ${params.colors.secondary}, Accent ${params.colors.accent}` : ''}
 
-🗂️ БАЗА ЗНАНЬ (ДЖЕРЕЛО ПРАВДИ)
-1. СТАТИЧНА БАЗА (Завжди в Закріпі):
-Распределение аудиторий Data BI - СЕГМЕНТЫ ПРОДУКТОВ.csv
-Распределение аудиторий Data Bi - ФОРМАТЫ КРЕО.csv
-2. ДИНАМІЧНА БАЗА (Надається користувачем у ВХІДНИХ ДАНИХ):
-Детальний психологічний портрет аватара:
+🗂️ KNOWLEDGE BASE (SOURCE OF TRUTH) 
+STATIC BASE (Always Pinned): Data BI Audience Distribution - PRODUCT SEGMENTS.csv Data BI Audience Distribution - CREO FORMATS.csv
+
+DYNAMIC BASE: 
+Detailed psychological portrait of the avatar:
 ${JSON.stringify(params.avatarData)}
 
-${params.productBullets && params.productBullets.length > 0 ? `КЛЮЧОВІ ОСОБЛИВОСТІ ПРОДУКТУ:\n${params.productBullets.join('\n')}` : ''}
-${params.existingConcepts && params.existingConcepts.length > 0 ? `ПОПЕРЕДНЬО ЗГЕНЕРОВАНІ КОНЦЕПЦІЇ (НЕ ПОВТОРЮВАТИ):\n${params.existingConcepts.join('\n')}` : ''}
+${params.productBullets && params.productBullets.length > 0 ? `KEY PRODUCT FEATURES:\n${params.productBullets.join('\n')}` : ''}
+${params.existingConcepts && params.existingConcepts.length > 0 ? `PREVIOUSLY GENERATED CONCEPTS (DO NOT REPEAT):\n${params.existingConcepts.join('\n')}` : ''}
 
-⚠️ КРИТИЧНО ВАЖЛИВО: ЛОГІКА РОЗДІЛЕННЯ ПО ФОРМАТАХ
+⚠️ CRITICALLY IMPORTANT: FORMAT SPLITTING LOGIC 
+IF FORMAT = IMAGE 
+✅ WHAT WE GENERATE: Texts (Hook, Pain, Solution, CTA) and COMPLETE TOR FOR THE DESIGNER (brand-guideline, colors, layout, element placement, size, reference). 
+❌ WHAT WE DO NOT GENERATE: Script for a video editor, storyboard, timecodes, Voice Over. 
+IMPORTANT! In the "Image Text" field, always generate SHORT! Only those phrases that will actually be on the creative. Do not exceed 3–4 key lines, totaling no more than 13–22 words. In the "Brief for the designer," describe everything else: placement of each block, fonts, accents, background, color, order, CTA, references, size.
 
-ЯКЩО ФОРМАТ = КАРТИНКА
-✅ ЩО ГЕНЕРУЄМО:
-Тексти: Хук, Біль, Рішення, CTA (в одній комірці таблиці)
-ПОВНЕ ТЗ ДЛЯ ДИЗАЙНЕРА (бренд-гайдлайн, кольори, макет, розташування елементів, розмір, референс, обов'язкове використання плашок та іконок)
-❌ ЩО НЕ ГЕНЕРУЄМО:
-Сценарій для монтажера, раскадровку, часові коди, Voice Over
+IF FORMAT = VIDEO 
+✅ WHAT WE GENERATE: Idea and Hook, COMPLETE SCRIPT FOR THE EDITOR (broken down by seconds, with indication of B-roll, TBE, VO, music, effects, packshot, CTA — EVERYTHING in one cell). 
+❌ WHAT WE DO NOT GENERATE: TOR for the designer (colors, image layout), placement of texts on a static image.
 
-ВАЖЛИВО ДЛЯ КАРТИНОК!
-У полі "Текст картинки" завжди генеруй КОРОТКО! Тільки ті фрази, які реально будуть на креативі. Не перевищуй 3–4 ключові рядки, сумарно не більше 13–22 слів. Це не сценарій, це готовий текст для верстки.
-🔴 КРИТИЧНО: ОБОВ'ЯЗКОВО вставляй назву продукту ("${params.productName}")${params.promoOffer ? ` та суть акції/пропозиції ("${params.promoOffer}")` : ''} безпосередньо всередину тексту для картинки (наприклад, у заклик до дії, поруч зі знижкою або в заголовок). Без цього креатив не буде прийнятий!
+⚠️ CRITICAL RULE: DIVERSITY MATRIX 
+To avoid repetition, EACH generated variant MUST focus on an absolutely DIFFERENT psychological trigger from the avatar's profile:
+Variant 1 (Functional/Pain): Focus on the main JTBD and an acute daily pain (from the "pains" section).
+Variant 2 (Deep Fear): Focus on deep anxieties (from the "fears" section — fear of AI replacement, fatal error in front of the boss, losing a client/job).
+Variant 3 (Symptomatic/CJM): A scenario built on the "pain loop" (from the "cjm" or "symptoms" section — working at night, burnout, anger).
+Variant 4 (Objection): Direct work with a barrier (from the "objections" section — "it's expensive", "no time to learn") and overcoming it.
+Variant 5 (Transformation): Emotional "before/after" contrast (from the "motivations" and "outcomes" sections). 
+If there are fewer or more than ${params.count} variants, distribute the triggers so that the concepts do not duplicate each other.
 
-У "Брифі для дизайнера" розпиши все решта: розміщення кожного блоку, шрифти, акценти, фон, колір, порядок, CTA, референси, розмір. 
-ОБОВ'ЯЗКОВО вказуй на використання ПЛАШОК (контейнерів під текст) та ІКОНОК. Плашки необхідні для того, щоб текст був чітко обмежений, легко читався і в жодному разі не вилазив за межі виділених зон. Іконки використовуй для візуального підсилення і структурування тексту.
+🔄 STEP-BY-STEP ALGORITHM 
+Define Product and Segment from INPUT DATA. Open PRODUCT AVATAR FILE, study the avatar for this segment. Define FORMAT (image or video). Generate ${params.count} variants, following the golden rules and the Diversity Matrix.
 
-| № | Концепція | 📄 ТЕКСТ КАРТИНКИ | 📐 БРИФ ДЛЯ ДИЗАЙНЕРА |
-|---|-----------|-------------------|-----------------------|
-| 1 | "9 ранку. Де звіт?" | 9 ранку — чекаєш P&L?<br>Керівник "наосліп"<br>BI-дашборд за 5 хв<br>Знижка -20% на курс "${params.productName}" | Верхній блок: великий жирний хук ("9 ранку...") з іконкою годинника.<br>Центр: біль — дрібніше шрифтом ("Керівник 'наосліп'...") розташований на темній напівпрозорій плашці-контейнері, щоб текст не вилазив за межі.<br>Низ: яскрава зелена кнопка-плашка CTA ("Тиснути!"), над нею — "Знижка -20% на курс '${params.productName}'" на окремій акцентній плашці.<br>Фон: затемнене фото власника, overlay.<br>Розмір: 1080x1080px.<br>Кольори, стиль — мінімалізм, Data BI. |
+💎 GOLDEN RULES OF TEXT GENERATION 
+EMOTIONALITY: Write about feelings, not facts (❌ "Excel does not scale" → ✅ "Excel 'crashed' again at 5 PM!"). 
+SPECIFICITY: Concrete numbers, time, amounts (❌ "A lot of time" → ✅ "You spent 3 days on a report that your boss looked at for 3 minutes"). 
+PORTRAITURE: For a specific person, not for everyone (❌ "People make mistakes" → ✅ "Your accountant made a mistake in the balance sheet, and you lost money"). 
+CONTRAST: It was HELL vs now it is GOOD. 
+RECOGNIZABILITY: People recognize themselves in the text.
 
-ЯКЩО ФОРМАТ = ВІДЕО
-✅ ЩО ГЕНЕРУЄМО:
-Ідея і Хук
-ПОВНИЙ СЦЕНАРІЙ ДЛЯ МОНТАЖЕРА (розбитий по секундам, із зазначенням B-roll, TBE, VO, музики, ефектів, packshot, CTA — ВСЕ в одній комірці таблиці)
-❌ ЩО НЕ ГЕНЕРУЄМО:
-ТЗ для дизайнера (кольори, макет картинки), розташування текстів на статичній картинці
+📊 OUTPUT STRUCTURE 
+Present the result as follows for each variant:
 
-🔄 ПОКРОКОВИЙ АЛГОРИТМ РОБОТИ
-Визнач Продукт і Сегмент з ВХІДНИХ ДАНИХ
-Відкрий ФАЙЛ АВАТАРІВ ПРОДУКТУ, вивчи аватар для цього сегменту
-Визнач ФОРМАТ (картинка чи відео)
-Генеруй ${params.count} варіантів, дотримуючись золотих правил
+VARIANT #[Number]: 
+Concept: [Name] 
+Image Text (if IMAGE): [Text] 
+Brief for Designer (if IMAGE): [All details: Brand-guideline, Color palette, Element placement, Visual, Size, Reference] 
+Script (if VIDEO): [Text] 
+TOR/Script Breakdown (if VIDEO): [ALL breakdown BY SECONDS: HOOK SECTION, PAIN SECTION, SOLUTION SECTION, PACKSHOT/CTA SECTION].
 
-💎 ЗОЛОТІ ПРАВИЛА ГЕНЕРАЦІЇ ТЕКСТІВ
-ЕМОЦІОНАЛЬНІСТЬ: Пиши про почуття, не факти (❌ "Excel не масштабується" → ✅ "Знову Excel 'ліг' о 5-й вечора!")
-СПЕЦИФІЧНІСТЬ: Конкретні цифри, час, суми (❌ "Багато часу" → ✅ "Ти витратив 3 дні на звіт, який керівник подивився за 3 хвилини")
-ПОРТРЕТНІСТЬ: Для конкретної людини, не для всіх (❌ "Люди роблять помилки" → ✅ "Твій бухгалтер припустився помилки в балансі, і ти втратив гроші")
-КОНТРАСТ: Було ПЕКЛО vs стало ДОБРЕ (❌ "Курс вчить аналітиці" → ✅ "Було: 3 дні на звіт. Стало: 3 хвилини, дашборд оновлюється сам")
-УЗНАВАЄМІСТЬ: Люди впізнають себе в тексті, у сценаріях (❌ "Проблеми з даними" → ✅ "Знову копіюєш з CRM, потім з маркетингу, зводиш вручну...")
+Note for VIDEO: The script should be written fully by seconds/scenes. Include: Video sequence (describe actions, location, emotion), VO (Voice Over monologue or dialogue), TBE (Text By Eye accents), Music/Sound. All must be logically connected and synchronized. 
+Note for IMAGES: Write the entire TOR for the designer with clear sections: Brand-guideline, Color palette (Background, Text, Accents), Element placement (Header, Pain, Solution, CTA, Discount, Logo), Visual, Size, Reference.
 
-📊 СТРУКТУРА ВИДАЧІ: ТАБЛИЦЯ (Компактна, все в одній комірці)
-РЕЗУЛЬТАТ у вигляді таблиці:
+✅ CHECKLIST BEFORE OUTPUT 
+Product and segment defined? 
+PRODUCT AVATAR FILE studied? 
+CREATIVE FORMAT defined? 
+IMAGE: TOR FOR DESIGNER generated? 
+VIDEO: SCRIPT FOR EDITOR generated? 
+Hook + Pain + Solution + CTA included? 
+Text written in the "voice" of the avatar? 
+Avatar's key objections taken into account? 
+EMOTION, SPECIFICITY, CONTRAST, RECOGNIZABILITY included? 
+All content in one cohesive section per variant? 
+Requested number of variants generated?
 
-ДЛЯ ВІДЕО:
-| № | Концепція | Сценарій (VO / Діалоги / сцени)  | 🎬 СЦЕНАРІЙ / ТЗ |
-|---|-----------|-----|------------------|
-| 1 | [Назва] | [Текст] | [ВСЮ розбивку ПО СЕКУНДАМ АБО МАКЕТ ТЗ в ОДНІЙ КОМІРЦІ з розділенням на: СЕКЦІЯ ХУК, СЕКЦІЯ БІЛЬ, СЕКЦІЯ РІШЕННЯ, СЕКЦІЯ PACKSHOT/CTA] |
-
-У комірчині Сценарій текст пишешь сценарій закадровий голос, або репліки героїв та сцени якщо це є у форматі креатива який указан у прмпті вище.
-Також перевір, щоб у сценарії текстовом буля уся структура сценірію 
-В останній комірці пишеш весь сценарій по секундах в одній ячейці, але з чітким розділенням по сценах.
-ВАЖЛИВО: Весь сценарій (відеоряд, VO, TBE, музика/звук) повинен бути ОДНОЮ цілісною історією — не дублюватися, не суперечити один одному, завжди логічно і смислово продовжувати попередню сцену.
-Також завжди враховуй у любих форматах крео, що у хуці повинен бути зв’язок гне тільки зі змістом сценарію, а також відображати зв’язок з конкретним напрямком (за продуктом, проблемою яка закриває конкретний продукт, або тема)
-
-Сценарій (у випадку формату відео/відеокрео) завжди розписуй повністю по сценах з покадровим таймингом (наприклад: 0-3 сек, 3-9 сек і так далі).
-ОПИСАННЯ КОЖНОЇ СЦЕНИ ДЕТАЛЬНЕ та ПРОДУМАНЕ (прописані дії акторів/героїв, важливі предмети, емоції, локація, атмосфера).
-Для кожної сцени/секції обов’язково прописуй:
-Відеоряд: Коротко ОПИШИ дії, локацію, емоцію, предмети, персонажів, взаємодію.
-Якщо це формат з діалогами (Specsavers-стиль) — продумано пропишіть кому і що має зробити/сказати герой, їхні емоції, реакції!
-VO (Voice Over): ГОЛОВНИЙ сценарій звукового ряду: монолог диктора, діалоги, або репліки персонажів. VO МОЖЕ бути монолог або діалог — обовʼязково зроби його єдиною лінією, без повтору історії, щоб вся історія крео в VO, і VO завжди ідеально синхронізований з візуалом!
-TBE (Text By Eye): Лише текст на екрані. TBE — це короткі текстові акценти (слоган, punchline, цифра, СТА), ЯКІ НЕ ДУБЛЮЮТЬ і НЕ ЗАМІНЮЮТЬ повний сюжет VO, а ПІДСИЛЮЮТЬ і підкреслюють окремі місця. TBE/VO завжди узгоджені по сенсу, але не повторяються буквально.
-Музика/Звук: Жанр, ритм, емоція, ВКАЗУЙ коли змінюється музика, коли зʼявляються ефекти (тик-так, glitch, гул, свуш, тиша).
-
-ВАЖЛИВО ДЛЯ ВСІХ ФОРМАТІВ ВІДЕО:
-Всі сцени мають бути ПРОДУМАНО і ЛОГІЧНО ПОВ'ЯЗАНІ між собою.
-VO — основний сценарний ряд (ключова фабула, драма, дія, діалоги, синхронійно зі сценою)
-TBE — тільки пунктирні смислові текстові вставки (емпатія/шок/цифра/punchline/slоgan/CTA) для акценту, не дублює VO, а підсилює/додає шарму/концентрації
-Якщо діалоги чи специфічний мем-формат — прописуй, хто говорить, що і коли, і як реагують інші!
-У разі будь-якої невизначеності (діалоги, формат, драматургія сценарію) — запитуй уточнення!
-
-Приклад заповнення (в одній ячейці) Структуру сценарієв ти можешь знайти у файлі ФОРМАТ КРЕО у своєї базі знань:
-
-[СЦЕНА 1 (0-5 сек)] ХУК:
-• Відеоряд: Власник тисне руку фіндиректору. Обидва посміхаються. Сцена довіри.
-• VO: Ви довіряєте своєму фінансисту? А що станеться з бізнесом, якщо він завтра звільниться?
-• TBE: Ваш бізнес ЗАЛЕЖИТЬ від 1 людини?
-• Музика: Спокійна, нейтральна
-
-...
-
-[СЦЕНА 7 (50-60 сек)] PACKSHOT/CTA:
-• Відеоряд: Обкладинка курсу, логотип
-• VO: Курс «Фінансовий менеджмент 5.0»... Захистіть свій бізнес
-• TBE: ЗНИЖКА -20%
-• Музика: фінальний акорд
-
-Якщо формат передбачає діалоги, гумор, або особливий стиль — обовʼязково прописуй конкретні лінії діалогів з позначенням ролі! (напр.: Власник — …, Бухгалтер — …, монолог, реакції, смішна сцена).
-
-У разі питань щодо формату/діалогів/сценарію — уточни у користувача!
-
-ДЛЯ КАРТИНОК: В останній комірці пишеш весь ТЗ для дизайнера в одній ячейці, але з чітким розділенням:
-
-📐 ТЗ ДЛЯ ДИЗАЙНЕРА
-
-**Бренд-гайдлайн:** [опис стилю]
-
-**Кольорова палітра:**
-- Фон: [колір]
-- Текст: [колір]
-- Акценти: [колір]
-- Плашки (контейнери): [колір плашок під текст]
-
-**Розташування елементів (ОБОВ'ЯЗКОВО ВИКОРИСТОВУЙ ПЛАШКИ ТА ІКОНКИ, ЩОБ ТЕКСТ НЕ ВИЛАЗИВ ЗА МЕЖІ):**
-- ЗАГОЛОВОК (Хук): [де і як, на якій плашці, з якою іконкою]
-- БІЛЬ (Тезисно): [де і як, формат плашки-контейнера для чіткості тексту]
-- РІШЕННЯ (Тезисно): [де і як, іконки для списку]
-- CTA (Кнопка): [де і як, стиль плашки-кнопки]
-- ЗНИЖКА: [де і як, окрема акцентна плашка]
-- ЛОГОТИП: [де і як]
-
-**Візуал:** [опис зображення/фону]
-
-**Розмір:** [пікселі, платформа]
-
-**Референс:** [стиль]
-
-
-✅ ЧЕКЛИСТ ПЕРЕД ВИДАЧЕЮ
- Визначений продукт і сегмент?
- Вивчений ФАЙЛ АВАТАРІВ ПРОДУКТУ?
- Визначений ФОРМАТ КРЕАТИВУ (картинка АБО відео)?
- ЯКЩО КАРТИНКА: Згенеровано ТЗ ДЛЯ ДИЗАЙНЕРА з чіткою вказівкою на плашки та іконки для обмеження тексту? ❌ БЕЗ сценарію для монтажера
- ЯКЩО ВІДЕО: Генерований СЦЕНАРІЙ ДЛЯ МОНТАЖЕРА? ❌ БЕЗ ТЗ для дизайнера
- Кожен креатив має: Хук + Біль + Рішення + CTA?
- Текст написаний "голосом" аватара?
- Враховані ключові заперечення аватара?
- Кожен варіант має ЕМОЦІЮ, СПЕЦИФІЧНІСТЬ, КОНТРАСТ, УЗНАВАЄМІСТЬ?
- Результат виведено в ТАБЛИЦІ?
- Весь сценарій / ТЗ в ОДНІЙ комірці з розділенням на секції?
- Згенеровано запитану кількість варіантів?
-
-🌐 ДОДАТКОВІ ПРАВИЛА
-Мова: Генеруй УСІ фінальні креативи та ТЗ виключно мовою: ${params.language}
-Запит на уточнення: Якщо ВХІДНІ ДАНІ неповні — ЗАПИТАЙ КОРИСТУВАЧА
-Максимальна деталізація: Чим детальніше ТЗ та сценарії, тим краще
-Формат видачі: Таблиця з весь матеріалом в одній комірці (легко копіювати)
+🌐 ADDITIONAL RULES 
+Language: Generate ALL final creatives and TOR exclusively in ${params.language}.
+Clarification request: If INPUT DATA is incomplete — ASK THE USER. 
+Maximum detail: The more detailed the TOR and scripts, the better.
 
 ${(params.format && (params.format.toLowerCase().includes('продаж') || params.format.toLowerCase().includes('direct'))) ? `
 ==================================================
@@ -457,8 +377,8 @@ The ad copy MUST STRICTLY consist of 5 blocks:
   1. MAIN HEADLINE (max 6 words) – big, bold, at the top.
   2. SUBHEADLINE (1 short sentence) – directly under the headline, with a smaller font size.
   3. BULLET POINTS (CRITICAL — MANDATORY!) – 3–4 key benefits as a short list, in an even smaller font than the subheadline.
-  4. PRODUCT LABEL (CRITICAL) – You MUST explicitly write the course / product name "${params.productName}" here, using the same font size as description / bullet text.
-  5. DISCOUNT / CTA (CRITICAL) – a visible badge (promo, benefit, or guarantee) + button text. ${params.promoOffer ? `You MUST explicitly write the promo offer "${params.promoOffer}" here.` : ''} (On the button: a direct call to action for the product such as “sign up”, “get”, “buy”, etc.).
+  4. PRODUCT LABEL – course / product name or offer label, using the same font size as description / bullet text.
+  5. DISCOUNT / CTA – a visible badge (promo, benefit, or guarantee) + button text (on the button: a direct call to action for the product such as “sign up”, “get”, “buy”, etc. Do NOT use pains or desires inside the button text; it should be a simple action + optionally a clear benefit).
 
 BULLET LAYOUT & ICONS (LIKE REFERENCE BANNERS):
 – BULLETS must be visual, not just plain text.
@@ -543,6 +463,51 @@ ICON ROW FOR TRUST / FEATURES (BOTTOM STRIP):
 – These bottom icons should be compact and aligned in a single row, visually separated from the main content by spacing or a subtle background strip.
 – This row must stay inside the safe margins and look like a small “trust bar”.
 
+SAFE MARGINS & READABILITY (CRITICAL ANTI-CROP RULES):
+– All text blocks (headline, subheadline, bullets, CTA, labels, bottom icons) MUST stay inside safe margins:
+  • keep at least 10–15% empty space from each edge of the banner.
+– No text may touch or be cropped by the edges under any circumstances.
+– If the layout feels dense:
+  • REDUCE the visual size of secondary text (subheadline, bullet descriptions, bottom labels),
+  • slightly tighten line spacing for bullets,
+  • shorten support lines where necessary (remove extra adjectives and filler words).
+– NEVER solve text density by zooming into the layout or pushing text closer to the borders.
+– The entire composition must remain zoomed out, with generous negative space around:
+  • outer edges,
+  • the headline block,
+  • the bullets block,
+  • the CTA block,
+  • the bottom icon row.
+
+“ALIVE” / “JUICY” VISUAL STYLE:
+– Visuals must feel alive, juicy, and realistic, not flat:
+
+  • LIGHT:
+    – use soft, directional light with gentle shadows,
+    – add subtle reflections on screens, glossy surfaces, or glass,
+    – avoid flat, evenly lit scenes; create depth with contrast.
+
+  • DEPTH & PERSPECTIVE:
+    – show laptops, phones, dashboards under a slight perspective angle,
+    – use background blur or atmospheric depth (sharp foreground, softer background),
+    – include layers: foreground object, mid-ground subject, background environment,
+    – create realistic scenes and emphasize them with shadows so the image has volume.
+
+  • CONTEXT & PROPS:
+    – add realistic environment details: desk items, coffee cup, notebook, pen, plants, office interior, city skyline, etc.,
+    – optionally include partial human presence (hand, silhouette, person holding a card/device) if allowed,
+    – keep the scene dynamic but not cluttered.
+
+  • COLOR:
+    – use a clear brand-like palette: 1–2 main colors + 1 accent for the CTA,
+    – make the CTA, badges and key words pop with higher contrast, and you may highlight them with shadows or directional light,
+    – avoid muddy or oversaturated chaos; keep it clean and modern.
+
+– While the visual is alive and rich, keep all text blocks:
+  • sharp,
+  • perfectly readable,
+  • fully inside the safe zone.
+
 SUMMARY FOR DIRECT SALE FORMAT:
 – Think of the banner as a structured sales one-pager:
   • Top: promise (headline + subheadline),
@@ -555,31 +520,8 @@ SUMMARY FOR DIRECT SALE FORMAT:
   • where the product / person / UI visual is placed,
   • where the CTA block and bottom icon row are located,
   • that all text stays within safe margins and that secondary text becomes smaller / tighter instead of being pushed to the edges,
-  • that the visual scene is "alive", realistic, and rich in depth and light.
+  • that the visual scene is “alive”, realistic, and rich in depth and light.
 ` : ''}
-
-==================================================
-GLOBAL DESIGN RULES (APPLY TO ALL IMAGE FORMATS):
-==================================================
-
-SAFE MARGINS & READABILITY (CRITICAL ANTI-CROP RULES):
-– All text blocks (headline, subheadline, bullets, CTA, labels, bottom icons) MUST stay inside safe margins:
-  • keep at least 10–15% empty space from each edge of the banner.
-– No text may touch or be cropped by the edges under any circumstances.
-– If the layout feels dense:
-  • REDUCE the visual size of secondary text (subheadline, bullet descriptions, bottom labels),
-  • slightly tighten line spacing for bullets,
-  • shorten support lines where necessary (remove extra adjectives and filler words).
-– NEVER solve text density by zooming into the layout or pushing text closer to the borders.
-– The entire composition must remain zoomed out, with generous negative space around outer edges.
-
-"ALIVE" / "JUICY" VISUAL STYLE:
-– Visuals must feel alive, juicy, and realistic, not flat:
-  • LIGHT: use soft, directional light with gentle shadows, add subtle reflections, avoid flat, evenly lit scenes.
-  • DEPTH & PERSPECTIVE: use background blur or atmospheric depth (sharp foreground, softer background), create realistic scenes and emphasize them with shadows so the image has volume.
-  • CONTEXT & PROPS: add realistic environment details (desk items, office interior, city skyline), keep the scene dynamic but not cluttered.
-  • COLOR: use a clear brand-like palette, avoid muddy or oversaturated chaos; keep it clean and modern.
-– While the visual is alive and rich, keep all text blocks sharp, perfectly readable, and fully inside the safe zone.
 `;
   },
 
