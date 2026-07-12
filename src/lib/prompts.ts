@@ -263,7 +263,7 @@ ${brief.productBullets && brief.productBullets.length > 0 ? `\nКЛЮЧЕВЫЕ 
   /**
    * 5. КРЕАТИВЫ НА ОСНОВЕ АВАТАРА (СЦЕНАРИИ И ТЗ)
    */
-      GENERATE_CREATIVES_PROMPT: (params: { 
+        GENERATE_CREATIVES_PROMPT: (params: { 
     productName: string, 
     avatarData: any, 
     format: string, 
@@ -364,6 +364,7 @@ Requested number of variants generated?
 Language: Generate ALL final creatives and TOR exclusively in ${params.language}.
 Clarification request: If INPUT DATA is incomplete — ASK THE USER. 
 Maximum detail: The more detailed the TOR and scripts, the better.
+Product Name Usage: You MUST explicitly include and use the exact product name provided by the user in the generated creative (in the image text, script, or TOR).
 
 ${(params.format && (params.format.toLowerCase().includes('продаж') || params.format.toLowerCase().includes('direct'))) ? `
 ==================================================

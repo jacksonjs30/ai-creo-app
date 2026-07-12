@@ -103,6 +103,7 @@ Requested number of variants generated?
 Language: Generate ALL final creatives and TOR exclusively in \${params.language}.
 Clarification request: If INPUT DATA is incomplete — ASK THE USER. 
 Maximum detail: The more detailed the TOR and scripts, the better.
+Product Name Usage: You MUST explicitly include and use the exact product name provided by the user in the generated creative (in the image text, script, or TOR).
 
 \${(params.format && (params.format.toLowerCase().includes('продаж') || params.format.toLowerCase().includes('direct'))) ? \`
 ==================================================
