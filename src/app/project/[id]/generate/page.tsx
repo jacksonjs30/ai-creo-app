@@ -58,7 +58,7 @@ export default function GenerateCreatives({ params }: { params: Promise<{ id: st
         let loadedAvatars: any[] = [];
         
         if (id && id !== 'temp-id') {
-          const res = await fetch(`/api/projects?id=${id}`);
+          const res = await fetch(`/api/projects?id=${id}&t=${Date.now()}`, { cache: 'no-store' });
           if (res.ok) {
             const data = await res.json();
             loadedProject = data.project || data.product || data;
@@ -81,9 +81,10 @@ export default function GenerateCreatives({ params }: { params: Promise<{ id: st
         }
 
         if (loadedProject) {
-           setProject(loadedProject);
            const savedName = localStorage.getItem(`savedProductName_${id}`);
-           const name = savedName || loadedProject.productName || loadedProject.name || loadedProject.product_name || '';
+           const name = (savedName !== null && savedName !== undefined) ? savedName : (loadedProject.productName || loadedProject.name || loadedProject.product_name || '');
+           loadedProject.name = name; // sync it back to project state for breadcrumbs
+           setProject(loadedProject);
            setProductName(name);
         }
         if (loadedAvatars.length > 0) {
@@ -271,8 +272,10 @@ export default function GenerateCreatives({ params }: { params: Promise<{ id: st
                 disabled={isGenerating}
                 value={productName} 
                 onChange={e => {
-                  setProductName(e.target.value);
-                  localStorage.setItem(`savedProductName_${id}`, e.target.value);
+                  const newName = e.target.value;
+                  setProductName(newName);
+                  setProject(p => p ? { ...p, name: newName } : p);
+                  localStorage.setItem(`savedProductName_${id}`, newName);
                 }}
                 onBlur={async (e) => {
                   const newName = e.target.value;
