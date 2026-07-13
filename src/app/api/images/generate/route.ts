@@ -80,7 +80,8 @@ export async function POST(req: NextRequest) {
       userNotes,
       logoUrl,
       logoPosition = 'BR',
-      enhancePrompt = false
+      enhancePrompt = false,
+      resolution = '1024x1024'
     } = await req.json();
 
     const apiKey = process.env.OPENAI_API_KEY;
@@ -253,7 +254,7 @@ Carefully read the brief and detect the requested format.
 Use a strict split-layout with marketing text and bullets.
 
 LAYOUT:
-– Since the image must be a perfect SQUARE (1:1), use a balanced, integrated composition.
+– The image layout will be ${resolution}, use a balanced, integrated composition that fills this space perfectly.
 – Text can be placed on a clean background or semi-transparent card overlay.
 – The product/visual content should be prominently featured alongside or behind the text.
 
@@ -306,7 +307,7 @@ VISUAL STYLE & SAFE MARGINS (CRITICAL FOR DALL-E)
 – No generic stock-photo clichés, no random glowing lines, no thin frames around the whole banner.
 – SAFE MARGINS (MANDATORY TO PREVENT CROPPING):
   • Instruct the image generator to keep all text slightly away from the absolute edges.
-  • The layout MUST be a perfect square (1:1 aspect ratio). Do not add empty horizontal margins.
+  • The layout MUST match the target resolution (${resolution}). Optimize the layout for this orientation.
 
 ==================================================
 EXACT TEXT RULES (CRITICAL – DO NOT TRANSLATE)
@@ -383,7 +384,7 @@ The prompt MUST:
           },
           body: JSON.stringify({
             text_prompt: prompt,
-            aspect_ratio: '1:1', // По умолчанию используем 1:1, как и было 1024x1024
+            resolution: resolution || '1024x1024',
           })
         });
 

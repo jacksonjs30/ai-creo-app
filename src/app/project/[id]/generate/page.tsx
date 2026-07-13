@@ -274,7 +274,7 @@ export default function GenerateCreatives({ params }: { params: Promise<{ id: st
                 onChange={e => {
                   const newName = e.target.value;
                   setProductName(newName);
-                  setProject(p => p ? { ...p, name: newName } : p);
+                  setProject((p: any) => p ? { ...p, name: newName } : p);
                   localStorage.setItem(`savedProductName_${id}`, newName);
                 }}
                 onBlur={async (e) => {

@@ -58,6 +58,7 @@ export default function ScriptStudio({ id }: { id: string }) {
   } | null>(null);
 
   const [globalEnhancePrompt, setGlobalEnhancePrompt] = useState<boolean>(true);
+  const [globalImageFormat, setGlobalImageFormat] = useState<string>('1024x1024');
 
 
   const [filterFormat, setFilterFormat] = useState<string>('Все');
@@ -418,7 +419,8 @@ export default function ScriptStudio({ id }: { id: string }) {
             userNotes: finalScriptNotes,
             logoUrl: project?.logoUrl,
             logoPosition: project?.logoPosition,
-            enhancePrompt
+            enhancePrompt,
+            resolution: globalImageFormat
           })
         });
 
@@ -512,7 +514,8 @@ export default function ScriptStudio({ id }: { id: string }) {
           oldImageUrl,
           count: action === 'replace' ? 1 : genCount,
           userNotes,
-          enhancePrompt: globalEnhancePrompt
+          enhancePrompt: globalEnhancePrompt,
+          resolution: globalImageFormat
         })
       });
 
@@ -637,6 +640,20 @@ export default function ScriptStudio({ id }: { id: string }) {
               style={{ padding: '0.5rem 1rem', borderRadius: '10px', border: '1px solid #e2e8f0', outline: 'none', background: '#f8fafc', color: '#334155', fontWeight: 500, minWidth: '140px', cursor: 'pointer', transition: 'all 0.2s' }}
             >
               {avatarOptions.map(a => <option key={a} value={a}>{a}</option>)}
+            </select>
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '1rem', borderLeft: '1px solid #e2e8f0', paddingLeft: '1rem' }}>
+            <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Формат картинок:</label>
+            <select
+              value={globalImageFormat}
+              onChange={e => setGlobalImageFormat(e.target.value)}
+              style={{ padding: '0.5rem 1rem', borderRadius: '10px', border: '1px solid #e2e8f0', outline: 'none', background: '#f8fafc', color: '#334155', fontWeight: 600, minWidth: '160px', cursor: 'pointer', transition: 'all 0.2s' }}
+            >
+              <option value="1024x1024">Квадрат (1:1)</option>
+              <option value="1440x2560">Вертикальное Stories (9:16)</option>
+              <option value="1792x2240">Вертикальное Лента (4:5)</option>
+              <option value="2560x1440">Горизонтальное (16:9)</option>
             </select>
           </div>
 
