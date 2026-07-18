@@ -102,7 +102,7 @@ export default function ScriptStudio({ id }: { id: string }) {
       let dbScripts: any[] = [];
       if (id && id !== 'temp-id') {
         try {
-          const res = await fetch(`/api/projects?id=${id}`);
+          const res = await fetch(`/api/projects?id=${id}&t=${Date.now()}`, { cache: 'no-store' });
           if (res.ok) {
             const data = await res.json();
             const proj = data.project || data.product || data;
@@ -148,6 +148,13 @@ export default function ScriptStudio({ id }: { id: string }) {
     const updatedScripts = scripts.filter(s => s.id !== scriptId);
     setScripts(updatedScripts);
     await set(`projectScripts_${id}`, updatedScripts);
+    if (id && id !== 'temp-id') {
+      fetch('/api/projects', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, brief: { ...(project?.brief || {}), scripts: updatedScripts } })
+      }).catch(console.error);
+    }
   };
 
   const handleSaveEdit = async (scriptId: string) => {
@@ -162,6 +169,13 @@ export default function ScriptStudio({ id }: { id: string }) {
     });
     setScripts(updatedScripts);
     await set(`projectScripts_${id}`, updatedScripts);
+    if (id && id !== 'temp-id') {
+      fetch('/api/projects', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, brief: { ...(project?.brief || {}), scripts: updatedScripts } })
+      }).catch(console.error);
+    }
     setEditingScriptId(null);
   };
 
@@ -201,6 +215,13 @@ export default function ScriptStudio({ id }: { id: string }) {
 
     if (finalScripts) {
       await set(`projectScripts_${id}`, finalScripts);
+      if (id && id !== 'temp-id') {
+        fetch('/api/projects', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, brief: { ...(project?.brief || {}), scripts: finalScripts } })
+        }).catch(console.error);
+      }
     }
   };
 
