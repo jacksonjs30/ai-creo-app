@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PROMPTS } from '@/lib/prompts';
 
-export const maxDuration = 60;
+export const maxDuration = 300;
 export const dynamic = 'force-dynamic';
+
+const GEMINI_MODELS = [
+  'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
+];
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,27 +28,54 @@ export async function POST(req: NextRequest) {
       jsonPayload: JSON.stringify(aggregatedData, null, 2)
     });
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.2, // Low temp for analytical consistency
-          },
-        }),
-      }
-    );
+    let rawText = '';
+    let lastError = null;
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Gemini API Error: ${response.status} ${errorText}`);
+    for (const model of GEMINI_MODELS) {
+      try {
+        console.log(`[insights] Trying model: ${model}`);
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ role: 'user', parts: [{ text: prompt }] }],
+              generationConfig: {
+                temperature: 0.2, // Low temp for analytical consistency
+              },
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          const err = new Error(`Gemini API Error: ${response.status} ${errorText}`);
+          (err as any).status = response.status;
+          throw err;
+        }
+
+        const resultData = await response.json();
+        rawText = resultData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        
+        if (rawText) {
+          console.log(`[insights] Success with model: ${model}`);
+          break; // success
+        }
+      } catch (err: any) {
+        console.error(`[insights] Model ${model} failed:`, err.message);
+        lastError = err;
+        // fallback if 429 (Too Many Requests), 403, 400, 404, or 503
+        if ([429, 403, 400, 404, 503].includes(err.status)) {
+          continue;
+        }
+        break; // if it's another error, stop trying
+      }
     }
 
-    const resultData = await response.json();
-    const rawText: string = resultData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    if (!rawText && lastError) {
+      throw lastError;
+    }
 
     let parsed = null;
     try {
