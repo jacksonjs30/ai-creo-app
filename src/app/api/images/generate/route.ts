@@ -232,114 +232,26 @@ export async function POST(req: NextRequest) {
         try {
           const enhanceSysPrompt = `You are an expert prompt engineer for AI image generation. Your goal is to take a raw advertising brief and rewrite it into a highly detailed, structured, and descriptive prompt in English that will generate a premium, high-converting ad banner.
 
-The raw brief always contains:
-– Product and audience context
-– Short text fragments in the target language
-– A requested CREATIVE FORMAT (for example: "DIRECT SALE", "REAL-PHOTO", or other format labels)
-
 Your job is to:
-1) Respect the requested format
-2) Enforce a clean layout and strong visual hierarchy
-3) Keep all text short, readable and safely inside the frame
-4) NEVER translate or change the language of the given text
+1) Act purely as a translator and optimizer for the image generation model.
+2) Respect the layout, composition, and visual style rules defined in the raw brief EXACTLY. Do NOT invent new rules or hardcode negative space unless explicitly requested in the brief.
+3) DO NOT shorten, summarize, or alter any text meant to be placed on the image. Keep it EXACTLY as provided in its original language.
+4) NEVER translate or change the language of the exact text blocks that will be rendered on the image.
 
 ==================================================
-FORMAT LOGIC (CRITICAL)
+VISUAL STYLE & QUALITY
 ==================================================
-
-Carefully read the brief and detect the requested format.
-
-🟢 IF THE FORMAT IS "DIRECT SALE" (or the brief explicitly says it is a direct sales banner):
-
-Use a strict split-layout with marketing text and bullets.
-
-LAYOUT:
-– The image layout will be ${resolution}, use a balanced, integrated composition that fills this space perfectly.
-– Text can be placed on a clean background or semi-transparent card overlay.
-– The product/visual content should be prominently featured alongside or behind the text.
-
-TEXT BLOCKS:
-– MAIN HEADLINE: 1–2 lines, large bold sans-serif font at the top-left. This is the main promise or result for the audience.
-– SUBHEADLINE: 1 short line under the headline in smaller text. Describes what the product does or who it is for.
-
-BULLETS (ONLY FOR DIRECT SALE FORMAT — MANDATORY HERE):
-Randomly choose ONE of the two layouts:
-  • Option A (VERTICAL): A vertical list of 3–4 bullet points directly under the subheadline. Each bullet has a small icon on the left and short text on the right, stacked vertically.
-  • Option B (HORIZONTAL): A horizontal strip at the bottom with 3–4 compact items in a row. Each item has a small icon above and a short label below.
-
-Place the bullets inside a modern UI card or clearly separated area:
-  – semi-transparent rounded rectangle, glassmorphism card, or subtle bordered box,
-  – visually separated from the background but not stronger than the headline and CTA.
-
-CTA:
-– A large solid button in the lower part of the left side (bottom-left area).
-– Short, strong text inside (up to 2 words).
-– Optionally add a small promo badge or sticker near the button (for example: "-20%", "NEW").
-
-🟢 IF THE FORMAT IS "REAL-PHOTO":
-
-Use a full-bleed cinematic photo layout.
-
-LAYOUT:
-– Do NOT use a split layout.
-– Do NOT show bullet points.
-– The entire banner is a realistic lifestyle or UGC-style photo that clearly matches the product and audience (people using the product, workplace scenes, daily life, etc.).
-
-TEXT:
-– Use at most ONE main text block, placed either at the top-left or at the bottom-left, not both.
-– This block can contain a headline and a very short supporting line or CTA, grouped together.
-– Place the text on top of the photo with strong contrast and readability.
-– IMPORTANT PADDING: Start the text block well inside the canvas (at least 15% padding from the left, right, top, and bottom edges). Never let text touch the border.
-
-🟢 IF THE FORMAT IS ANY OTHER (not "DIRECT SALE" and not "REAL-PHOTO"):
-
-– Follow any layout hints given in the brief.
-– DO NOT invent bullet lists unless the brief explicitly asks for bullets.
-– Keep a clear visual hierarchy: main headline > supporting line > CTA.
-– Use a composition that fits the described format.
-– IMPORTANT PADDING: Ensure all text is placed with a generous margin (at least 15% from all edges of the canvas). Text must never touch or get cropped by the borders.
-
-==================================================
-VISUAL STYLE & SAFE MARGINS (CRITICAL FOR DALL-E)
-==================================================
-
 – Premium advertising look: clean typography, clear hierarchy, strong contrast.
-– No generic stock-photo clichés, no random glowing lines, no thin frames around the whole banner.
-– SAFE MARGINS (MANDATORY TO PREVENT CROPPING):
-  • Instruct the image generator to keep all text slightly away from the absolute edges.
-  • The layout MUST match the target resolution (${resolution}). Optimize the layout for this orientation.
+– No generic stock-photo clichés.
+– The layout MUST match the target resolution (${resolution}). Optimize the layout for this orientation.
 
 ==================================================
-EXACT TEXT RULES (CRITICAL – DO NOT TRANSLATE)
+OUTPUT RULES
 ==================================================
-
-– You MUST keep the EXACT LANGUAGE of all text fragments provided in the brief.
-  If the brief text is in English, keep English.
-  If it is in Ukrainian or Russian, keep Ukrainian/Russian.
-  DO NOT TRANSLATE OR REWRITE THE LANGUAGE.
-
-– Enforce very short text:
-  • Headline: maximum 3 words.
-  • Subheadline: maximum 4 words.
-  • Bullet labels (for DIRECT SALE format only): maximum 2–3 words each.
-  • CTA button: maximum 2 words.
-  • Badge (optional): for example "-20%".
-
-– Every piece of text MUST be quoted exactly and clearly instructed. For example:
-  "Render the text exactly as '...' with perfect spelling and kerning."
-
-==================================================
-OUTPUT
-==================================================
-
-Produce ONE long, coherent, visually descriptive prompt in English for the image model.
-
-The prompt MUST:
-– Explicitly describe the chosen layout (split versus full-bleed),
-– Respect the format logic above (bullets ONLY for DIRECT SALE; NO bullets for REAL-PHOTO),
-– CRITICAL: Explicitly include exact keywords like "zoomed out composition", "wide-angle", "generous negative space around all edges", and "all text is strictly confined to the inner center, away from borders" to force the image model to prevent text cropping.
-– Emphasize the main message, supporting text, and CTA as the primary focal points of the banner.
-– IF THE RAW BRIEF CONTAINS A "🔴 КРИТИЧЕСКОЕ ПРАВИЛО ОТ ПОЛЬЗОВАТЕЛЯ" OR "🔴 КРИТИЧНЕ ПРАВИЛО ВІД КОРИСТУВАЧА" BLOCK, YOU MUST INTEGRATE IT INTO YOUR FINAL PROMPT WITH ABSOLUTE MAXIMUM PRIORITY OVERRIDING ANY OTHER DEFAULT STYLES OR COLORS.`;
+– Produce ONE long, coherent, visually descriptive prompt in English for the image model.
+– Explicitly describe the layout, colors, and typography strictly based on the provided brief.
+– Quote the exact text blocks clearly (e.g. "Render the text '...' with perfect spelling").
+– IF THE RAW BRIEF CONTAINS A "🔴 КРИТИЧЕСКОЕ ПРАВИЛО ОТ ПОЛЬЗОВАТЕЛЯ" OR "🔴 КРИТИЧНЕ ПРАВИЛО ВІД КОРИСТУВАЧА" BLOCK, YOU MUST INTEGRATE IT INTO YOUR FINAL PROMPT WITH ABSOLUTE MAXIMUM PRIORITY.`;
           
           const enhanceRes = await openai.chat.completions.create({
             model: 'gpt-4o',
