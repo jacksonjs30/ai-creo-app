@@ -438,30 +438,159 @@ SUMMARY: A classic comic page – 4–7 sequential CJM scenes, minimal large tex
 FOR "INFOGRAPHIC" FORMAT (Special Rules):
 ==================================================
 
-This format is built on DATA VISUALIZATION and STRUCTURED LOGIC. Break down complex information (processes, comparisons, statistics, or steps) into highly scannable, visual chunks. Do NOT use realistic photography – only diagrams, charts, icons, and flat/3D-style vector graphics.
+GENERAL ROLE
+This format is built on DATA VISUALIZATION and STRUCTURED LOGIC.
+It must break down complex information (processes, comparisons, statistics, steps)
+into highly scannable, visual chunks.
 
-TEXT STRUCTURE (MANDATORY – DATA DRIVEN): Do NOT write paragraphs or long sentences. All text must be ultra-short and attached to a visual element.
-1. GLOBAL HEADLINE (TOP): One big, bold line at the top. Max 8–10 words, no emoji.
-2. DATA POINTS / STEPS (3 to 5 ITEMS): This is the core. Each item MUST have:
-   – A large Number, Percentage, or Icon.
-   – A bold short label (1–3 words).
-   – A micro-description (max 3–5 words).
-   All labels and micro-descriptions must be logically derived from the current scenario and the avatar's pains, fears, outcomes, and objections.
-3. FOOTER / BRAND LABEL (BOTTOM): One small line with product name, role, or very short CTA.
+Do NOT use realistic photography in this format.
+Use only diagrams, charts, icons, and flat/3D-style vector graphics.
 
-LAYOUT / COMPOSITION – Choose ONE:
+TEXT STRUCTURE (MANDATORY – DATA DRIVEN)
+Do NOT write full paragraphs or long sentences.
+All text must be ultra-short and attached to a visual element.
 
-OPTION 1 – SEQUENTIAL FLOW (Vertical or Horizontal): 3 to 4 steps in a clear line (vertical column or horizontal row) or simple zig-zag. Connect each consecutive step with ONE visible arrow or dashed line. Maximum 1 connecting line per step (no spider webs). Flow must read in a clear direction.
+1. GLOBAL HEADLINE (TOP – HOOK)
+   – One big, bold line at the top of the canvas.
+   – It must work as a HOOK about the avatar’s pain or desired outcome,
+     not just a neutral label.
+   – Examples (structure only):
+     • “From manual chaos to precise finance”
+     • “Before vs after automation”
+     • “Stop Excel panic, get control”
+   – Max 8–10 words, no emoji.
 
-OPTION 2 – COMPARISON SPLIT (Vs): Canvas split into two structured columns. LEFT = "Without product / Old way". RIGHT = "With product / New way". Each side has 3 BAD vs 3 GOOD items aligned by number. Between columns: clear dividing line or panel with optional "VS" label at top center. Each item uses big number/icon + short bold label + 3–5-word micro-description.
+2. DATA POINTS / STEPS (3 to 5 ITEMS)
+   This is the core of the infographic.
 
-OPTION 3 – HUB LAYOUT (Center + Orbit): Central massive graphic (laptop with dashboard, product logo, or simple flat chart – NOT a complex 3D analytics chart). Around the center, 3 to 4 data points float like satellites. Each satellite has: icon/number, short label, micro-description. Connect each satellite to center with ONE thin line or arrow. Max 4 connecting lines total.
+   Each item MUST have:
+   – A large Number, Percentage, or Icon
+     (e.g. “1”, “+30% time”, money stack icon, graph arrow).
+   – A bold short label (1–3 words)
+     (e.g. “Manual routine”, “Accurate data”, “Burnout nights”).
+   – A micro-description (max 3–5 words)
+     (e.g. “Copy–paste reports”, “Secure financial data”).
 
-VISUAL STYLE ("CLEAN & VECTOR"): Background MUST be clean, solid, or very subtle gradient. No realistic photos, no busy textures. Elements: high-end modern UI look – cards, pills, banners, simple charts, minimal icons. Flat or lightly 3D-styled icons; avoid heavy shadows, glow spam, or noisy effects. Use distinct cards/pills to separate each data point. Soft rounded corners, subtle shadows, consistent stroke width. Color palette: use user-provided brand colors or system brand tokens. Avoid acid neon colors. Ensure high contrast.
+   All labels and micro-descriptions must be logically derived from:
+   – the current scenario,
+   – the avatar’s pains, fears, outcomes, and objections
+     (GLOBAL PROMPT handles exact trigger selection).
 
-SAFE MARGINS: Keep generous negative space between cards, charts, and arrows. Do NOT let charts or text boxes touch each other or the canvas edge. Keep at least ~15% margin from all sides.
+3. OFFER & CTA (BOTTOM – BADGES ONLY)
+   – If the brief includes any offer (discount, bonus, deadline),
+     the infographic MUST show it inside a clear OFFER BADGE,
+     not as a small footnote.
+     • Shape: card or pill, similar to PHOTO+TEXT CTA style.
+     • Example (structure only):
+       “DISCOUNT -20% until the end of the week”.
 
-SUMMARY: Think of it as a slide from a premium pitch deck or high-end Pinterest infographic, adapted to avatar's pains and outcomes. Your DESIGNER BRIEF must explicitly state which layout type is used (Flow, Comparison, or Hub), list each data point (number/icon + label + micro-text), and specify where arrows/lines appear (one per logical connection).`;
+   – The CTA MUST be on its own CTA BADGE or directly combined
+     with the offer badge:
+     • Examples (structure only):
+       “Apply now”, “Start learning”, “Get control”.
+
+   – Visual rules:
+     • Large, readable font.
+     • High-contrast color (brand accent).
+     • Placed in the lower part of the canvas,
+       but not touching the bottom edge
+       (keep safe margin for social UI overlays).
+
+   – Optional:
+     • A single short product descriptor below or near the badge
+       (max 1 line, 4–6 words),
+       e.g. “Excel course for accountants”.
+
+   – Do NOT:
+     • hide offer/CTA only as small text footers,
+     • use comic-style bubbles for offer/CTA.
+
+LAYOUT / COMPOSITION (GRID OR FLOW)
+You MUST use a structured, mathematical layout.
+Choose ONE layout type per creative:
+
+OPTION 1 – SEQUENTIAL FLOW (Vertical or Horizontal)
+– 3 to 4 steps arranged in a clear line (vertical column, horizontal row, or simple zig-zag).
+– Connect each consecutive step with ONE visible arrow or dashed line:
+  • Step 1 → Step 2 → Step 3 → Step 4 (if present).
+– Maximum 1 connecting line per step (no spider webs).
+– The flow must read in a clear direction (top-to-bottom or left-to-right).
+
+OPTION 2 – COMPARISON SPLIT (Vs)
+– Canvas is split into two structured columns:
+
+  LEFT: “Before” / “Old way”
+  RIGHT: “After” / “New way”
+
+– Each side contains 3 BAD vs 3 GOOD items, aligned by row:
+  • Left column: pain states, wasted time, low income, chaos.
+  • Right column: desired states, saved time, higher income, clarity.
+
+– Between columns there is:
+  • a clear dividing line or panel,
+  • optional “VS” label at the center.
+
+– Each item uses:
+  • big number/icon,
+  • short bold label,
+  • 3–5-word micro-description.
+
+OPTION 3 – HUB LAYOUT (Center + Orbit)
+– Central main graphic:
+  • laptop with dashboard, simple bar/line/pie chart,
+    or product/system icon (no complex 3D analytics).
+– Around the center, 3 to 4 data points orbit like satellites.
+– Each satellite has:
+  • icon/number,
+  • short label,
+  • micro-description.
+– Connect each satellite to the center with ONE thin line or arrow.
+  • Max 4 connecting lines total to avoid visual noise.
+
+VISUAL STYLE & ICONS ("CLEAN & VECTOR")
+– Background:
+  • MUST be clean, solid, or very subtle gradient.
+  • No realistic photos, no busy textures.
+
+– Elements:
+  • High-end modern UI look:
+    cards, pills, banners, simple charts, minimal icons.
+  • Icons can be flat or lightly 3D-styled,
+    but avoid heavy shadows, glow spam, or noisy effects.
+
+– Bounding boxes:
+  • Use distinct cards/pills to separate each data point.
+  • Soft rounded corners, subtle shadows, consistent stroke width.
+
+– Color palette:
+  • Use either:
+    – user-provided brand colors from the brief,
+    – or system brand tokens (primary, secondary, accent).
+  • Avoid acid neon colors that break readability.
+  • Ensure high contrast between text and background
+    for all labels and numbers.
+
+SAFE MARGINS & READABILITY
+– Infographics contain more elements: spacing is CRITICAL.
+– Maintain generous negative space between cards, charts, and arrows.
+– Do NOT let charts or text boxes touch:
+  • each other,
+  • or the canvas edge.
+– Keep at least ~15% margin from all sides of the canvas.
+
+BEHAVIORAL SUMMARY FOR INFOGRAPHIC FORMAT
+– Think of this format as:
+  • a slide from a premium pitch deck,
+  • or a high-end Pinterest infographic,
+  adapted to the avatar’s pains and outcomes.
+
+– The DESIGNER BRIEF generated by the model must:
+  • explicitly state which layout type is used (Flow, Comparison, or Hub),
+  • list each data point (number/icon + label + micro-text),
+  • specify:
+    – where arrows/lines appear (one per logical connection),
+    – the exact position and text of the OFFER badge and CTA badge,
+  so the visual designer can render the infographic without ambiguity.`;
 
     } else if (fmt.includes('\u0444\u043e\u0442\u043e') || fmt.includes('photo')) {
       formatRulebook = `
