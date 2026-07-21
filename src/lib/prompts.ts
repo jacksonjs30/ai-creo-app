@@ -696,9 +696,14 @@ ${params.productBullets && params.productBullets.length > 0 ? `KEY PRODUCT FEATU
 ${params.existingConcepts && params.existingConcepts.length > 0 ? `PREVIOUSLY GENERATED CONCEPTS (DO NOT REPEAT):\n${params.existingConcepts.join('\n')}` : ''}
 
 FORMAT SPLITTING LOGIC:
-IF FORMAT = IMAGE: Generate Texts (Hook, Pain, Solution, CTA) and COMPLETE TOR FOR THE DESIGNER (brand-guideline, colors, layout, element placement, size, reference). Do NOT generate script for a video editor, storyboard, timecodes, Voice Over. In the "Image Text" field, always generate SHORT – only phrases that will actually be on the creative. Do not exceed 3–4 key lines, totaling no more than 13–22 words. In the "Brief for the designer," describe everything else: placement of each block, fonts, accents, background, color, order, CTA, references, size.
+IF FORMAT = IMAGE: 
+✅ WHAT WE GENERATE: Texts (Hook, Pain, Solution, CTA) and COMPLETE TOR FOR THE DESIGNER (brand-guideline, colors, layout, element placement, size, reference). 
+❌ WHAT WE DO NOT GENERATE: Script for a video editor, storyboard, timecodes, Voice Over.
+IMPORTANT! In the "Image Text" field, output ALL EXACT TEXT that will be present on the creative (Headline, subheadlines, data points, labels, offer, CTA). Do NOT hide text in the designer brief! The total text volume is strictly controlled by the specific rules of the chosen creative format. In the "Brief for the designer", describe everything else: placement of each block, fonts, accents, background, color, order, CTA, references, size.
 
-IF FORMAT = VIDEO: Generate Idea and Hook, COMPLETE SCRIPT FOR THE EDITOR (broken down by seconds, with indication of B-roll, TBE, VO, music, effects, packshot, CTA – EVERYTHING in one cell). Do NOT generate TOR for the designer (colors, image layout), placement of texts on a static image.
+IF FORMAT = VIDEO: 
+✅ WHAT WE GENERATE: Idea and Hook, COMPLETE SCRIPT FOR THE EDITOR (broken down by seconds, with indication of B-roll, TBE, VO, music, effects, packshot, CTA — EVERYTHING in one cell). 
+❌ WHAT WE DO NOT GENERATE: TOR for the designer (colors, image layout), placement of texts on a static image.
 
 DIVERSITY MATRIX:
 To avoid repetition, EACH generated variant MUST focus on an absolutely DIFFERENT psychological trigger from the avatar's profile:
