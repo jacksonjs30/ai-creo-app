@@ -772,48 +772,276 @@ BRANDING & TONE: Logo: small, non-dominant, placed in a corner (e.g. bottom-righ
 CONSTRAINTS: No artificial split into "photo half vs text half" layouts. Max elements on screen: 1 headline, 1 subcopy block, 1 offer badge, 1 CTA, 1 logo.`;
 
     } else if (fmt.includes('\u0442\u0435\u043a\u0441\u0442 \u043d\u0430 \u0431\u0456\u043b\u043e\u043c\u0443') || fmt.includes('text on white')) {
-      formatRulebook = `
-==================================================
-FOR "TEXT ON WHITE" FORMAT (Special Rules):
-==================================================
+      formatRulebook = `FOR "TEXT ON WHITE" FORMAT (Special Rules):
 
-This is a minimalist text-first image creative. The focus is on the message itself (text + simple background), without complex graphics.
+ROLE
+This is a minimalist text-first image creative.
+The focus is on the message itself (text + simple background),
+without complex graphics.
 
-CORE IDEA – TWO EQUALLY IMPORTANT MODES (distribute 50/50 across variants):
-1) PRODUCT MODE – show the product structure and its components through a strong hook.
-2) RECOGNITION MODE – show a highly relatable situation, pain, or internal monologue of the avatar in plain text (based on JTBD, CJM, pains, fears, motivations).
+CORE IDEA
+There are two equally important modes that must be represented
+across the generated variants (approximately 50/50):
 
-In BOTH modes the creative ALWAYS contains 4 text elements: Main headline. Body text (1–3 lines). Offer/discount block (ONLY if a discount/offer is provided in the brief). CTA (text-only pseudo-button in the same style as the rest of the text).
+1) PRODUCT MODE — show the product structure and its components
+   through a strong hook.
 
-IMPORTANT STRUCTURAL RULES (ANTI-GLITCH):
-– The offer/discount line MUST be a separate text block, visually separated from the body text by clear vertical spacing. It must NOT be part of the body text or any list.
-– The CTA pseudo-button MUST be placed BELOW the offer block with clear vertical spacing and MUST sit inside its own box/outlined area. Offer text and CTA must never share the same box or appear on the same line.
-– In the Image Text field: MUST NOT use any bullet characters at the beginning of lines. MUST NOT include service labels ("HEADLINE", "BODY", "OFFER", "CTA"). MUST NOT include emoji or Unicode icon characters.
+2) RECOGNITION MODE — show a highly relatable situation,
+   pain, or internal monologue of the avatar in plain text
+   (based on JTBD, CJM, pains, fears, motivations).
 
-MODE 1 – PRODUCT (TEXT-ON-WHITE PRODUCT EXPLAINER):
-– HEADLINE: Short, punchy hook related to the main JTBD or core pain. Largest, most visually dominant line.
-– BODY TEXT: 1–3 lines. May include a short list of product modules/features (3–7 modules) or a brief description of what is inside the product, and/or the main result/outcome. Simple list (each module on a new line) OR 1–2 compact sentences. No leading dashes or bullet symbols.
-– OFFER/DISCOUNT: Separate line under body text with extra vertical spacing. Medium size, bolder than body, smaller than headline. Only generate if the brief explicitly contains an offer/discount.
-– CTA (PSEUDO-BUTTON): Short verbal action (2–4 words). Visual style: outlined rectangle, lightly shaded/hatched background, or handwritten-like box around the CTA. Placed BELOW the offer block. Never shares a box with the offer.
+In BOTH modes the creative ALWAYS contains these text elements:
+1. Main headline.
+2. Body text.
+3. Product name/role line (when the product is mentioned).
+4. Offer/discount block (ONLY if a discount/offer is provided).
+5. CTA (text-only pseudo-button).
 
-MODE 2 – RECOGNITION (TEXT-ONLY EMOTIONAL INSIGHT):
-– HEADLINE: Sharp, emotionally charged line calling out a concrete pain, fear or recurring scenario from CJM/symptoms. Can be a quote from the avatar's inner voice, a short observation, or a provocative question.
-– BODY TEXT: 1–3 lines detailing the daily scenario (working at night, errors, burnout, fear of boss/client), or showing the "pain loop" (try -> fail -> try -> burnout), or contrasting "how it feels now" vs "how it could be". No leading bullet characters.
-– OFFER/DISCOUNT (IF PROVIDED): One concise line connecting the recognition to a concrete benefit/offer. Same typographic status as in Product Mode. Separate from body text.
-– CTA (PSEUDO-BUTTON): Short, calm action that feels like a natural next step. Always below the offer block with clear spacing.
+--------------------------------------------------
+TEXT LENGTH LIMITS (TEXT-ON-WHITE)
+— CRITICAL FOR CYRILLIC RENDERING
+--------------------------------------------------
 
-VISUAL STYLE: BACKGROUND & TYPOGRAPHY:
-– Background options: clean white background, solid brand color or soft brand-tinted surface, imitation of paper in a grid or ruled notebook, chalk-like writing on a dark board, sketch-like handwritten note.
-– CONTRAST & READABILITY (CRITICAL): Always maintain high contrast. Avoid low-contrast pastel-on-pastel. All text must be legible on mobile: no ultra-thin fonts, no tiny sizes.
-– Safe margins: at least 10–15% empty space from each edge.
-– TYPOGRAPHIC HIERARCHY: HEADLINE = largest, boldest. BODY = smaller, regular/medium weight. OFFER = medium size, noticeably bolder than body. CTA = same size as body or slightly larger, visually grouped inside a pseudo-button (outlined or shaded box).
+– HEADLINE:
+  • Max 4–6 words.
 
-ICONS / SKETCHES NEAR OFFER: If an offer/discount block is present, ALWAYS add a small hand-drawn-style icon next to it (described in the Brief for Designer only, NOT in the Image Text). Icons: Shield (safety), Clock/Lightning (speed), Graph/Chart (growth), Person/Team (support), Checklist (structure). Must look like simple graphic symbols, NOT like emoji.
+– BODY:
+  • Max 1–2 short sentences.
+  • TOTAL body length max 8–12 words.
 
-WHAT WE GENERATE:
-Always: Headline text, Body text, Offer/discount line ONLY IF brief contains an active offer, CTA text (pseudo-button).
-In "Brief for Designer" MUST describe: Type of background, Exact text hierarchy, Placement of each text block, How the CTA is visually separated as a pseudo-button, How the offer block is emphasized and where the hand-drawn icon sits, Confirmation that all text stays inside safe margins with high contrast.
-DO NOT: Use complex photo backgrounds as main focus. Use bullet/dash/marker characters at beginning of any line in Image Text. Include service labels like "HEADLINE", "BODY", "OFFER", "CTA" in the Image Text.`;
+– PRODUCT LINE:
+  • Max 1 line, 3–6 words.
+
+– OFFER:
+  • Max 1 line, 3–5 words.
+
+– CTA:
+  • Max 2–3 words.
+
+CRITICAL:
+Visual AI models cannot render long Cyrillic texts without errors.
+You MUST keep the text ultra-short, punchy, and billboard-style.
+
+The overall impression must be:
+“readable in 1 second”
+rather than a long paragraph or story block.
+
+IMPORTANT STRUCTURAL RULES (ANTI-GLITCH)
+– The offer/discount line MUST be a separate text block,
+  visually separated from body text and any lists by clear vertical spacing.
+– The product name/role line MUST appear between body and offer
+  whenever the product is mentioned, so it is clearly tied to the offer.
+– The CTA pseudo-button MUST be placed BELOW the offer block
+  with clear vertical spacing and MUST sit inside its own box/outlined area.
+– Offer text and CTA must never share the same box
+  or appear on the same line.
+– In the Image Text field DO NOT use any bullet characters
+  at the beginning of lines (‘-’, ‘—’, ‘•’).
+– Icon characters (emoji, Unicode) MUST NOT appear in the Image Text.
+– The Image Text must NOT include service labels
+  such as “HEADLINE”, “BODY”, “OFFER”, “CTA”.
+  Only output the actual final text for the creative.
+
+--------------------------------------------------
+MODE 1 — PRODUCT
+(TEXT-ON-WHITE PRODUCT EXPLAINER)
+--------------------------------------------------
+
+HEADLINE:
+– Short, punchy hook that relates to the main JTBD or core pain.
+– Tone of voice = \${params.toneOfVoice}.
+– Largest and most visually dominant line.
+– Max 4–6 words.
+
+BODY TEXT:
+– 1–2 short sentences, total 8–12 words.
+– Can include:
+  • a compact list of max 2–3 ultra-short features
+    (2 words each, e.g. “Fast reports”, “Error control”),
+  • or a brief description of what is inside the product,
+  • and/or the main result/outcome.
+– Content must be grounded in the Product Avatar.
+
+PRODUCT NAME / ROLE:
+– One separate line between body and offer, e.g.:
+  • “Excel course for accountants”.
+  • “PM course for online schools”.
+– Max 3–6 words.
+– Same or slightly smaller than headline,
+  bolder than body text.
+
+OFFER/DISCOUNT (IF PROVIDED):
+– Separate line or micro-block placed under product line,
+  with extra vertical spacing.
+– Typographically: medium size, bolder than body,
+  smaller than headline.
+– Max 3–5 words.
+– Only generate this block if the brief explicitly contains an offer/discount.
+– Offer must not be part of body text or combined with CTA.
+
+CTA (PSEUDO-BUTTON):
+– Short verbal action: 2–3 words.
+– Examples: “Start course”, “Get access”, “Learn more”.
+– Visually: text inside an outlined rectangle
+  or lightly shaded/hatched box,
+  placed below the offer block with clear spacing.
+– Offer text must never share the same box
+  or appear on the same line as CTA.
+
+--------------------------------------------------
+MODE 2 — RECOGNITION
+(TEXT-ONLY EMOTIONAL INSIGHT)
+--------------------------------------------------
+
+HEADLINE:
+– Sharp, emotionally charged line that calls out
+  a concrete pain, fear, or recurring scenario
+  from CJM/symptoms.
+– Can be written as:
+  • a quote from the avatar’s inner voice,
+  • a short observation,
+  • or a provocative question.
+– Max 4–6 words.
+
+BODY TEXT:
+– 1–2 short sentences (8–12 words total) that deepen recognition:
+  • detail the daily scenario (night work, errors, burnout,
+    fear of boss/client),
+  • or show the “pain loop” (try → fail → burnout),
+  • or contrast “how it feels now” vs “how it could be”.
+– Always tie back to JTBD, pains, fears or motivations
+  from the Product Avatar.
+
+PRODUCT NAME / ROLE (when relevant):
+– One line stating what the product is
+  and how it relates to this pain:
+  • e.g. “Excel course for accountants – your confidence tomorrow”.
+– Max 3–6 words.
+
+OFFER/DISCOUNT (IF PROVIDED):
+– Concise line connecting recognition to a concrete benefit/offer,
+  separated from body by spacing.
+– Same typographic status as in Product Mode:
+  medium size, bolder than body, smaller than headline.
+– Max 3–5 words.
+
+CTA (PSEUDO-BUTTON):
+– Short, calm action, natural next step:
+  • e.g. “Get plan”, “Learn details”.
+– Visually оформлена так же, как в Product Mode
+  (outline or shaded box).
+– Always placed below the offer block with clear spacing;
+  separate box, no shared line with the offer.
+
+--------------------------------------------------
+VISUAL STYLE: BACKGROUND & TYPOGRAPHY
+--------------------------------------------------
+
+GENERAL:
+– The creative must always look like “text + background”.
+– Background options (examples, not exhaustive):
+  • clean white background,
+  • solid brand color or soft brand gradient,
+  • imitation of notebook paper (grid or ruled),
+  • chalk-like writing on a dark board,
+  • sketch-like handwritten note.
+
+CONTRAST & READABILITY:
+– Always maintain high contrast between text and background:
+  dark text on light background OR light text on dark background.
+– Avoid low-contrast pastel-on-pastel combinations.
+– All text must be legible on mobile:
+  no ultra-thin fonts, no tiny sizes,
+  no text over noisy texture.
+
+SPACING & COMPOSITION:
+– Safe margins from each edge: 10–15% of canvas.
+– Inside those margins:
+  • headline near the top margin,
+  • body + product line grouped in the middle,
+  • offer + CTA near the lower margin.
+– No large empty bands between text blocks.
+– Fill the canvas dynamically so text is HUGE
+  and highly readable.
+  Do not shrink text into a tiny block in the center.
+
+TYPOGRAPHIC HIERARCHY:
+– HEADLINE: largest, boldest.
+– BODY: smaller, regular/medium weight.
+– PRODUCT LINE: medium size, bolder than body.
+– OFFER: medium size, bolder than body, below product line.
+– CTA: same or slightly larger than body,
+  inside pseudo-button.
+
+HANDWRITTEN / SKETCH STYLE:
+– At least ~30–40% of variants MUST use
+  a handwritten or sketch-like treatment
+  for the headline or CTA (or both):
+  • marker-like headline on notebook paper,
+  • dashed, hand-drawn CTA box,
+  • small doodles near offer (sun, smiley, etc.).
+– Even in handwritten style, readability is critical:
+  thick strokes, high contrast,
+  no overly decorative scripts.
+
+--------------------------------------------------
+ICONS / SKETCHES NEAR OFFER
+--------------------------------------------------
+
+– If an offer/discount block is present, ALWAYS add
+  in the Brief for Designer a small hand-drawn-style icon
+  next to it.
+
+– Icon meanings follow DIRECT SALE logic:
+  • Shield – safety, protection, no mistakes, legality.
+  • Clock / Lightning – speed, automation, fast result.
+  • Graph / Chart – growth, analytics, control over numbers.
+  • Person / Team – support, human help, curator.
+  • Checklist – structure, order, clear process.
+
+– Icons must look like simple graphic symbols or mini-sketched pictograms,
+  NOT like emoji.
+– Icon must be described only in the Brief for Designer
+  as a separate graphic element;
+  do NOT include icon characters in the Image Text field.
+
+--------------------------------------------------
+LANGUAGE & ORTHOGRAPHY
+--------------------------------------------------
+
+– All image text must be written in language specified in the brief.
+– Prefer simpler, shorter phrases to reduce risk of spelling errors.
+– Avoid rare slang words or complex quotations
+  that are easy to misspell.
+
+--------------------------------------------------
+WHAT WE GENERATE FOR THIS FORMAT
+--------------------------------------------------
+
+IF FORMAT = "TEXT ON WHITE":
+
+Generate (Image Text):
+– Headline text (without labels).
+– Body text (1–2 short sentences).
+– Product name/role line (when the product is mentioned).
+– Offer/discount line (IF there is an offer).
+– CTA text (pseudo-button).
+
+In "Brief for Designer" you MUST describe:
+– Background type (white, brand color, notebook paper,
+  chalkboard, sketch note, etc.).
+– Exact text hierarchy (headline, body, product line,
+  offer, CTA).
+– Placement of each text block on the canvas
+  (top/middle/bottom).
+– How the CTA is visually separated as a pseudo-button
+  (outline, shading, dashed box, etc.).
+– How the offer block is emphasized
+  (medium size, bolder weight) and where the small icon sits.
+– Assurance that all text stays inside safe margins
+  and contrast is high.
+– Explicitly state that no bullet characters, emoji,
+  or service labels appear in the Image Text field.\`;
     }
 
     return `ROLE You are a Data BI Creative Strategist. Your mission is not just to write texts. Your mission is to generate high-converting creative concepts (ideas, texts, scripts) that strike precisely at the psychological portrait of the target audience, forcing them to recognize themselves and click through to the site.
