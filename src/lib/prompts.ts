@@ -263,7 +263,7 @@ ${brief.productBullets && brief.productBullets.length > 0 ? `\nКЛЮЧЕВЫЕ 
   /**
    * 5. КРЕАТИВЫ НА ОСНОВЕ АВАТАРА (СЦЕНАРИИ И ТЗ)
    */
-            GENERATE_CREATIVES_PROMPT: (params: { 
+  GENERATE_CREATIVES_PROMPT: (params: { 
     productName: string, 
     avatarData: any, 
     format: string, 
@@ -277,99 +277,11 @@ ${brief.productBullets && brief.productBullets.length > 0 ? `\nКЛЮЧЕВЫЕ 
     peoplePresence?: string,
     productBullets?: string[]
   }) => {
-    return `ROLE You are a Data BI Creative Strategist. Your mission is not just to write texts. Your mission is to generate high-converting creative concepts (ideas, texts, scripts) that strike precisely at the psychological portrait of the target audience, forcing them to recognize themselves and click through to the site. 
+    const fmt = params.format.toLowerCase();
+    let formatRulebook = '';
 
-Brand Tone of Voice: ${params.toneOfVoice} 
-Friendly → warm, conversational, informal ("you"), no pressure 
-Expert → confident, factual, data and facts, authority 
-Provocative → sharp hook, provocative question, challenging the status quo 
-Inspiring → emotional uplift, transformation, "you can do it"
-
-📋 INPUT DATA: 
-COURSE / PRODUCT: ${params.productName}
-SEGMENT / AUDIENCE: ${params.avatarData?.segmentName}
-CREATIVE FORMAT: ${params.format}
-NUMBER OF VARIANTS: ${params.count}
-${params.focusDirection ? `SPECIFIC FOCUS: ${params.focusDirection}` : ''}
-${params.promoOffer ? `PROMO OFFER: ${params.promoOffer}` : ''}
-${params.peoplePresence ? `PEOPLE PRESENCE: ${params.peoplePresence === 'without_people' ? 'Strictly NO PEOPLE' : 'Mix of people and no people'}` : ''}
-${params.colors ? `BRAND COLORS: Main ${params.colors.main}, Secondary ${params.colors.secondary}, Accent ${params.colors.accent}` : ''}
-
-🗂️ KNOWLEDGE BASE (SOURCE OF TRUTH) 
-STATIC BASE (Always Pinned): Data BI Audience Distribution - PRODUCT SEGMENTS.csv Data BI Audience Distribution - CREO FORMATS.csv
-
-DYNAMIC BASE: 
-Detailed psychological portrait of the avatar:
-${JSON.stringify(params.avatarData)}
-
-${params.productBullets && params.productBullets.length > 0 ? `KEY PRODUCT FEATURES:\n${params.productBullets.join('\n')}` : ''}
-${params.existingConcepts && params.existingConcepts.length > 0 ? `PREVIOUSLY GENERATED CONCEPTS (DO NOT REPEAT):\n${params.existingConcepts.join('\n')}` : ''}
-
-⚠️ CRITICALLY IMPORTANT: FORMAT SPLITTING LOGIC 
-IF FORMAT = IMAGE 
-✅ WHAT WE GENERATE: Texts (Hook, Pain, Solution, CTA) and COMPLETE TOR FOR THE DESIGNER (brand-guideline, colors, layout, element placement, size, reference). 
-❌ WHAT WE DO NOT GENERATE: Script for a video editor, storyboard, timecodes, Voice Over. 
-IMPORTANT! In the "Image Text" field, always generate SHORT! Only those phrases that will actually be on the creative. Do not exceed 3–4 key lines, totaling no more than 13–22 words. In the "Brief for the designer," describe everything else: placement of each block, fonts, accents, background, color, order, CTA, references, size.
-
-IF FORMAT = VIDEO 
-✅ WHAT WE GENERATE: Idea and Hook, COMPLETE SCRIPT FOR THE EDITOR (broken down by seconds, with indication of B-roll, TBE, VO, music, effects, packshot, CTA — EVERYTHING in one cell). 
-❌ WHAT WE DO NOT GENERATE: TOR for the designer (colors, image layout), placement of texts on a static image.
-
-⚠️ CRITICAL RULE: DIVERSITY MATRIX 
-To avoid repetition, EACH generated variant MUST focus on an absolutely DIFFERENT psychological trigger from the avatar's profile:
-Variant 1 (Functional/Pain): Focus on the main JTBD and an acute daily pain (from the "pains" section).
-Variant 2 (Deep Fear): Focus on deep anxieties (from the "fears" section — fear of AI replacement, fatal error in front of the boss, losing a client/job).
-Variant 3 (Symptomatic/CJM): A scenario built on the "pain loop" (from the "cjm" or "symptoms" section — working at night, burnout, anger).
-Variant 4 (Objection): Direct work with a barrier (from the "objections" section — "it's expensive", "no time to learn") and overcoming it.
-Variant 5 (Transformation): Emotional "before/after" contrast (from the "motivations" and "outcomes" sections). 
-If there are fewer or more than ${params.count} variants, distribute the triggers so that the concepts do not duplicate each other.
-
-🔄 STEP-BY-STEP ALGORITHM 
-Define Product and Segment from INPUT DATA. Open PRODUCT AVATAR FILE, study the avatar for this segment. Define FORMAT (image or video). Generate ${params.count} variants, following the golden rules and the Diversity Matrix.
-
-💎 GOLDEN RULES OF TEXT GENERATION 
-EMOTIONALITY: Write about feelings, not facts (❌ "Excel does not scale" → ✅ "Excel 'crashed' again at 5 PM!"). 
-SPECIFICITY: Concrete numbers, time, amounts (❌ "A lot of time" → ✅ "You spent 3 days on a report that your boss looked at for 3 minutes"). 
-PORTRAITURE: For a specific person, not for everyone (❌ "People make mistakes" → ✅ "Your accountant made a mistake in the balance sheet, and you lost money"). 
-CONTRAST: It was HELL vs now it is GOOD. 
-RECOGNIZABILITY: People recognize themselves in the text.
-
-📊 OUTPUT STRUCTURE 
-STRICTLY output the result as a Markdown Table. Do not use block format.
-
-IF FORMAT = IMAGE:
-| № | Концепція | 📄 ТЕКСТ КАРТИНКИ | 🎨 БРИФ ДЛЯ ДИЗАЙНЕРА |
-|---|---|---|---|
-| [Number] | [Name] | [Text] | [All details] |
-
-IF FORMAT = VIDEO:
-| № | Концепція | 📝 СЦЕНАРИЙ | 🎬 РАСКАДРОВКА |
-|---|---|---|---|
-| [Number] | [Name] | [Text] | [ALL breakdown BY SECONDS] |
-
-Note for VIDEO: The script should be written fully by seconds/scenes. Include: Video sequence (describe actions, location, emotion), VO (Voice Over monologue or dialogue), TBE (Text By Eye accents), Music/Sound. All must be logically connected and synchronized. 
-Note for IMAGES: Write the entire TOR for the designer with clear sections: Brand-guideline, Color palette (Background, Text, Accents), Element placement (Header, Pain, Solution, CTA, Discount, Logo), Visual, Size, Reference.
-
-✅ CHECKLIST BEFORE OUTPUT 
-Product and segment defined? 
-PRODUCT AVATAR FILE studied? 
-CREATIVE FORMAT defined? 
-IMAGE: TOR FOR DESIGNER generated? 
-VIDEO: SCRIPT FOR EDITOR generated? 
-Hook + Pain + Solution + CTA included? 
-Text written in the "voice" of the avatar? 
-Avatar's key objections taken into account? 
-EMOTION, SPECIFICITY, CONTRAST, RECOGNIZABILITY included? 
-All content in one cohesive section per variant? 
-Requested number of variants generated?
-
-🌐 ADDITIONAL RULES 
-Language: Generate ALL final creatives and TOR exclusively in ${params.language}.
-Clarification request: If INPUT DATA is incomplete — ASK THE USER. 
-Maximum detail: The more detailed the TOR and scripts, the better.
-Product Name Usage: You MUST explicitly include and use the exact product name provided by the user in the generated creative (in the image text, script, or TOR).
-
-${(params.format && (params.format.toLowerCase().includes('продаж') || params.format.toLowerCase().includes('direct'))) ? `
+    if (fmt.includes('direct') || fmt.includes('продаж')) {
+      formatRulebook = `
 ==================================================
 FOR "DIRECT SALE" FORMAT (Special Rules):
 ==================================================
@@ -382,150 +294,335 @@ The ad copy MUST STRICTLY consist of 5 blocks:
   2. SUBHEADLINE (1 short sentence) – directly under the headline, with a smaller font size.
   3. BULLET POINTS (CRITICAL — MANDATORY!) – 3–4 key benefits as a short list, in an even smaller font than the subheadline.
   4. PRODUCT LABEL – course / product name or offer label, using the same font size as description / bullet text.
-  5. DISCOUNT / CTA – a visible badge (promo, benefit, or guarantee) + button text (on the button: a direct call to action for the product such as “sign up”, “get”, “buy”, etc. Do NOT use pains or desires inside the button text; it should be a simple action + optionally a clear benefit).
+  5. DISCOUNT / CTA – a visible badge (promo, benefit, or guarantee) + button text (on the button: a direct call to action for the product such as "sign up", "get", "buy", etc. Do NOT use pains or desires inside the button text; it should be a simple action + optionally a clear benefit).
 
 BULLET LAYOUT & ICONS (LIKE REFERENCE BANNERS):
 – BULLETS must be visual, not just plain text.
-– Each bullet point MUST have:
-  • a clear icon that matches the meaning of the bullet,
-  • a short bold line (2–4 words) as the benefit title,
-  • an optional micro-line in smaller text (explanation, 4–8 words).
+– Each bullet point MUST have: a clear icon that matches the meaning of the bullet, a short bold line (2–4 words) as the benefit title, an optional micro-line in smaller text (explanation, 4–8 words).
 
-ICON MEANING EXAMPLES:
-  • Shield – safety, protection, no mistakes, legality.
-  • Clock / Lightning – speed, automation, fast result.
-  • Graph / Chart – growth, analytics, control over numbers.
-  • Person / Team – support, human help, curator.
-  • Checklist – structure, order, clear process.
-  • Smile-like character – calm, confidence, comfort.
+ICON MEANING EXAMPLES: Shield – safety/protection. Clock/Lightning – speed/fast result. Graph/Chart – growth/analytics. Person/Team – support/human help. Checklist – structure/order. Smile-like character – calm/confidence.
+Icons must NOT look like emoji; they should be graphic symbols.
 
-Icons must NOT look like emoji; they should be graphic symbols that visually express the specific meaning of each bullet.
+BULLET LAYOUT OPTIONS (pick ONE or combine):
+Vertical bullets: A vertical column of 3–4 bullet rows placed on the LEFT or CENTER-LEFT. Icons aligned in a straight column; text aligned to the right of each icon.
+Horizontal feature row: A horizontal strip at the BOTTOM of the banner with 3–5 compact feature blocks. Each block: icon on top, 1–2 word label under it.
+COMBINATION (RECOMMENDED): vertical bullets for the main 2–3 benefits + bottom horizontal micro-feature strip for trust / extra points.
 
-BULLET LAYOUT OPTIONS:
-You can use ONE of two layouts (pick whichever fits better for this concept), and it is allowed to combine them:
+LAYOUT / COMPOSITION:
+OPTION 1 – TEXT LEFT (~60%), VISUAL RIGHT (~40%): LEFT SIDE: product label, main headline, subheadline, vertical bullets, CTA/button, bottom icon row. RIGHT SIDE: person with product, UI on laptop/phone, or clear metaphor. The left side can smoothly transition using a gradient.
+OPTION 2 – TEXT RIGHT (~60%), VISUAL LEFT (~40%): Same elements mirrored. Left side transitions via gradient.
+OPTION 3 – TEXT TOP, VISUAL BOTTOM: Top: product label, headline, subheadline, bullets. Middle/right: product visual. Bottom: wide CTA strip with button and small icons in a horizontal row.
 
-  • Vertical bullets:
-    – A vertical column of 3–4 bullet rows.
-    – Placed on the LEFT or CENTER-LEFT (or under the headline, depending on the layout).
-    – Icons aligned in a straight column; text aligned to the right of each icon.
+CTA AREA: Must be inside a clearly separated block (button, banner strip, or card). Solid shape, rounded corners, arrow or icon. Promotion shown as a separate bright badge.
 
-  • Horizontal feature row:
-    – A horizontal strip at the BOTTOM of the banner with 3–5 compact feature blocks.
-    – Each block: icon on top, 1–2 word label under it (for example, “Confidentially”, “Individual approach”, “Real results”).
+PRODUCT LABEL / PROMO BADGE: Use a pill/badge element for product name or promo. Place near the headline or CTA.
 
-COMBINATION (RECOMMENDED):
-– For DIRECT SALE it is RECOMMENDED to combine both:
-  • vertical bullets for the main 2–3 benefits,
-  • and a bottom horizontal micro-feature strip for trust / extra points (such as “Confidential & safe”, “Support at every step”, etc.).
+ICON ROW FOR TRUST (BOTTOM STRIP): Row of 3–5 small icons with labels at the very bottom ("Confidential & safe", "Individual approach", "Real results", "Support at every step", "24/7 online"). Compact, aligned in single row, inside safe margins.
 
-LAYOUT / COMPOSITION (STRUCTURE LIKE REFERENCE BANNERS):
-– Use a clear split or asymmetrical layout, inspired by high-performing direct sale banners:
+SAFE MARGINS (CRITICAL ANTI-CROP): All text blocks MUST stay inside safe margins – at least 10–15% empty space from each edge. Never push text to the borders. If layout feels dense: reduce secondary text size, tighten line spacing for bullets. The composition must remain zoomed out with generous negative space.
 
-  • OPTION 1 – TEXT LEFT, VISUAL RIGHT:
-    – LEFT SIDE (~60% width): product label, main headline, subheadline, vertical bullets, CTA/button, bottom icon row.
-    – RIGHT SIDE (~40% width): strong product visual:
-      ▸ a person with the product (e.g., holding a card, laptop, phone),
-      ▸ or product UI on a laptop/phone,
-      ▸ or a clear metaphor (e.g., money leak, dashboards, city background),
-      ▸ or any other visual that clearly represents the product idea or the creative brief.
-    – The left side can smoothly transition into the right side using a gradient.
+"ALIVE" / "JUICY" VISUAL STYLE: Soft directional light with gentle shadows and subtle reflections on screens/glass. Show laptops/phones/dashboards under a slight perspective angle with background blur and depth. Add realistic environment details (desk items, coffee cup, notebook, plants, office interior). Use 1–2 main colors + 1 accent for the CTA. While the visual is alive and rich, keep all text blocks sharp, perfectly readable, fully inside the safe zone.
 
-  • OPTION 2 – TEXT RIGHT, VISUAL LEFT:
-    – RIGHT SIDE (~60% width): product label, main headline, subheadline, bullets, CTA/button, bottom icon row.
-    – LEFT SIDE (~40% width): product / metaphor visual (e.g., magnifying glass over a table, person with a laptop, etc.),
-      or any other visual that clearly represents the product idea or the creative brief.
-    – The left side can smoothly transition into the right side using a gradient.
+SUMMARY: Think of the banner as a structured sales one-pager: Top = promise (headline + subheadline), Middle = main benefits as bullet icons (vertical list) near one side, Opposite side = strong product/person/UI visual, Bottom = CTA strip + small trust badges. Your DESIGNER BRIEF must explicitly describe where each of the 5 text blocks is placed, where bullet icons go, where the product visual is placed, where the CTA block and bottom icon row are located, that all text stays within safe margins, and that the visual scene is "alive", realistic, and rich in depth and light.`;
 
-  • OPTION 3 – TEXT TOP, VISUAL BOTTOM:
-    – Top section: product label, headline, subheadline, bullets.
-    – Middle/right: product visual (UI, person, metaphor).
-    – Bottom: wide CTA strip with a button and small icons / benefits in a horizontal row.
+    } else if (fmt.includes('\u0434\u043e/\u043f\u0456\u0441') || fmt.includes('\u043a\u0435\u0439\u0441') || fmt.includes('before') || fmt.includes('after')) {
+      formatRulebook = `
+==================================================
+FOR "BEFORE / AFTER (CASE STUDY)" FORMAT (Special Rules):
+==================================================
 
-– In all options:
-  • keep text blocks grouped in a clean panel,
-  • keep the visual as a strong, “alive” scene that supports the promise.
+This format simulates a "Case Study" or a highly realistic transformation. It must visually contrast the avatar's painful starting point ("Before") with the successful outcome ("After") achieved via the product.
 
-CTA AREA:
-  • The CTA must be placed inside a clearly separated block (button, banner strip, or card).
-  • Make the CTA area visually similar to the reference banners:
-    – solid shape, rounded corners, arrow or icon,
-    – short text like “Get consultation”, “Start test”, “Download guide”, “Освой Excel за тиждень”.
-  • The promotion or discount must be shown as a separate bright badge, consistent with the creative brief.
+TEXT STRUCTURE (DIRECT SALE LITE – NO BULLETS):
+The text must be structured like a clean Direct Sale banner, but STRICTLY WITHOUT bullet points to maximize space for the dual visuals.
+1. MAIN HEADLINE (max 6 words) – big, bold, focusing on the transformation, case study, or final result.
+2. SUBHEADLINE (1 short sentence) – directly under the headline, providing context.
+3. "BEFORE" & "AFTER" LABELS (Optional but Recommended) – Short 1-word labels (e.g., "\u0414\u043e" / "\u041f\u0456\u0441\u043b\u044f" or "\u0411\u0435\u0437" / "\u0417") placed directly over their respective images.
+4. PRODUCT LABEL / PROMO BADGE – product name or offer label.
+5. CTA BLOCK – a visible button with action-oriented text at the bottom.
 
-PRODUCT LABEL / PROMO BADGE:
-  • Use a pill / badge element for the product name or promo:
-    – e.g., “Online course”, “For business in USA”, “PRODUCT / COURSE NAME”, “Free consultation”, “Special price”.
-  • Place it near the headline or near the CTA, not randomly.
+LAYOUT / COMPOSITION (STRICT SPLIT):
+– The visual area MUST feature two distinct images, split Left/Right (50/50).
+– LEFT IMAGE: The "BEFORE" state (pain, problem, old way).
+– RIGHT IMAGE: The "AFTER" state (solution, success, new way).
+– Text Blocks (Headline, Subheadline, CTA) should be placed in a dedicated panel (Top block or unified banner strip at the bottom) so they do NOT obstruct the comparison.
 
-ICON ROW FOR TRUST / FEATURES (BOTTOM STRIP):
-– At the very bottom, it is strongly recommended to add a row of 3–5 small icons with labels, for example:
-  • “Confidential & safe”
-  • “Individual approach”
-  • “Real results”
-  • “Support at every step”
-  • “24/7 online”
-– These bottom icons should be compact and aligned in a single row, visually separated from the main content by spacing or a subtle background strip.
-– This row must stay inside the safe margins and look like a small “trust bar”.
+VISUAL STYLE & COLOR GRADING (REALISTIC & CONTRASTING):
+– The imagery MUST be highly realistic (Real-Photo style: real people, real desks, real screens, natural lighting). No vector graphics.
+– Contrast & Color Rules – The Designer Brief MUST specify ONE of these:
+  Option A (Tints): If text labels are used, apply a subtle RED tint/overlay to the "Before" image and a subtle GREEN tint/overlay to the "After" image.
+  Option B (Frames): If no labels are used, apply a red border/frame to the "Before" image and a green border/frame to the "After" image.
+  Option C (Natural Contrast): No artificial colors/frames. Rely purely on realistic lighting and composition ("Before" = messy, dark, stressful; "After" = clean, bright, smiling).
 
-SAFE MARGINS & READABILITY (CRITICAL ANTI-CROP RULES):
-– All text blocks (headline, subheadline, bullets, CTA, labels, bottom icons) MUST stay inside safe margins:
-  • keep at least 10–15% empty space from each edge of the banner.
-– No text may touch or be cropped by the edges under any circumstances.
-– If the layout feels dense:
-  • REDUCE the visual size of secondary text (subheadline, bullet descriptions, bottom labels),
-  • slightly tighten line spacing for bullets,
-  • shorten support lines where necessary (remove extra adjectives and filler words).
-– NEVER solve text density by zooming into the layout or pushing text closer to the borders.
-– The entire composition must remain zoomed out, with generous negative space around:
-  • outer edges,
-  • the headline block,
-  • the bullets block,
-  • the CTA block,
-  • the bottom icon row.
+SAFE MARGINS & READABILITY:
+– Dividing line between the two images must be sharp and clear.
+– Labels must be highly legible (use solid pills/badges over the photos).
+– Keep all main text inside safe margins (10–15% from the edges).
 
-“ALIVE” / “JUICY” VISUAL STYLE:
-– Visuals must feel alive, juicy, and realistic, not flat:
+SUMMARY: Think of it as a realistic proof-of-concept or case-study slide. Your DESIGNER BRIEF must explicitly describe: the Left realistic scene (Before), the Right realistic scene (After), the specific color grading or framing logic (Red vs Green), and placement of the text panel (top or bottom strip).`;
 
-  • LIGHT:
-    – use soft, directional light with gentle shadows,
-    – add subtle reflections on screens, glossy surfaces, or glass,
-    – avoid flat, evenly lit scenes; create depth with contrast.
+    } else if (fmt.includes('\u043c\u0435\u043c') || fmt.includes('meme')) {
+      formatRulebook = `
+==================================================
+FOR "MEME-CREO" FORMAT (Special Rules):
+==================================================
 
-  • DEPTH & PERSPECTIVE:
-    – show laptops, phones, dashboards under a slight perspective angle,
-    – use background blur or atmospheric depth (sharp foreground, softer background),
-    – include layers: foreground object, mid-ground subject, background environment,
-    – create realistic scenes and emphasize them with shadows so the image has volume.
+A PHOTO + TEXT ad where the IMAGE is a MEME (cartoon or real-photo) and the TEXT follows PHOTO + TEXT structure: hook -> supporting line -> optional offer (from brief) -> CTA. Content is derived from the current trigger and Extended Avatar.
 
-  • CONTEXT & PROPS:
-    – add realistic environment details: desk items, coffee cup, notebook, pen, plants, office interior, city skyline, etc.,
-    – optionally include partial human presence (hand, silhouette, person holding a card/device) if allowed,
-    – keep the scene dynamic but not cluttered.
+CRITICAL DISTINCTION: MEME-CREO uses ONE main meme scene, NOT a full comic page with multiple panels. No 4-7 panels, no numbered panel headers, no gutter grid.
 
-  • COLOR:
-    – use a clear brand-like palette: 1–2 main colors + 1 accent for the CTA,
-    – make the CTA, badges and key words pop with higher contrast, and you may highlight them with shadows or directional light,
-    – avoid muddy or oversaturated chaos; keep it clean and modern.
+VISUAL SUBTYPES:
 
-– While the visual is alive and rich, keep all text blocks:
-  • sharp,
-  • perfectly readable,
-  • fully inside the safe zone.
+SUBTYPE A – CARTOON MEME AD:
+– One single cartoon-style image: avatar in a relatable, slightly exaggerated situation (tired with coffee, struggling with Excel/Sheets, boss asking about metrics). Simple, flat or soft-gradient background.
+– Composition: Character + one main context object (laptop, phone, spreadsheets). Large meme text (hook) in the upper part of the canvas. Optional supporting line near the character. Offer/CTA rendered as PHOTO+TEXT-style badges at the bottom.
+– Allowed: speech/thought bubble for 1 short meme line, labels on objects.
+– NOT allowed: comic-page frames with multiple panels, numbered scenes.
 
-SUMMARY FOR DIRECT SALE FORMAT:
-– Think of the banner as a structured sales one-pager:
-  • Top: promise (headline + subheadline),
-  • Middle: main benefits as bullet icons (vertical list) near one side,
-  • Opposite side: strong product / person / UI visual,
-  • Bottom: CTA strip + small trust badges in a horizontal row.
-– Your DESIGNER BRIEF must explicitly describe:
-  • where each of the 5 text blocks is placed,
-  • where bullet icons go (vertical / horizontal),
-  • where the product / person / UI visual is placed,
-  • where the CTA block and bottom icon row are located,
-  • that all text stays within safe margins and that secondary text becomes smaller / tighter instead of being pushed to the edges,
-  • that the visual scene is “alive”, realistic, and rich in depth and light.
-` : ''}
+SUBTYPE B – REAL-PHOTO MEME AD:
+– One real-photo base: a person with a clear emotional expression (confused, anxious, exhausted, "Harold" smile), simple clean background.
+– Composition: Person on one side, large meme text on the other side. Headline captures the pain, supporting line adds the sarcastic comment.
+– Offer/CTA: pashkas/buttons at the bottom.
+– NOT allowed: multi-photo grids, collage-style comic layout.
+
+TEXT STRUCTURE (PHOTO+TEXT LOGIC, MEME TONE):
+1. MAIN HEADLINE (HOOK / SETUP): One strong line (max 10–12 words). Sarcastic, self-deprecating. MUST directly comment on what is happening in the meme image.
+2. SUPPORTING LINE: One short line (max 10–12 words). Explains what exactly goes wrong or what outcome they want. Uses wording from Extended Avatar (pains, CJM symptoms, outcomes).
+3. OFFER (ONLY IF PROVIDED IN BRIEF): ONE short offer line inside an OFFER BADGE. Never invent offers. Max 1–2 lines.
+4. CTA: One short call-to-action (2–4 words). Rendered as a CTA pashka (rounded rectangle, brand color). Meme tone allowed as long as the action is clear.
+
+TEXT DENSITY LIMITS: Max 3 main text surfaces: 1) headline area, 2) ONE supporting line, 3) ONE offer OR CTA pashka. Labels on objects allowed (1–3 words each). All text legible on a phone screen.
+
+LAYOUT: Headline at top or upper half. Supporting line near the character or key object. Offer/CTA in lower part of canvas, NOT at the extreme bottom edge. DO NOT use comic-style panel headers, multi-frame grids, or CTA/offers inside speech bubbles.
+
+TONE & SAFETY: Self-deprecating humor, work/financial stress. No insults, no offensive stereotypes. Product framed as the escape from the meme situation. Keep all main text away from extreme edges: bottom 20% and top 10% reserved for platform UI.
+
+SUMMARY: VISUAL = one meme scene (cartoon or real-photo), NOT a multi-panel comic page. TEXT = up to 3 main text surfaces in PHOTO+TEXT style (headline, support, offer/CTA) plus a few short object labels. CONTENT = firmly tied to avatar's pains/CJM and meme joke, with a clear advertising function and UGC/native meme vibe.`;
+
+    } else if (fmt.includes('comic') || fmt.includes('\u043a\u043e\u043c\u0456\u043a\u0441')) {
+      formatRulebook = `
+==================================================
+FOR "COMIC-CJM" FORMAT (Special Rules):
+==================================================
+
+A single-page CLASSIC COMIC that visualizes the avatar's journey (CJM) from pain to desired outcome in multiple scenes. Visual style = traditional comic book page (panels, speech bubbles, bold colors), with MINIMAL, LARGE text. This is still an AD: it must include a clear OFFER badge and CTA pashka.
+
+PAGE & PANEL STRUCTURE:
+– One page composed of 4–7 panels (scenes). Minimum 4 panels so the CJM path (pain -> crisis -> intervention -> outcome) is fully visible.
+– Panels may have different sizes: key scenes (starting pain, crisis, final outcome) can be larger; intermediate steps smaller. Whole composition MUST have clear frames and gutters and read as ONE chronological sequence.
+
+SEQUENCE RULES: Panels MUST show an obvious order via numbered badges (1, 2, 3, 4, 5, 6, 7) or connected with arrows. Reading path: top row -> bottom row, or left -> right, or a clear zig-zag / L-shaped flow. No random scatter.
+
+CJM & AVATAR MAPPING (STORY CONTENT):
+PANEL GROUP 1 (1–2 panels) – STARTING PAIN: Avatar stuck in pain loop: chaotic tasks, manual Excel reports at night, CRM crashes, burnout. Emotions: tired, anxious, overwhelmed. Text: short speech bubbles from avatar pains + CJM symptoms.
+PANEL GROUP 2 (1–2 panels) – CRISIS / REALIZATION: Pain peaks: deadlines on fire, errors, sleepless nights. Insight: "this can't go on". Emotions: panic, frustration, determination. Text: short line from fears/objections and crisis insight.
+PANEL GROUP 3 (1–2 panels) – INTERVENTION (PRODUCT/COURSE): Avatar discovers and starts using the product. Scene: screen with clear structure, funnel view, action plan. Emotions: focus, hope, clarity. Text: short line from motivations.
+PANEL GROUP 4 (1–2 panels) – OUTCOME: Avatar in new reality: predictable client flow, stable income, remote work, launches without chaos, normal sleep. Emotions: confident, calm, happy. Text: short line from outcomes.
+
+GLOBAL TEXT LIMITS: Whole page: MAX 10 text elements total. Per panel: MAX 2 text elements. Each text element: MAX 9 words, large comic-style lettering readable on a phone screen.
+
+VISUAL STYLE: Traditional comic frames with clear gutters, dynamic compositions. STRICTLY avoid violence, blood, weapons, horror. Characters: human or simplified cartoon figures with readable emotions. Colors: use user brand palette if provided; otherwise 2–3 harmonious dominant colors. Avoid harsh neon acid colors.
+
+OFFER & CTA PLACEMENT (MANDATORY):
+– ONE distinct OFFER pashka: card or pill with short offer text, placed below the last row of panels. Large enough to be readable on a smartphone. Max 1–2 short lines.
+– CTA MUST be rendered as its own button/pashka. Can be combined with the offer badge on one wide pashka.
+– Visual style: same logic as PHOTO+TEXT (primary/accent brand colors, soft rounded rectangles/pills, subtle shadow).
+
+OPTIONAL BULLETS: 1–3 short bullets/mini-icons below the OFFER/CTA if there is room (each max 3–5 words). Count toward the GLOBAL TEXT LIMIT.
+
+SUMMARY: A classic comic page – 4–7 sequential CJM scenes, minimal large text (up to 10 text elements total), clear emotional arc "before -> crisis -> solution -> after". PLUS: one visible OFFER badge, one CTA pashka, optionally 1–3 short bullets of key benefits.`;
+
+    } else if (fmt.includes('\u0456\u043d\u0444\u043e\u0433\u0440\u0430\u0444') || fmt.includes('infograph')) {
+      formatRulebook = `
+==================================================
+FOR "INFOGRAPHIC" FORMAT (Special Rules):
+==================================================
+
+This format is built on DATA VISUALIZATION and STRUCTURED LOGIC. Break down complex information (processes, comparisons, statistics, or steps) into highly scannable, visual chunks. Do NOT use realistic photography – only diagrams, charts, icons, and flat/3D-style vector graphics.
+
+TEXT STRUCTURE (MANDATORY – DATA DRIVEN): Do NOT write paragraphs or long sentences. All text must be ultra-short and attached to a visual element.
+1. GLOBAL HEADLINE (TOP): One big, bold line at the top. Max 8–10 words, no emoji.
+2. DATA POINTS / STEPS (3 to 5 ITEMS): This is the core. Each item MUST have:
+   – A large Number, Percentage, or Icon.
+   – A bold short label (1–3 words).
+   – A micro-description (max 3–5 words).
+   All labels and micro-descriptions must be logically derived from the current scenario and the avatar's pains, fears, outcomes, and objections.
+3. FOOTER / BRAND LABEL (BOTTOM): One small line with product name, role, or very short CTA.
+
+LAYOUT / COMPOSITION – Choose ONE:
+
+OPTION 1 – SEQUENTIAL FLOW (Vertical or Horizontal): 3 to 4 steps in a clear line (vertical column or horizontal row) or simple zig-zag. Connect each consecutive step with ONE visible arrow or dashed line. Maximum 1 connecting line per step (no spider webs). Flow must read in a clear direction.
+
+OPTION 2 – COMPARISON SPLIT (Vs): Canvas split into two structured columns. LEFT = "Without product / Old way". RIGHT = "With product / New way". Each side has 3 BAD vs 3 GOOD items aligned by number. Between columns: clear dividing line or panel with optional "VS" label at top center. Each item uses big number/icon + short bold label + 3–5-word micro-description.
+
+OPTION 3 – HUB LAYOUT (Center + Orbit): Central massive graphic (laptop with dashboard, product logo, or simple flat chart – NOT a complex 3D analytics chart). Around the center, 3 to 4 data points float like satellites. Each satellite has: icon/number, short label, micro-description. Connect each satellite to center with ONE thin line or arrow. Max 4 connecting lines total.
+
+VISUAL STYLE ("CLEAN & VECTOR"): Background MUST be clean, solid, or very subtle gradient. No realistic photos, no busy textures. Elements: high-end modern UI look – cards, pills, banners, simple charts, minimal icons. Flat or lightly 3D-styled icons; avoid heavy shadows, glow spam, or noisy effects. Use distinct cards/pills to separate each data point. Soft rounded corners, subtle shadows, consistent stroke width. Color palette: use user-provided brand colors or system brand tokens. Avoid acid neon colors. Ensure high contrast.
+
+SAFE MARGINS: Keep generous negative space between cards, charts, and arrows. Do NOT let charts or text boxes touch each other or the canvas edge. Keep at least ~15% margin from all sides.
+
+SUMMARY: Think of it as a slide from a premium pitch deck or high-end Pinterest infographic, adapted to avatar's pains and outcomes. Your DESIGNER BRIEF must explicitly state which layout type is used (Flow, Comparison, or Hub), list each data point (number/icon + label + micro-text), and specify where arrows/lines appear (one per logical connection).`;
+
+    } else if (fmt.includes('\u0444\u043e\u0442\u043e') || fmt.includes('photo')) {
+      formatRulebook = `
+==================================================
+FORMAT: PHOTO + TEXT BANNER (OVERLAY) – Special Rules:
+==================================================
+
+GOAL: A situational photo that illustrates the scenario from the current variant, with all text elements (headline, subcopy, offer badge, CTA) placed ON TOP of this photo using readable backing surfaces.
+
+OVERALL COMPOSITION:
+– Use ONE full-bleed photo as the background. Do NOT split the canvas into separate photo and solid-color halves.
+– All text lives as an overlay on the photo: backed by solid/soft surfaces (panels, pashki, chips), positioned so the image and text feel integrated.
+
+TEXT CONTENT:
+– HEADLINE: One strong line tied to the current variant's trigger (pain / fear / CJM loop / objection / transformation). Max 10–12 words, no emoji, no ellipses.
+– SUBCOPY: 2–3 short lines explaining the movement from the avatar's current chaos/problem to the desired outcome with the product. Uses the avatar's vocabulary, avoids generic buzzwords.
+– OFFER BADGE: Short pashka with the concrete mechanic (discount, deadline, bonus, guarantee). Max 1–2 lines.
+– CTA BUTTON: Clear action verb (up to 3 words), present tense, no punctuation at the end.
+
+VISUAL TREATMENT: TEXT OVER PHOTO:
+– Never place text directly on a noisy part of the photo.
+– Always back headline, subcopy, offer badge, and CTA with: solid light/dark panel, soft gradient strip, or semi-transparent card with enough contrast for readability.
+– Pashki styles: offer badge and CTA may use solid filled pill/rounded rectangle, outlined "frame" style (stroke-only), or soft pill with subtle inner shadow. Style must stay consistent with the brand.
+– In different variants the model is allowed to change which element is filled vs outlined.
+– Placement: group headline, subcopy, badge, and CTA in one overlay cluster (top-left, top-right, bottom-left, or bottom-right) depending on where the photo has the most "air". Ensure the main character or focal object in the photo is still clearly visible.
+
+PHOTO REQUIREMENTS:
+– The photo must: show the avatar in a realistic situation matching the current scenario (work, study, commute, freelance, office, etc.), hint at the product category, and feel natural – not staged with exaggerated stock poses.
+– Composition: leave enough negative space to host the text overlay cluster. The character's pose or gaze may gently direct attention toward the text area (optional).
+
+BRANDING & TONE: Logo: small, non-dominant, placed in a corner (e.g. bottom-right), not competing with the headline or CTA.
+
+CONSTRAINTS: No artificial split into "photo half vs text half" layouts. Max elements on screen: 1 headline, 1 subcopy block, 1 offer badge, 1 CTA, 1 logo.`;
+
+    } else if (fmt.includes('\u0442\u0435\u043a\u0441\u0442 \u043d\u0430 \u0431\u0456\u043b\u043e\u043c\u0443') || fmt.includes('text on white')) {
+      formatRulebook = `
+==================================================
+FOR "TEXT ON WHITE" FORMAT (Special Rules):
+==================================================
+
+This is a minimalist text-first image creative. The focus is on the message itself (text + simple background), without complex graphics.
+
+CORE IDEA – TWO EQUALLY IMPORTANT MODES (distribute 50/50 across variants):
+1) PRODUCT MODE – show the product structure and its components through a strong hook.
+2) RECOGNITION MODE – show a highly relatable situation, pain, or internal monologue of the avatar in plain text (based on JTBD, CJM, pains, fears, motivations).
+
+In BOTH modes the creative ALWAYS contains 4 text elements: Main headline. Body text (1–3 lines). Offer/discount block (ONLY if a discount/offer is provided in the brief). CTA (text-only pseudo-button in the same style as the rest of the text).
+
+IMPORTANT STRUCTURAL RULES (ANTI-GLITCH):
+– The offer/discount line MUST be a separate text block, visually separated from the body text by clear vertical spacing. It must NOT be part of the body text or any list.
+– The CTA pseudo-button MUST be placed BELOW the offer block with clear vertical spacing and MUST sit inside its own box/outlined area. Offer text and CTA must never share the same box or appear on the same line.
+– In the Image Text field: MUST NOT use any bullet characters at the beginning of lines. MUST NOT include service labels ("HEADLINE", "BODY", "OFFER", "CTA"). MUST NOT include emoji or Unicode icon characters.
+
+MODE 1 – PRODUCT (TEXT-ON-WHITE PRODUCT EXPLAINER):
+– HEADLINE: Short, punchy hook related to the main JTBD or core pain. Largest, most visually dominant line.
+– BODY TEXT: 1–3 lines. May include a short list of product modules/features (3–7 modules) or a brief description of what is inside the product, and/or the main result/outcome. Simple list (each module on a new line) OR 1–2 compact sentences. No leading dashes or bullet symbols.
+– OFFER/DISCOUNT: Separate line under body text with extra vertical spacing. Medium size, bolder than body, smaller than headline. Only generate if the brief explicitly contains an offer/discount.
+– CTA (PSEUDO-BUTTON): Short verbal action (2–4 words). Visual style: outlined rectangle, lightly shaded/hatched background, or handwritten-like box around the CTA. Placed BELOW the offer block. Never shares a box with the offer.
+
+MODE 2 – RECOGNITION (TEXT-ONLY EMOTIONAL INSIGHT):
+– HEADLINE: Sharp, emotionally charged line calling out a concrete pain, fear or recurring scenario from CJM/symptoms. Can be a quote from the avatar's inner voice, a short observation, or a provocative question.
+– BODY TEXT: 1–3 lines detailing the daily scenario (working at night, errors, burnout, fear of boss/client), or showing the "pain loop" (try -> fail -> try -> burnout), or contrasting "how it feels now" vs "how it could be". No leading bullet characters.
+– OFFER/DISCOUNT (IF PROVIDED): One concise line connecting the recognition to a concrete benefit/offer. Same typographic status as in Product Mode. Separate from body text.
+– CTA (PSEUDO-BUTTON): Short, calm action that feels like a natural next step. Always below the offer block with clear spacing.
+
+VISUAL STYLE: BACKGROUND & TYPOGRAPHY:
+– Background options: clean white background, solid brand color or soft brand-tinted surface, imitation of paper in a grid or ruled notebook, chalk-like writing on a dark board, sketch-like handwritten note.
+– CONTRAST & READABILITY (CRITICAL): Always maintain high contrast. Avoid low-contrast pastel-on-pastel. All text must be legible on mobile: no ultra-thin fonts, no tiny sizes.
+– Safe margins: at least 10–15% empty space from each edge.
+– TYPOGRAPHIC HIERARCHY: HEADLINE = largest, boldest. BODY = smaller, regular/medium weight. OFFER = medium size, noticeably bolder than body. CTA = same size as body or slightly larger, visually grouped inside a pseudo-button (outlined or shaded box).
+
+ICONS / SKETCHES NEAR OFFER: If an offer/discount block is present, ALWAYS add a small hand-drawn-style icon next to it (described in the Brief for Designer only, NOT in the Image Text). Icons: Shield (safety), Clock/Lightning (speed), Graph/Chart (growth), Person/Team (support), Checklist (structure). Must look like simple graphic symbols, NOT like emoji.
+
+WHAT WE GENERATE:
+Always: Headline text, Body text, Offer/discount line ONLY IF brief contains an active offer, CTA text (pseudo-button).
+In "Brief for Designer" MUST describe: Type of background, Exact text hierarchy, Placement of each text block, How the CTA is visually separated as a pseudo-button, How the offer block is emphasized and where the hand-drawn icon sits, Confirmation that all text stays inside safe margins with high contrast.
+DO NOT: Use complex photo backgrounds as main focus. Use bullet/dash/marker characters at beginning of any line in Image Text. Include service labels like "HEADLINE", "BODY", "OFFER", "CTA" in the Image Text.`;
+    }
+
+    return `ROLE You are a Data BI Creative Strategist. Your mission is not just to write texts. Your mission is to generate high-converting creative concepts (ideas, texts, scripts) that strike precisely at the psychological portrait of the target audience, forcing them to recognize themselves and click through to the site.
+
+Brand Tone of Voice: ${params.toneOfVoice}
+Friendly -> warm, conversational, informal ("you"), no pressure
+Expert -> confident, factual, data and facts, authority
+Provocative -> sharp hook, provocative question, challenging the status quo
+Inspiring -> emotional uplift, transformation, "you can do it"
+
+INPUT DATA:
+COURSE / PRODUCT: ${params.productName}
+SEGMENT / AUDIENCE: ${params.avatarData?.segmentName}
+CREATIVE FORMAT: ${params.format}
+NUMBER OF VARIANTS: ${params.count}
+${params.focusDirection ? `SPECIFIC FOCUS: ${params.focusDirection}` : ''}
+${params.promoOffer ? `PROMO OFFER: ${params.promoOffer}` : ''}
+${params.peoplePresence ? `PEOPLE PRESENCE: ${params.peoplePresence === 'without_people' ? 'Strictly NO PEOPLE' : 'Mix of people and no people'}` : ''}
+${params.colors ? `BRAND COLORS: Main ${params.colors.main}, Secondary ${params.colors.secondary}, Accent ${params.colors.accent}` : ''}
+
+DYNAMIC BASE:
+Detailed psychological portrait of the avatar:
+${JSON.stringify(params.avatarData)}
+
+${params.productBullets && params.productBullets.length > 0 ? `KEY PRODUCT FEATURES:\n${params.productBullets.join('\n')}` : ''}
+${params.existingConcepts && params.existingConcepts.length > 0 ? `PREVIOUSLY GENERATED CONCEPTS (DO NOT REPEAT):\n${params.existingConcepts.join('\n')}` : ''}
+
+FORMAT SPLITTING LOGIC:
+IF FORMAT = IMAGE: Generate Texts (Hook, Pain, Solution, CTA) and COMPLETE TOR FOR THE DESIGNER (brand-guideline, colors, layout, element placement, size, reference). Do NOT generate script for a video editor, storyboard, timecodes, Voice Over. In the "Image Text" field, always generate SHORT – only phrases that will actually be on the creative. Do not exceed 3–4 key lines, totaling no more than 13–22 words. In the "Brief for the designer," describe everything else: placement of each block, fonts, accents, background, color, order, CTA, references, size.
+
+IF FORMAT = VIDEO: Generate Idea and Hook, COMPLETE SCRIPT FOR THE EDITOR (broken down by seconds, with indication of B-roll, TBE, VO, music, effects, packshot, CTA – EVERYTHING in one cell). Do NOT generate TOR for the designer (colors, image layout), placement of texts on a static image.
+
+DIVERSITY MATRIX:
+To avoid repetition, EACH generated variant MUST focus on an absolutely DIFFERENT psychological trigger from the avatar's profile:
+Variant 1 (Functional/Pain): Focus on the main JTBD and an acute daily pain (from the "pains" section).
+Variant 2 (Deep Fear): Focus on deep anxieties (from the "fears" section – fear of AI replacement, fatal error in front of the boss, losing a client/job).
+Variant 3 (Symptomatic/CJM): A scenario built on the "pain loop" (from the "cjm" or "symptoms" section – working at night, burnout, anger).
+Variant 4 (Objection): Direct work with a barrier (from the "objections" section – "it's expensive", "no time to learn") and overcoming it.
+Variant 5 (Transformation): Emotional "before/after" contrast (from the "motivations" and "outcomes" sections).
+If there are fewer or more than ${params.count} variants, distribute the triggers so that the concepts do not duplicate each other.
+
+STEP-BY-STEP ALGORITHM:
+Define Product and Segment from INPUT DATA. Study the avatar for this segment. Define FORMAT (image or video). Generate ${params.count} variants, following the golden rules and the Diversity Matrix.
+
+GOLDEN RULES OF TEXT GENERATION:
+EMOTIONALITY: Write about feelings, not facts.
+SPECIFICITY: Concrete numbers, time, amounts.
+PORTRAITURE: For a specific person, not for everyone.
+CONTRAST: It was HELL vs now it is GOOD.
+RECOGNIZABILITY: People recognize themselves in the text.
+
+OUTPUT STRUCTURE:
+STRICTLY output the result as a Markdown Table. Do not use block format.
+
+IF FORMAT = IMAGE:
+| # | Концепція | ТЕКСТ КАРТИНКИ | БРИФ ДЛЯ ДИЗАЙНЕРА |
+|---|---|---|---|
+| [Number] | [Name] | [Text] | [All details] |
+
+IF FORMAT = VIDEO:
+| # | Концепція | СЦЕНАРІЙ | РАСКАДРОВКА |
+|---|---|---|---|
+| [Number] | [Name] | [Text] | [ALL breakdown BY SECONDS] |
+
+Note for VIDEO: The script should be written fully by seconds/scenes. Include: Video sequence (describe actions, location, emotion), VO (Voice Over monologue or dialogue), TBE (Text By Eye accents), Music/Sound.
+Note for IMAGES: Write the entire TOR for the designer with clear sections: Brand-guideline, Color palette (Background, Text, Accents), Element placement (Header, Pain, Solution, CTA, Discount, Logo), Visual, Size, Reference.
+
+CHECKLIST BEFORE OUTPUT:
+Product and segment defined? Avatar studied? Creative format defined?
+IMAGE: TOR FOR DESIGNER generated?
+VIDEO: SCRIPT FOR EDITOR generated?
+Hook + Pain + Solution + CTA included?
+Text written in the "voice" of the avatar?
+Avatar's key objections taken into account?
+EMOTION, SPECIFICITY, CONTRAST, RECOGNIZABILITY included?
+All content in one cohesive section per variant?
+Requested number of variants generated?
+
+ADDITIONAL RULES:
+Language: Generate ALL final creatives and TOR exclusively in ${params.language}.
+Maximum detail: The more detailed the TOR and scripts, the better.
+Product Name Usage: You MUST explicitly include and use the exact product name in the generated creative.
+
+${formatRulebook}
 `;
   },
 

@@ -11,11 +11,11 @@ const CREATIVE_TYPES = [
   { id: 'Відео-крео на основі JTBD + CJM', name: 'Відео-крео (JTBD + CJM)', icon: PlayCircle, isVideo: true },
   { id: 'Текст на білому фоні (статична картинка)', name: 'Текст на білому фоні', icon: FileText, isVideo: false },
   { id: 'Крео з фото/графікою + текст', name: 'Фото + текст', icon: Camera, isVideo: false },
-  { id: 'Реалістичне фото-крео (Real-Photo Creo)', name: 'Реалістичне фото (Real-Photo)', icon: Camera, isVideo: false },
-  { id: 'Крео в стилі Specsavers', name: 'Стиль Specsavers', icon: Video, isVideo: true },
+  { id: 'Крео в стилі Specsavers', name: 'Стиль Specsavers', icon: Palette, isVideo: false },
   { id: 'Інфографіка', name: 'Інфографіка', icon: LayoutTemplate, isVideo: false },
-  { id: 'Карусель (5-10 слайдів)', name: 'Карусель (5-10 слайдів)', icon: LayoutTemplate, isVideo: false },
   { id: 'Мем-крео', name: 'Мем-крео', icon: Smile, isVideo: false },
+  { id: 'До/Після (Кейс)', name: 'До / Після (Кейс)', icon: ImageIcon, isVideo: false },
+  { id: 'Комікс-CJM', name: 'Комікс-CJM', icon: User, isVideo: false },
   { id: 'Відео-відгук (Testimonial-video)', name: 'Відео-відгук', icon: Video, isVideo: true },
   { id: 'Коротке демо-відео (screen recording)', name: 'Демо-відео (скрін)', icon: Video, isVideo: true }
 ];
