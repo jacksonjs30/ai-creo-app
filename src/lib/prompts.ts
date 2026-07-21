@@ -1402,14 +1402,53 @@ IF FORMAT = VIDEO:
 ✅ WHAT WE GENERATE: Idea and Hook, COMPLETE SCRIPT FOR THE EDITOR (broken down by seconds, with indication of B-roll, TBE, VO, music, effects, packshot, CTA — EVERYTHING in one cell). 
 ❌ WHAT WE DO NOT GENERATE: TOR for the designer (colors, image layout), placement of texts on a static image.
 
-DIVERSITY MATRIX:
-To avoid repetition, EACH generated variant MUST focus on an absolutely DIFFERENT psychological trigger from the avatar's profile:
-Variant 1 (Functional/Pain): Focus on the main JTBD and an acute daily pain (from the "pains" section).
-Variant 2 (Deep Fear): Focus on deep anxieties (from the "fears" section – fear of AI replacement, fatal error in front of the boss, losing a client/job).
-Variant 3 (Symptomatic/CJM): A scenario built on the "pain loop" (from the "cjm" or "symptoms" section – working at night, burnout, anger).
-Variant 4 (Objection): Direct work with a barrier (from the "objections" section – "it's expensive", "no time to learn") and overcoming it.
-Variant 5 (Transformation): Emotional "before/after" contrast (from the "motivations" and "outcomes" sections).
-If there are fewer or more than ${params.count} variants, distribute the triggers so that the concepts do not duplicate each other.
+⚠️ CRITICAL RULE: DIVERSITY MATRIX
+
+To avoid repetition, EACH generated variant MUST:
+1) focus on an absolutely DIFFERENT psychological trigger
+   from the avatar's profile, and
+2) use a DISTINCT visual concept (scene, composition, props)
+   even within the same creative format.
+
+TRIGGER LAYERS:
+– Variant 1 (Functional/Pain):
+  Focus on the main JTBD and an acute daily pain
+  (from the "pains" section).
+
+– Variant 2 (Deep Fear):
+  Focus on deep anxieties
+  (from the "fears" section — fear of AI replacement,
+   fatal error in front of the boss, losing a client/job).
+
+– Variant 3 (Symptomatic/CJM):
+  A scenario built on the "pain loop"
+  (from the "cjm" or "symptoms" section — working at night,
+   burnout, anger).
+
+– Variant 4 (Objection):
+  Direct work with a barrier
+  (from the "objections" section — "it's expensive",
+   "no time to learn") and overcoming it.
+
+– Variant 5 (Transformation):
+  Emotional "before/after" contrast
+  (from the "motivations" and "outcomes" sections).
+
+If there are fewer or more than ${params.count} variants,
+distribute the triggers so that the concepts
+do not duplicate each other.
+
+VISUAL DIVERSITY:
+– For each variant, you MUST propose a unique visual idea:
+  • different scene or environment (office, home, commute, meeting),
+  • different main action (night work, boss conversation, family time,
+    data chaos, calm control),
+  • different composition and focal objects
+    (laptop, calculator, dashboards, coffee, phone, paperwork).
+– Do NOT reuse the same visual setup across variants
+  (no “same desk + same posture + just new text”).
+– Hooks, texts and visuals must feel like completely new ads,
+  all still grounded in the same Extended Avatar.
 
 STEP-BY-STEP ALGORITHM:
 Define Product and Segment from INPUT DATA. Study the avatar for this segment. Define FORMAT (image or video). Generate ${params.count} variants, following the golden rules and the Diversity Matrix.
