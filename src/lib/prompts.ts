@@ -469,39 +469,245 @@ SUMMARY: Think of it as a realistic proof-of-concept or case-study slide. Your D
       formatRulebook = `
 ==================================================
 FOR "MEME-CREO" FORMAT (Special Rules):
-==================================================
 
-A PHOTO + TEXT ad where the IMAGE is a MEME (cartoon or real-photo) and the TEXT follows PHOTO + TEXT structure: hook -> supporting line -> optional offer (from brief) -> CTA. Content is derived from the current trigger and Extended Avatar.
+ROLE
+A photo+text-style ad where:
+– the IMAGE is a single MEME SCENE (cartoon-style illustration),
+– the TEXT follows a simple structure:
+  hook → supporting line → optional offer (from brief) → CTA,
+– the CONTENT:
+  • is derived from the current trigger and Extended Avatar,
+  • explicitly reinforces the joke of the meme scene.
 
-CRITICAL DISTINCTION: MEME-CREO uses ONE main meme scene, NOT a full comic page with multiple panels. No 4-7 panels, no numbered panel headers, no gutter grid.
+CRITICAL DISTINCTION FROM COMIC FORMAT
+– MEME-CREO uses ONE main meme scene,
+  NOT a full comic page with multiple panels.
+– NO comic-style page layout:
+  • no 4–7 panels,
+  • no numbered panel headers,
+  • no gutters or grids.
+– Any multi-step CJM storytelling belongs to COMIC-CJM, not MEME-CREO.
 
-VISUAL SUBTYPES:
+--------------------------------------------------
+VISUAL SUBTYPE: CARTOON MEME AD
+--------------------------------------------------
 
-SUBTYPE A – CARTOON MEME AD:
-– One single cartoon-style image: avatar in a relatable, slightly exaggerated situation (tired with coffee, struggling with Excel/Sheets, boss asking about metrics). Simple, flat or soft-gradient background.
-– Composition: Character + one main context object (laptop, phone, spreadsheets). Large meme text (hook) in the upper part of the canvas. Optional supporting line near the character. Offer/CTA rendered as PHOTO+TEXT-style badges at the bottom.
-– Allowed: speech/thought bubble for 1 short meme line, labels on objects.
-– NOT allowed: comic-page frames with multiple panels, numbered scenes.
+IMAGE STYLE
+– One single cartoon-style image:
+  • avatar in a relatable, slightly exaggerated situation
+    (e.g. tired with coffee, drowning in spreadsheets,
+     boss asking about metrics, launch chaos).
+  • Simple flat or soft-gradient background:
+    large color fields (yellow, blue, orange, green, etc.)
+    or soft, slightly textured surfaces.
 
-SUBTYPE B – REAL-PHOTO MEME AD:
-– One real-photo base: a person with a clear emotional expression (confused, anxious, exhausted, "Harold" smile), simple clean background.
-– Composition: Person on one side, large meme text on the other side. Headline captures the pain, supporting line adds the sarcastic comment.
-– Offer/CTA: pashkas/buttons at the bottom.
-– NOT allowed: multi-photo grids, collage-style comic layout.
+– Composition:
+  • Character and one main context object
+    (laptop, phone, spreadsheets, calculator, charts).
+  • Large meme text (hook) in the upper part of the canvas.
+  • Optional supporting line near the character or key object.
+  • Offer/CTA rendered as BRIGHT BADGE PASHKAS in the lower area.
 
-TEXT STRUCTURE (PHOTO+TEXT LOGIC, MEME TONE):
-1. MAIN HEADLINE (HOOK / SETUP): One strong line (max 10–12 words). Sarcastic, self-deprecating. MUST directly comment on what is happening in the meme image.
-2. SUPPORTING LINE: One short line (max 10–12 words). Explains what exactly goes wrong or what outcome they want. Uses wording from Extended Avatar (pains, CJM symptoms, outcomes).
-3. OFFER (ONLY IF PROVIDED IN BRIEF): ONE short offer line inside an OFFER BADGE. Never invent offers. Max 1–2 lines.
-4. CTA: One short call-to-action (2–4 words). Rendered as a CTA pashka (rounded rectangle, brand color). Meme tone allowed as long as the action is clear.
+– Allowed:
+  • speech/thought bubble for 1 short meme line
+    (e.g. “I hate Excel”),
+  • short labels on objects
+    (e.g. “Excel chaos”, “Night work”).
 
-TEXT DENSITY LIMITS: Max 3 main text surfaces: 1) headline area, 2) ONE supporting line, 3) ONE offer OR CTA pashka. Labels on objects allowed (1–3 words each). All text legible on a phone screen.
+– NOT allowed:
+  • comic-page frames with multiple panels,
+  • numbered scenes (Panel 1, Panel 2),
+  • multi-photo grids or collage-style layouts.
 
-LAYOUT: Headline at top or upper half. Supporting line near the character or key object. Offer/CTA in lower part of canvas, NOT at the extreme bottom edge. DO NOT use comic-style panel headers, multi-frame grids, or CTA/offers inside speech bubbles.
+--------------------------------------------------
+TEXT STRUCTURE (MEME TONE, PHOTO+TEXT LOGIC)
+--------------------------------------------------
 
-TONE & SAFETY: Self-deprecating humor, work/financial stress. No insults, no offensive stereotypes. Product framed as the escape from the meme situation. Keep all main text away from extreme edges: bottom 20% and top 10% reserved for platform UI.
+1. MAIN HEADLINE (HOOK / SETUP)
+   – One strong line (max 6–8 words).
+   – Describes the painful / absurd situation of the avatar
+     (e.g. “Fourth coffee for one report?”).
+   – Tone: sarcastic, self-deprecating, clearly tied to avatar’s pain.
 
-SUMMARY: VISUAL = one meme scene (cartoon or real-photo), NOT a multi-panel comic page. TEXT = up to 3 main text surfaces in PHOTO+TEXT style (headline, support, offer/CTA) plus a few short object labels. CONTENT = firmly tied to avatar's pains/CJM and meme joke, with a clear advertising function and UGC/native meme vibe.`;
+   MUST:
+   – be based on the current trigger
+     (pain, fear, CJM loop, objection, transformation),
+   – directly comment on what is happening in the meme image.
+
+2. SUPPORTING LINE
+   – One short line (max 10–12 words).
+   – Explains:
+     • what exactly goes wrong (panic, burnout, manual reports,
+       fines, “drowning in rows”),
+     • or what outcome the avatar wants.
+
+   – Uses wording from Extended Avatar:
+     pains, CJM symptoms, desired outcomes.
+
+3. OFFER (ONLY IF PROVIDED IN BRIEF)
+   – If the brief includes an offer (discount, bonus, deadline),
+     add ONE short offer line inside an OFFER BADGE PASHKA:
+       • e.g. “-20% on automation course until Friday”.
+
+   STRICT RULES:
+   – Never invent offers if the brief does not provide them.
+   – Max 1–2 lines inside one badge,
+     3–5 words total.
+   – Exactly ONE offer badge on the banner.
+
+4. CTA
+   – One short call-to-action (2–4 words):
+     • e.g. “Start learning”, “Find out more”, “Stop suffering”.
+
+   – Rendered as a separate CTA badge pashka (button):
+     • bright background color,
+     • clear readable text,
+     • strong “clickable” feeling.
+
+   – Meme tone allowed
+     (e.g. “Stop suffering in Excel”),
+     as long as the action is clear.
+
+--------------------------------------------------
+TEXT DENSITY LIMITS
+--------------------------------------------------
+– Max 3 main text surfaces:
+  1) headline area (hook),
+  2) ONE supporting line area (bar or bubble),
+  3) ONE badge pashka (offer OR CTA, or combined offer+CTA).
+
+– Short labels on objects are allowed
+  (e.g. “Excel chaos”, “Deadline panic”, “Night shift”),
+  but must remain 1–3 words each.
+
+– No long paragraphs.
+– No fine-print microcopy;
+  all text must be clearly legible on a phone screen.
+
+--------------------------------------------------
+PLACEMENT OF TEXT AND BADGES
+--------------------------------------------------
+
+HEADLINE
+– Placed in the top or upper half of the canvas.
+– Large font, high contrast with background.
+– May occupy a significant portion of the width.
+
+SUPPORTING LINE
+– Placed close to the character or key object:
+  • near the face,
+  • above the laptop,
+  • inside a small strip or speech bubble.
+
+– Font smaller than headline, but still large and readable.
+
+OFFER / CTA BADGE PASHKAS
+– Placed in the lower part of the image
+  (but not at the extreme bottom edge to avoid UI overlap).
+– Badge shapes:
+  • classic button (rounded rectangle),
+  • slightly tilted bright rectangle,
+  • “sticker” with rounded or torn edges,
+  • paintbrush stroke badge (uneven edges),
+  • cloud-like shapes that match illustration style.
+
+– Badges MAY:
+  • be slightly tilted with the text,
+  • look like sticky labels,
+  • be perfectly horizontal or with a small angle.
+
+– Key requirements:
+  • bright color (visual accent),
+  • strong contrast between badge and text,
+  • big enough so text is instantly readable.
+
+– Offer (if present) and CTA must be visually connected:
+  • placed next to each other or one above the other,
+  • in the same area, not in opposite corners.
+
+--------------------------------------------------
+BADGE PASHKA VISUAL LAWS
+--------------------------------------------------
+– Badges act as visual anchors:
+  • they highlight CTA and offer,
+  • they guide the eye to “what to do now”.
+
+– Color:
+  • bright but not neon-toxic,
+  • ideally brand colors or strong contrasts with background
+    (orange, yellow, blue, green, etc.).
+
+– Shape and style:
+  • multiple shapes allowed:
+    – geometric (rectangles, pills),
+    – paint strokes, torn edges,
+    – clouds, ribbons,
+    – small meme-style stickers.
+  • Slight wobble or tilt is allowed to enhance meme feeling.
+
+– Text inside badges:
+  • large font, no tiny sizes,
+  • max 3–5 words,
+  • no extra fine-print explanations.
+
+--------------------------------------------------
+CONTENT ALIGNMENT (MEME + AVATAR)
+--------------------------------------------------
+– Text structure is like photo+text:
+  hook → support → (optional offer) → CTA.
+
+– Content MUST:
+  1) use triggers from Extended Avatar
+     (pains, fears, CJM loops, objections, outcomes),
+  2) feel like a caption written specifically for THIS meme:
+     the viewer immediately connects the lines
+     with the visual joke.
+
+Example (structure only):
+
+– Exhausted avatar with huge coffee cup, Excel on laptop:
+  • Headline: “Fourth coffee for one report?”
+  • Support: “We know this manual Excel hell.”
+  • Offer badge (if brief has offer): “-20% on automation course.”
+  • CTA: “Learn to automate.”
+
+--------------------------------------------------
+TONE & SAFETY
+--------------------------------------------------
+– Humor:
+  • self-deprecating, based on work/financial stress,
+  • no insults, no offensive stereotypes.
+
+– Focus on:
+  • manual Excel/Sheets work,
+  • panic about metrics or balance,
+  • launch chaos, boss pressure,
+  • stuck income, fear of mistakes, fines.
+
+– Product is framed as:
+  • the escape from the meme situation,
+  • not just a corporate banner.
+
+--------------------------------------------------
+READABILITY
+--------------------------------------------------
+– Main text must not sit too close to extreme edges
+  (especially bottom 20% and top 10%) because of platform UI.
+
+– Fonts:
+  • large, high-contrast,
+  • similar in feel to native social meme captions
+    (Impact/Arial-style bold sans-serif or simple bold fonts).
+
+SUMMARY FOR MEME-CREO:
+– VISUAL: one cartoon meme scene
+  (no multi-panel comics).
+– TEXT: up to 3 main text surfaces
+  (hook, support, one offer/CTA block) plus a few short labels.
+– BADGES: bright accent shapes (buttons, stickers, strokes)
+  that highlight CTA and offer.
+– CONTENT: tightly tied to avatar’s pains and the meme joke,
+  while remaining a clear advertising message.`;
 
     } else if (fmt.includes('comic') || fmt.includes('\u043a\u043e\u043c\u0456\u043a\u0441')) {
       formatRulebook = `
