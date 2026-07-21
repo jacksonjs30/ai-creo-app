@@ -740,36 +740,203 @@ BEHAVIORAL SUMMARY FOR INFOGRAPHIC FORMAT
 
     } else if (fmt.includes('\u0444\u043e\u0442\u043e') || fmt.includes('photo')) {
       formatRulebook = `
-==================================================
 FORMAT: PHOTO + TEXT BANNER (OVERLAY) – Special Rules:
-==================================================
 
-GOAL: A situational photo that illustrates the scenario from the current variant, with all text elements (headline, subcopy, offer badge, CTA) placed ON TOP of this photo using readable backing surfaces.
+GOAL
+A situational photo that illustrates the scenario from the current variant,
+with all text elements placed ON TOP of this photo using bold, readable backing surfaces.
 
-OVERALL COMPOSITION:
-– Use ONE full-bleed photo as the background. Do NOT split the canvas into separate photo and solid-color halves.
-– All text lives as an overlay on the photo: backed by solid/soft surfaces (panels, pashki, chips), positioned so the image and text feel integrated.
+OVERALL COMPOSITION
+– Use ONE full-bleed photo as the background.
+– Do NOT split the canvas into separate photo and solid-color halves.
+  (Soft gradient overlays on part of the photo are allowed, but the photo
+   must still feel like the main background.)
+– All text lives as an overlay on the photo, positioned so the image and text
+  feel integrated, not like two different screens.
 
-TEXT CONTENT:
-– HEADLINE: One strong line tied to the current variant's trigger (pain / fear / CJM loop / objection / transformation). Max 10–12 words, no emoji, no ellipses.
-– SUBCOPY: 2–3 short lines explaining the movement from the avatar's current chaos/problem to the desired outcome with the product. Uses the avatar's vocabulary, avoids generic buzzwords.
-– OFFER BADGE: Short pashka with the concrete mechanic (discount, deadline, bonus, guarantee). Max 1–2 lines.
-– CTA BUTTON: Clear action verb (up to 3 words), present tense, no punctuation at the end.
+--------------------------------------------------
+TEXT LENGTH LIMITS (CRITICAL FOR CYRILLIC)
+--------------------------------------------------
+– HEADLINE:
+  • Max 4–6 words.
+  • Tone = ${params.toneOfVoice}.
 
-VISUAL TREATMENT: TEXT OVER PHOTO:
-– Never place text directly on a noisy part of the photo.
-– Always back headline, subcopy, offer badge, and CTA with: solid light/dark panel, soft gradient strip, or semi-transparent card with enough contrast for readability.
-– Pashki styles: offer badge and CTA may use solid filled pill/rounded rectangle, outlined "frame" style (stroke-only), or soft pill with subtle inner shadow. Style must stay consistent with the brand.
-– In different variants the model is allowed to change which element is filled vs outlined.
-– Placement: group headline, subcopy, badge, and CTA in one overlay cluster (top-left, top-right, bottom-left, or bottom-right) depending on where the photo has the most "air". Ensure the main character or focal object in the photo is still clearly visible.
+– SUBCOPY:
+  • Max 1–2 short sentences (total 8–12 words)
+    explaining the movement from chaos/pain
+    to the desired outcome with the product.
 
-PHOTO REQUIREMENTS:
-– The photo must: show the avatar in a realistic situation matching the current scenario (work, study, commute, freelance, office, etc.), hint at the product category, and feel natural – not staged with exaggerated stock poses.
-– Composition: leave enough negative space to host the text overlay cluster. The character's pose or gaze may gently direct attention toward the text area (optional).
+– PRODUCT LABEL (MANDATORY):
+  • Max 3–5 words.
+  • Distinct line stating the product name and/or role,
+    e.g. “Курс «Excel для фінансистів»”,
+         “ExcelPro – курс автоматизації”.
 
-BRANDING & TONE: Logo: small, non-dominant, placed in a corner (e.g. bottom-right), not competing with the headline or CTA.
+– OFFER BADGE:
+  • Max 1–2 lines, total 3–5 words.
+  • Short mechanic: discount / deadline / bonus / guarantee,
+    e.g. “ЗНИЖКА -20% до кінця тижня”.
 
-CONSTRAINTS: No artificial split into "photo half vs text half" layouts. Max elements on screen: 1 headline, 1 subcopy block, 1 offer badge, 1 CTA, 1 logo.`;
+– CTA BUTTON:
+  • Clear action verb, up to 3 words,
+    e.g. “Розпочати навчання”, “Подати заявку”, “Дізнатись більше”.
+  • Present tense, no punctuation at the end.
+
+CRITICAL:
+Visual AI models cannot render long Cyrillic texts without errors.
+You MUST keep the text ultra-short, punchy, and billboard-style.
+All text must be readable in 1–2 seconds.
+
+--------------------------------------------------
+TEXT CONTENT (LOGIC)
+--------------------------------------------------
+– HEADLINE:
+  • Strong, situational hook tied to the current trigger
+    (pain, fear, CJM loop, objection, transformation)
+    from the global prompt.
+  • Uses the avatar’s vocabulary, not generic buzzwords.
+
+– SUBCOPY:
+  • Brief explanation of:
+    – the current chaotic/problem state,
+    – the desired result with the product.
+  • 1–2 short sentences, total 8–12 words.
+
+– PRODUCT LABEL:
+  • Names the product and its category/role
+    (course, system, program, etc.).
+  • Always placed close to headline/subcopy
+    so it is clearly tied to the message.
+
+– OFFER BADGE:
+  • Shows the concrete mechanic:
+    discount, deadline, bonus, guarantee.
+  • Only generate if the brief includes an actual offer.
+
+– CTA BUTTON:
+  • Clear next step for the avatar:
+    “what to do now” in 2–3 words.
+  • Action-focused, not vague.
+
+--------------------------------------------------
+VISUAL TREATMENT & PLACEMENT (ANTI-GLITCH)
+--------------------------------------------------
+– TEXT SIZE:
+  • Fill the canvas dynamically so text is HUGE
+    and highly readable on mobile.
+  • Do NOT shrink text into a tiny block in the center
+    with massive empty space around.
+
+– CLUSTERING (STRICT RULE):
+  • You MUST group the Headline, Subcopy, Product Label,
+    Offer Badge, and CTA in ONE tight overlay cluster:
+    – all aligned left,
+    – or all centered,
+    – or all aligned right,
+      but within the same general area of the photo
+      (e.g. top-left, top-right, bottom-left, bottom-right).
+  • The cluster should feel like a single unit,
+    not scattered elements.
+
+– OFFER + CTA RELATION:
+  • DO NOT separate the Offer Badge from the CTA.
+  • The Offer Badge MUST sit directly above or next to
+    the CTA Button in the same cluster.
+  • Offer and CTA belong to the same corner of the layout,
+    not in opposite corners.
+
+– BACKING SURFACES:
+  • Always back all text (headline, product label, subcopy,
+    offer, CTA) with:
+    – solid light/dark panels,
+    – soft gradient strips,
+    – or semi-transparent cards.
+  • Ensure high contrast between text and background
+    for every element.
+  • Never place text directly on a noisy part of the photo
+    (details, faces, busy textures).
+
+--------------------------------------------------
+PHOTO REQUIREMENTS
+--------------------------------------------------
+– Scenario:
+  • Show the avatar in a realistic situation
+    matching the current variant:
+    work, study, commute, freelance, office, home, etc.
+  • The photo should hint at the product category:
+    laptop with spreadsheets, reports, dashboards,
+    meeting, notebook, etc.
+  • Feel natural, not staged with exaggerated stock poses.
+
+– Composition:
+  • Leave enough natural background space
+    (wall, desk, blur, window, sky) to host the text cluster,
+    but do NOT make the character tiny.
+  • The main person or focal object must stay clearly visible
+    and not be completely covered by text panels.
+  • The character’s pose or gaze may gently direct attention
+    toward the text cluster (optional).
+
+--------------------------------------------------
+BRANDING & TONE
+--------------------------------------------------
+– Tone of voice strictly equals ${params.toneOfVoice}.
+
+– Logo:
+  • Small, non-dominant, placed in a corner
+    (e.g. bottom-right or top-left),
+    away from the main text cluster.
+  • Must not compete with headline or CTA.
+
+--------------------------------------------------
+SPACING & SCALE (READABILITY)
+--------------------------------------------------
+– Use safe margins (~10–15% from each edge),
+  but within those margins fill the available area
+  so the text cluster has strong visual presence.
+– Avoid large empty bands between text blocks.
+– All main text must be clearly legible on a phone screen:
+  no ultra-thin fonts, no tiny sizes.
+
+--------------------------------------------------
+CONSTRAINTS
+--------------------------------------------------
+– Max elements on screen:
+  • 1 headline,
+  • 1 subcopy block,
+  • 1 product label,
+  • 1 offer badge,
+  • 1 CTA,
+  • 1 logo.
+
+– Headline and subcopy still follow the global
+  DIVERSITY MATRIX triggers (handled in the main prompt,
+  not duplicated here).
+
+--------------------------------------------------
+WHAT TO GENERATE FOR THIS FORMAT
+--------------------------------------------------
+IF FORMAT = "PHOTO + TEXT":
+
+Image Text:
+– Headline (no service labels).
+– Subcopy (1–2 short sentences).
+– Product label line.
+– Offer text (IF the brief contains an offer).
+– CTA text.
+
+Brief for Designer:
+– Specify the type of photo (office late at night, home with family,
+  stressful workday, etc.).
+– Define the position of the text overlay cluster
+  (e.g. top-right over blurred background).
+– Describe backing surfaces for each text element
+  (panels, chips, pills, semi-transparent cards).
+– Explicitly state that:
+  • all text is large and high-contrast,
+  • the Offer Badge sits directly above/next to the CTA,
+  • the cluster is compact, without scattered elements,
+  • the character remains clearly visible and not fully covered.`;
 
     } else if (fmt.includes('\u0442\u0435\u043a\u0441\u0442 \u043d\u0430 \u0431\u0456\u043b\u043e\u043c\u0443') || fmt.includes('text on white')) {
       formatRulebook = `FOR "TEXT ON WHITE" FORMAT (Special Rules):
