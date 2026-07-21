@@ -740,13 +740,11 @@ BEHAVIORAL SUMMARY FOR INFOGRAPHIC FORMAT
 
     } else if (fmt.includes('\u0444\u043e\u0442\u043e') || fmt.includes('photo')) {
       formatRulebook = `
-FORMAT: PHOTO + TEXT BANNER (OVERLAY) – Big Text Layout
+FORMAT: PHOTO + TEXT BANNER (OVERLAY) – Integrated Big Text Layout
 
 GOAL
-Billboard-style banner: one full photo background with LARGE text
-distributed across the image:
-big headline, smaller description, clearly highlighted product name,
-CTA on a button, and optional bright offer badge (only if user provides offer).
+A stunning, billboard-style banner where a single, full-bleed photo serves as the background, and LARGE text is integrated directly into the empty spaces of the photo. 
+The text should NOT be squeezed into one tiny clustered block, but should breathe and span across the available free space (e.g., top-left to bottom-left).
 
 IMPORTANT OFFER LOGIC (NO INVENTED DISCOUNTS)
 – The banner MUST NOT invent any offer, discount, bonus, or guarantee
@@ -758,145 +756,87 @@ IMPORTANT OFFER LOGIC (NO INVENTED DISCOUNTS)
   • there is NO discount text inside headline, description,
     product name, or CTA.
 
-OVERALL COMPOSITION
-– Use ONE full-bleed photo as the ONLY background
-  (no cut-out figures on white).
-– Text is DISTRIBUTED across the photo, not squeezed into a tiny corner:
-  • BIG headline across the upper part (full width or large portion),
-  • description (subcopy) under the headline in smaller font,
-  • product name highlighted as a separate line,
-  • CTA button lower on the banner,
-  • optional bright offer badge near the CTA.
-– The layout must visually read as “photo with big text on top”,
-  not “small text block + huge empty background”.
+OVERALL COMPOSITION & TEXT PLACEMENT (CRITICAL)
+– ONE full-bleed photo is the ONLY background.
+– No split screens, no solid color blocks covering half the image. 
+– The main object or character should be positioned to one side (e.g., right side) or in the center-right/bottom, leaving a large, clean "negative space" area (e.g., the entire left side or the top area) for the text.
+– Text elements must be vertically distributed in this negative space:
+  • BIG headline at the top.
+  • Subcopy / Product Name in the middle.
+  • CTA (and optional offer badge) at the bottom.
+– Do NOT cluster all text into one tight tiny box. Let the text breathe vertically.
+– The text should feel like it is printed directly on the photo. Use soft dark/light gradients behind the text if necessary for contrast, but do not use harsh solid shapes that cut the photo or split the screen.
 
 --------------------------------------------------
 TEXT LENGTH LIMITS (CRITICAL FOR CYRILLIC)
 --------------------------------------------------
 – HEADLINE:
-  • Max 6–10 words.
+  • Max 4–8 words.
   • Tone = ${params.toneOfVoice}.
-  • Largest font size on the banner.
+  • Must be HUGE and highly readable.
 
 – DESCRIPTION (SUBCOPY):
-  • Max 1–2 short sentences (TOTAL 12–16 words)
-    explaining the movement from chaos/pain
-    to the desired outcome with the product.
-  • Font smaller than headline, but still big and readable.
+  • Max 1–2 short sentences (TOTAL 10–14 words)
+    explaining the movement from chaos/pain to desired outcome.
 
 – PRODUCT NAME (MANDATORY):
   • Max 3–6 words.
-  • Distinct line stating the product name/role,
-    e.g. “Курс «Excel для фінансистів»”.
-  • Font size between headline and description
-    (clearly highlighted).
+  • Distinct line stating the product name/role, e.g. “Курс «Excel для фінансистів»”.
+  • Highlighted (color, bold, or subtle pill).
 
 – OFFER BADGE (OPTIONAL):
   • Max 1 line, 3–5 words.
-  • Short mechanic: discount / deadline / bonus / guarantee.
   • ONLY present if the brief explicitly contains an offer.
-  • Placed on a BRIGHT pill/panel so it stands out.
+  • Placed on a bright pill/panel near the CTA.
 
 – CTA BUTTON:
-  • Clear action verb, up to 3 words,
-    e.g. “Дізнатись більше”, “Діяти зараз”, “Розпочати курс”.
-  • Present tense, no punctuation at the end.
-  • Placed inside a solid button (panel) under/near the offer.
+  • Clear action verb, up to 3 words.
+  • Solid, bright button (panel) in the lower part of the text area.
 
 --------------------------------------------------
 TEXT HIERARCHY & DISTRIBUTION
 --------------------------------------------------
 – HEADLINE:
-  • Occupies the UPPER part of the banner,
-    can stretch across most of the width.
-  • Largest font, strongest contrast.
+  • Occupies the UPPER part of the negative space.
+  • Largest font on the banner.
 
-– DESCRIPTION:
-  • 1–2 lines directly under the headline,
-    smaller font but still large on mobile.
-  • Explains the situation and result.
-
-– PRODUCT NAME:
-  • Separate line under description or near it.
-  • Highlighted by:
-    – bolder weight,
-    – or contrasting color,
-    – or small pill behind text.
-  • Must be clearly visible as “what is being sold”.
-
-– OFFER BADGE (IF PRESENT):
-  • Bright pill/panel with short text.
-  • Placed near the CTA button (above or beside),
-    in the LOWER part of the banner.
-  • Never placed alone in a distant corner.
-
-– CTA BUTTON:
-  • Solid rounded rectangle with action text.
-  • Located in the LOWER part of the banner,
-    slightly larger font than description,
-    strongly contrasted with background.
-
-– TEXT SCALE:
-  • All text must be BIG enough to read instantly on mobile.
-  • Do NOT compress all text into a small card;
-    use the available width of the photo.
-
---------------------------------------------------
-VISUAL TREATMENT
---------------------------------------------------
-– HEADLINE / DESCRIPTION / PRODUCT:
-  • May be placed directly on photo IF background is clean
-    and provides high contrast (e.g. dark wall, blurred office).
-  • If background is busy, use soft shadow, stroke, or subtle
-    translucent panel behind these lines, but keep them wide
-    (no tiny cards).
+– DESCRIPTION & PRODUCT NAME:
+  • Located below the headline, in the middle of the negative space.
+  • Smaller font than headline, but still readable.
 
 – OFFER & CTA:
-  • MUST use clearly visible panels/pills:
-    bright fill colors, rounded corners.
-  • CTA button looks like a classic button (solid fill),
-    offer badge as smaller but noticeable pill.
+  • Located in the LOWER part of the negative space.
+  • CTA is a solid button. Offer is a bright pill/tag placed directly near the CTA.
 
-– PANELS:
-  • Panels must be LOCAL (around text), not full-height side bars.
-  • Do NOT create a separate column of solid color;
-    panels live on top of the photo.
+--------------------------------------------------
+VISUAL TREATMENT & PHOTO INTEGRATION
+--------------------------------------------------
+– The photo must be naturally dark or have a dark gradient/vignette on the side where the text is placed, to ensure white/bright text is perfectly readable.
+– DO NOT place text over the character's face or the main focal object. The text must live in the clean "negative space".
+– No solid, opaque rectangular cards behind the entire text block. The text should lay on the photo background. 
+– Only the CTA button and Offer badge use solid pill shapes.
 
 --------------------------------------------------
 PHOTO REQUIREMENTS
 --------------------------------------------------
 – Scenario:
-  • Photo shows a relevant situation or object:
-    office, laptop, charts, calculator, person at work, etc.
-  • Can be with or without people; text must still integrate
-    naturally with the scene.
-
+  • Photo shows a relevant situation or object (office, laptop, charts, person at work).
 – Composition:
-  • Provide enough clean area (blurred background, wall, desk)
-    for headline and description across the top,
-    and for offer+CTA near the bottom.
-  • The main objects/people must remain visible,
-    but text is allowed to occupy a large portion of the frame.
+  • The subject (person/object) is off-center or occupies one side/bottom, naturally leaving a large, dark, or blurred area for text.
 
 --------------------------------------------------
 BRANDING & TONE
 --------------------------------------------------
 – Tone of voice strictly equals ${params.toneOfVoice}.
-– Logo (if any):
-  • Small, non-dominant, in a corner,
-    not competing with headline or CTA.
+– Logo (if any): Small, non-dominant, in a distant corner.
 
 --------------------------------------------------
 CONSTRAINTS
 --------------------------------------------------
 – Max elements on screen:
-  • 1 headline,
-  • 1 description block,
-  • 1 product name line,
+  • 1 headline, 1 description block, 1 product name line,
   • 1 optional offer badge (ONLY IF brief contains offer),
-  • 1 CTA button,
-  • 1 logo.
-
+  • 1 CTA button, 1 logo.
 – Headline and description still follow the global
   DIVERSITY MATRIX triggers (handled in main prompt).
 
@@ -909,26 +849,20 @@ Image Text:
 – Headline (largest, no invented offers).
 – Description (1–2 short sentences).
 – Product name line (highlighted).
-– Offer text ONLY IF the brief contains an offer
-  (otherwise omit completely).
-– CTA text (on button, no invented discounts).
+– Offer text ONLY IF the brief contains an offer.
+– CTA text (on button).
 
 Brief for Designer:
 – Specify:
-  • photo scenario (with/without person),
-  • where headline and description sit (upper area, full width),
-  • where product name sits (near description, highlighted),
-  • where offer badge (if present) and CTA button sit (lower area).
+  • photo scenario and composition (e.g. "Person on the right, large dark negative space on the left").
+  • vertical distribution of text in the negative space: Headline at the top, Description/Product in the middle, CTA at the bottom.
 – Describe:
-  • font hierarchy (headline largest, description smaller,
-    product name medium, CTA/offer clear),
-  • panel styles for offer and CTA (bright pills/buttons),
-  • use of wide text placement on photo (no tiny clustered card).
+  • font hierarchy (headline huge, description smaller).
+  • text placed directly on the photo background (using soft dark gradients for contrast), NOT inside a single solid box.
+  • CTA is a solid button; Offer (if present) is a pill.
 – Emphasize:
-  • no invented offers,
-  • no separate solid-color column,
-  • text must be large, distributed across the photo,
-    and readable in 1–2 seconds.`;
+  • NO split screens and NO single tight clustered block of text.
+  • Text must be spread out vertically in the negative space, integrating with the photo.`;
 
     } else if (fmt.includes('\u0442\u0435\u043a\u0441\u0442 \u043d\u0430 \u0431\u0456\u043b\u043e\u043c\u0443') || fmt.includes('text on white')) {
       formatRulebook = `FOR "TEXT ON WHITE" FORMAT (Special Rules):
