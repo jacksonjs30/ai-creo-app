@@ -744,47 +744,54 @@ FORMAT: PHOTO + TEXT BANNER (OVERLAY) – Special Rules:
 
 GOAL
 A situational photo that illustrates the scenario from the current variant,
-with all text elements placed ON TOP of this photo using bold, readable backing surfaces.
+with billboard-style text directly ON TOP of this photo:
+big headline + product block + offer/CTA badges,
+all in one side of the image.
 
 OVERALL COMPOSITION
-– Use ONE full-bleed photo as the background.
-– Do NOT split the canvas into separate photo and solid-color halves.
-  (Soft gradient overlays on part of the photo are allowed, but the photo
-   must still feel like the main background.)
-– All text lives as an overlay on the photo, positioned so the image and text
-  feel integrated, not like two different screens.
+– Use ONE full-bleed photo as the ONLY background.
+– The viewer must always perceive the layout as:
+  “one photo with text and badges on top”
+  NOT as:
+  “photo area + separate text area”.
+– It is STRICTLY FORBIDDEN to build layouts where:
+  • one side of the canvas is mostly photo,
+  • and the other side is mostly solid color or dense gradient panel.
+– Any gradients or overlays MUST be local behind the text cluster
+  (small panels/cards), not full-height bars or wide side panels.
 
 --------------------------------------------------
 TEXT LENGTH LIMITS (CRITICAL FOR CYRILLIC)
 --------------------------------------------------
 – HEADLINE:
-  • Max 4–6 words.
+  • Max 6–10 words.
   • Tone = ${params.toneOfVoice}.
 
 – SUBCOPY:
-  • Max 1–2 short sentences (total 8–12 words)
+  • Max 1–2 short sentences
+    (TOTAL 12–16 words)
     explaining the movement from chaos/pain
     to the desired outcome with the product.
 
 – PRODUCT LABEL (MANDATORY):
-  • Max 3–5 words.
+  • Max 3–6 words.
   • Distinct line stating the product name and/or role,
     e.g. “Курс «Excel для фінансистів»”,
          “ExcelPro – курс автоматизації”.
 
 – OFFER BADGE:
-  • Max 1–2 lines, total 3–5 words.
+  • Max 1 line, 3–5 words.
   • Short mechanic: discount / deadline / bonus / guarantee,
-    e.g. “ЗНИЖКА -20% до кінця тижня”.
+    e.g. “Знижка -20%”, “Лише цього тижня”.
 
 – CTA BUTTON:
   • Clear action verb, up to 3 words,
-    e.g. “Розпочати навчання”, “Подати заявку”, “Дізнатись більше”.
+    e.g. “Дізнатись більше”, “Діяти зараз”, “Розпочати курс”.
   • Present tense, no punctuation at the end.
 
 CRITICAL:
 Visual AI models cannot render long Cyrillic texts without errors.
-You MUST keep the text ultra-short, punchy, and billboard-style.
+You MUST keep the text short, punchy, and billboard-style.
 All text must be readable in 1–2 seconds.
 
 --------------------------------------------------
@@ -800,7 +807,7 @@ TEXT CONTENT (LOGIC)
   • Brief explanation of:
     – the current chaotic/problem state,
     – the desired result with the product.
-  • 1–2 short sentences, total 8–12 words.
+  • 1–2 short sentences, 12–16 words total.
 
 – PRODUCT LABEL:
   • Names the product and its category/role
@@ -819,63 +826,78 @@ TEXT CONTENT (LOGIC)
   • Action-focused, not vague.
 
 --------------------------------------------------
-VISUAL TREATMENT & PLACEMENT (ANTI-GLITCH)
+VISUAL TREATMENT & PLACEMENT
 --------------------------------------------------
-– TEXT SIZE:
-  • Fill the canvas dynamically so text is HUGE
-    and highly readable on mobile.
-  • Do NOT shrink text into a tiny block in the center
-    with massive empty space around.
+TEXT BLOCKS ON PHOTO
+– Headline, Product Label, and Subcopy form
+  ONE main text block placed DIRECTLY ON TOP of the photo:
+  • usually in the upper part of one side (left or right),
+  • aligned together (left/center/right) as a stack.
 
-– CLUSTERING (STRICT RULE):
-  • You MUST group the Headline, Subcopy, Product Label,
-    Offer Badge, and CTA in ONE tight overlay cluster:
-    – all aligned left,
-    – or all centered,
-    – or all aligned right,
-      but within the same general area of the photo
-      (e.g. top-left, top-right, bottom-left, bottom-right).
-  • The cluster should feel like a single unit,
-    not scattered elements.
+– Headline and Product/Subcopy may be placed
+  directly on the photo IF the background in that area
+  is clean and high-contrast (dark wall, blurred sky, simple surface).
+– If the background behind text is busy (details, faces),
+  use local panels/cards only behind that piece of text,
+  sized around the text + padding.
 
-– OFFER + CTA RELATION:
-  • DO NOT separate the Offer Badge from the CTA.
-  • The Offer Badge MUST sit directly above or next to
-    the CTA Button in the same cluster.
-  • Offer and CTA belong to the same corner of the layout,
-    not in opposite corners.
+OFFER BADGE & CTA (PANELS)
+– Offer Badge and CTA MUST use clear panels/pills
+  (solid or outlined), similar to reference banners:
+  • rounded rectangles,
+  • bright accent colors,
+  • strong, readable text.
 
-– BACKING SURFACES:
-  • Always back all text (headline, product label, subcopy,
-    offer, CTA) with:
-    – solid light/dark panels,
-    – soft gradient strips,
-    – or semi-transparent cards.
-  • Ensure high contrast between text and background
-    for every element.
-  • Never place text directly on a noisy part of the photo
-    (details, faces, busy textures).
+– Offer Badge and CTA MUST sit directly BELOW
+  the main text block on the SAME side of the image,
+  forming one continuous vertical stack:
+  • Headline + Product/Subcopy (upper),
+  • Offer badge,
+  • CTA button (lower).
+
+– DO NOT separate the Offer Badge from the CTA:
+  they belong to the same side and cluster,
+  not in opposite corners.
+
+LOCAL PANELS ONLY (NO SIDE COLUMNS)
+– Panels/cards behind text must be LOCAL blocks:
+  • they should NOT cover an entire half
+    or the full height of the canvas,
+  • typical size = around the text itself + small padding.
+– Do NOT create one big vertical bar or side strip
+  for all text.
+  Instead, group text into 1–2 compact cards
+  placed over the photo (as in your references).
+
+TEXT SIZE & SCALE
+– Fill the canvas dynamically so text is BIG
+  and highly readable on mobile.
+– Do NOT shrink text into a tiny block in the center
+  with massive empty space around.
+– Use safe margins (~10–15% from each edge),
+  but within those margins the text stack should occupy
+  a significant portion of the side (like a billboard).
 
 --------------------------------------------------
 PHOTO REQUIREMENTS
 --------------------------------------------------
 – Scenario:
-  • Show the avatar in a realistic situation
+  • Show the avatar or key object in a realistic situation
     matching the current variant:
-    work, study, commute, freelance, office, home, etc.
+    work, study, routine, burnout, relief, etc.
   • The photo should hint at the product category:
     laptop with spreadsheets, reports, dashboards,
-    meeting, notebook, etc.
+    calculator, charts, office/home setup, etc.
   • Feel natural, not staged with exaggerated stock poses.
 
 – Composition:
-  • Leave enough natural background space
-    (wall, desk, blur, window, sky) to host the text cluster,
-    but do NOT make the character tiny.
-  • The main person or focal object must stay clearly visible
-    and not be completely covered by text panels.
+  • Leave enough clean background space
+    (wall, desk, blur, window, sky)
+    on one side to host the text stack.
+  • The main person or object must stay clearly visible
+    and not be completely covered by text.
   • The character’s pose or gaze may gently direct attention
-    toward the text cluster (optional).
+    toward the text area (optional).
 
 --------------------------------------------------
 BRANDING & TONE
@@ -884,19 +906,9 @@ BRANDING & TONE
 
 – Logo:
   • Small, non-dominant, placed in a corner
-    (e.g. bottom-right or top-left),
-    away from the main text cluster.
+    (e.g. bottom-left or bottom-right),
+    away from the main text stack.
   • Must not compete with headline or CTA.
-
---------------------------------------------------
-SPACING & SCALE (READABILITY)
---------------------------------------------------
-– Use safe margins (~10–15% from each edge),
-  but within those margins fill the available area
-  so the text cluster has strong visual presence.
-– Avoid large empty bands between text blocks.
-– All main text must be clearly legible on a phone screen:
-  no ultra-thin fonts, no tiny sizes.
 
 --------------------------------------------------
 CONSTRAINTS
@@ -926,17 +938,20 @@ Image Text:
 – CTA text.
 
 Brief for Designer:
-– Specify the type of photo (office late at night, home with family,
-  stressful workday, etc.).
-– Define the position of the text overlay cluster
-  (e.g. top-right over blurred background).
-– Describe backing surfaces for each text element
-  (panels, chips, pills, semi-transparent cards).
+– Specify the type of photo (e.g. stopwatch + laptop, calculator + Excel,
+  person at desk, person in relief, etc.).
+– Define the side of the image for the text stack
+  (e.g. left side over blurred background).
+– Describe:
+  • the vertical structure: Headline + Product/Subcopy (upper),
+    Offer badge + CTA (lower);
+  • which text is directly on photo and which uses local panels;
+  • panel/pill styles for offer and CTA (colors, shapes).
 – Explicitly state that:
-  • all text is large and high-contrast,
-  • the Offer Badge sits directly above/next to the CTA,
-  • the cluster is compact, without scattered elements,
-  • the character remains clearly visible and not fully covered.`;
+  • there is NO separate text column with solid color,
+  • panels are local around text (no full-height bars),
+  • text is large, high-contrast, and occupies a visible portion
+    of one side of the photo.`;
 
     } else if (fmt.includes('\u0442\u0435\u043a\u0441\u0442 \u043d\u0430 \u0431\u0456\u043b\u043e\u043c\u0443') || fmt.includes('text on white')) {
       formatRulebook = `FOR "TEXT ON WHITE" FORMAT (Special Rules):
