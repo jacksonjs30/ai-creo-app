@@ -441,7 +441,7 @@ FOR "INFOGRAPHIC" FORMAT (Special Rules):
 GENERAL ROLE
 This format is built on DATA VISUALIZATION and STRUCTURED LOGIC.
 It must break down complex information (processes, comparisons, statistics, steps)
-into highly scannable, visual chunks.
+into highly scannable, visual chunks that feel dense and impactful.
 
 Do NOT use realistic photography in this format.
 Use only diagrams, charts, icons, and flat/3D-style vector graphics.
@@ -456,8 +456,8 @@ All text must be ultra-short and attached to a visual element.
      not just a neutral label.
    – Examples (structure only):
      • “From manual chaos to precise finance”
-     • “Before vs after automation”
-     • “Stop Excel panic, get control”
+     • “Debit vs credit: before vs after automation”
+     • “Your evenings belong to you, not Excel”
    – Max 8–10 words, no emoji.
 
 2. DATA POINTS / STEPS (3 to 5 ITEMS)
@@ -465,11 +465,11 @@ All text must be ultra-short and attached to a visual element.
 
    Each item MUST have:
    – A large Number, Percentage, or Icon
-     (e.g. “1”, “+30% time”, money stack icon, graph arrow).
+     (e.g. “1”, “+3 hours/day”, “-50% report time”, money stack icon).
    – A bold short label (1–3 words)
-     (e.g. “Manual routine”, “Accurate data”, “Burnout nights”).
+     (e.g. “Manual checking”, “Human error”, “Accurate data”).
    – A micro-description (max 3–5 words)
-     (e.g. “Copy–paste reports”, “Secure financial data”).
+     (e.g. “Copy–paste routine”, “Every digit in doubt”).
 
    All labels and micro-descriptions must be logically derived from:
    – the current scenario,
@@ -479,7 +479,7 @@ All text must be ultra-short and attached to a visual element.
 3. OFFER & CTA (BOTTOM – BADGES ONLY)
    – If the brief includes any offer (discount, bonus, deadline),
      the infographic MUST show it inside a clear OFFER BADGE,
-     not as a small footnote.
+     not just as small footer text.
      • Shape: card or pill, similar to PHOTO+TEXT CTA style.
      • Example (structure only):
        “DISCOUNT -20% until the end of the week”.
@@ -497,22 +497,28 @@ All text must be ultra-short and attached to a visual element.
        (keep safe margin for social UI overlays).
 
    – Optional:
-     • A single short product descriptor below or near the badge
+     • A single short product descriptor near the badges
        (max 1 line, 4–6 words),
        e.g. “Excel course for accountants”.
 
    – Do NOT:
-     • hide offer/CTA only as small text footers,
-     • use comic-style bubbles for offer/CTA.
+     • hide offer/CTA only as fine-print footers,
+     • render offer/CTA inside comic-style bubbles.
 
 LAYOUT / COMPOSITION (GRID OR FLOW)
-You MUST use a structured, mathematical layout.
+You MUST use a structured layout.
 Choose ONE layout type per creative:
 
 OPTION 1 – SEQUENTIAL FLOW (Vertical or Horizontal)
-– 3 to 4 steps arranged in a clear line (vertical column, horizontal row, or simple zig-zag).
+– 3 to 4 steps arranged in a clear line
+  (vertical column, horizontal row, or simple zig-zag).
+– Cards should be visually close to each other:
+  • consistent spacing,
+  • clear continuous path (no huge empty gaps).
 – Connect each consecutive step with ONE visible arrow or dashed line:
   • Step 1 → Step 2 → Step 3 → Step 4 (if present).
+– Arrows must be thick and visible enough
+  to clearly show direction of movement.
 – Maximum 1 connecting line per step (no spider webs).
 – The flow must read in a clear direction (top-to-bottom or left-to-right).
 
@@ -526,6 +532,10 @@ OPTION 2 – COMPARISON SPLIT (Vs)
   • Left column: pain states, wasted time, low income, chaos.
   • Right column: desired states, saved time, higher income, clarity.
 
+– Columns should occupy MOST of the canvas width:
+  • each side feels like a solid panel,
+  • not two tiny strips in the center.
+
 – Between columns there is:
   • a clear dividing line or panel,
   • optional “VS” label at the center.
@@ -537,8 +547,16 @@ OPTION 2 – COMPARISON SPLIT (Vs)
 
 OPTION 3 – HUB LAYOUT (Center + Orbit)
 – Central main graphic:
-  • laptop with dashboard, simple bar/line/pie chart,
-    or product/system icon (no complex 3D analytics).
+  • laptop with dashboard,
+  • simple bar/line/pie chart,
+  • or product/system icon (shield, cog, rocket, etc.),
+    using subtle 3D depth/lighting if desired.
+
+– The central object must be visually strong:
+  • larger than satellites,
+  • immediately conveying the main concept
+    (e.g. “Automation shield”, “Excel control panel”).
+
 – Around the center, 3 to 4 data points orbit like satellites.
 – Each satellite has:
   • icon/number,
@@ -547,16 +565,17 @@ OPTION 3 – HUB LAYOUT (Center + Orbit)
 – Connect each satellite to the center with ONE thin line or arrow.
   • Max 4 connecting lines total to avoid visual noise.
 
-VISUAL STYLE & ICONS ("CLEAN & VECTOR")
+VISUAL STYLE & ICONS ("CLEAN, VECTOR OR LIGHT 3D")
 – Background:
-  • MUST be clean, solid, or very subtle gradient.
+  • MUST be clean, solid, or a subtle gradient.
   • No realistic photos, no busy textures.
 
 – Elements:
   • High-end modern UI look:
     cards, pills, banners, simple charts, minimal icons.
-  • Icons can be flat or lightly 3D-styled,
-    but avoid heavy shadows, glow spam, or noisy effects.
+  • Icons can be flat or LIGHT 3D-styled:
+    – simple depth, soft shadows, gradients,
+    – avoid photorealistic 3D and noisy effects.
 
 – Bounding boxes:
   • Use distinct cards/pills to separate each data point.
@@ -570,19 +589,40 @@ VISUAL STYLE & ICONS ("CLEAN & VECTOR")
   • Ensure high contrast between text and background
     for all labels and numbers.
 
+VISUAL DENSITY & SCALE
+– Infographics should feel VISUALLY DENSE and impactful,
+  not empty or overly minimal.
+– At least 60–70% of the canvas area should be actively used
+  by cards, charts, icons, and badges (not just blank gradient).
+– Cards and icons must be LARGE enough to be clearly legible
+  on a phone screen:
+  • avoid tiny cards floating in a huge background,
+  • prefer bigger blocks with strong presence.
+
+TEXT SIZE & HIERARCHY
+– The global headline must be visually dominant:
+  • font size larger than any card label.
+– Each card’s main label (bold short line) MUST use
+  a font size only one step smaller than the headline.
+– Micro-descriptions (3–5 words) must remain readable:
+  • no fine-print,
+  • if necessary, simplify the text instead of shrinking the font.
+
 SAFE MARGINS & READABILITY
-– Infographics contain more elements: spacing is CRITICAL.
-– Maintain generous negative space between cards, charts, and arrows.
+– Maintain generous negative space between cards, charts, and arrows,
+  but without leaving most of the canvas empty.
 – Do NOT let charts or text boxes touch:
   • each other,
   • or the canvas edge.
 – Keep at least ~15% margin from all sides of the canvas.
+– Keep offer/CTA badges away from the very bottom edge
+  (reserve space for social UI overlays).
 
 BEHAVIORAL SUMMARY FOR INFOGRAPHIC FORMAT
 – Think of this format as:
   • a slide from a premium pitch deck,
   • or a high-end Pinterest infographic,
-  adapted to the avatar’s pains and outcomes.
+  adapted to the avatar’s pains, CJM path, and outcomes.
 
 – The DESIGNER BRIEF generated by the model must:
   • explicitly state which layout type is used (Flow, Comparison, or Hub),
@@ -590,6 +630,8 @@ BEHAVIORAL SUMMARY FOR INFOGRAPHIC FORMAT
   • specify:
     – where arrows/lines appear (one per logical connection),
     – the exact position and text of the OFFER badge and CTA badge,
+    – how dense the composition should be
+      (cards fill most of the canvas, central object size, etc.),
   so the visual designer can render the infographic without ambiguity.`;
 
     } else if (fmt.includes('\u0444\u043e\u0442\u043e') || fmt.includes('photo')) {
