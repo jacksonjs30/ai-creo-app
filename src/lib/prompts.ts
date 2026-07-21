@@ -1041,7 +1041,7 @@ In "Brief for Designer" you MUST describe:
 – Assurance that all text stays inside safe margins
   and contrast is high.
 – Explicitly state that no bullet characters, emoji,
-  or service labels appear in the Image Text field.\`;
+  or service labels appear in the Image Text field.`;
     }
 
     return `ROLE You are a Data BI Creative Strategist. Your mission is not just to write texts. Your mission is to generate high-converting creative concepts (ideas, texts, scripts) that strike precisely at the psychological portrait of the target audience, forcing them to recognize themselves and click through to the site.
