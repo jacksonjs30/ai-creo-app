@@ -745,11 +745,23 @@ FORMAT: PHOTO + TEXT BANNER (OVERLAY) – Special Rules:
 GOAL
 A situational photo that illustrates the scenario from the current variant,
 with billboard-style text directly ON TOP of this photo:
-big headline + product block + offer/CTA badges,
-all in one side of the image.
+big headline + product block + optional offer badge + CTA,
+all на одной стороне изображения.
+
+IMPORTANT OFFER LOGIC (NO INVENTED DISCOUNTS)
+– The banner MUST NOT invent any offer, discount, bonus, or guarantee
+  that is not explicitly provided by the user.
+– Offer/discount text appears on the banner ONLY IF the user’s brief
+  contains a clear offer/discount field (e.g. “-20% до кінця тижня”).
+– If the brief does NOT contain any offer/discount:
+  • there is NO offer badge on the banner,
+  • there is NO discount text inside headline, subcopy, product label, or CTA,
+  • the creative focuses only on pain, product, and CTA.
 
 OVERALL COMPOSITION
 – Use ONE full-bleed photo as the ONLY background.
+– The background must be a complete, natural photo
+  (no isolated cutout figures on empty white canvas).
 – The viewer must always perceive the layout as:
   “one photo with text and badges on top”
   NOT as:
@@ -757,7 +769,7 @@ OVERALL COMPOSITION
 – It is STRICTLY FORBIDDEN to build layouts where:
   • one side of the canvas is mostly photo,
   • and the other side is mostly solid color or dense gradient panel.
-– Any gradients or overlays MUST be local behind the text cluster
+– Any gradients or overlays MUST be local behind the text stack
   (small panels/cards), not full-height bars or wide side panels.
 
 --------------------------------------------------
@@ -779,10 +791,11 @@ TEXT LENGTH LIMITS (CRITICAL FOR CYRILLIC)
     e.g. “Курс «Excel для фінансистів»”,
          “ExcelPro – курс автоматизації”.
 
-– OFFER BADGE:
+– OFFER BADGE (OPTIONAL):
   • Max 1 line, 3–5 words.
   • Short mechanic: discount / deadline / bonus / guarantee,
     e.g. “Знижка -20%”, “Лише цього тижня”.
+  • ONLY present if the brief explicitly contains an offer.
 
 – CTA BUTTON:
   • Clear action verb, up to 3 words,
@@ -802,12 +815,14 @@ TEXT CONTENT (LOGIC)
     (pain, fear, CJM loop, objection, transformation)
     from the global prompt.
   • Uses the avatar’s vocabulary, not generic buzzwords.
+  • MUST NOT contain invented discounts or offers.
 
 – SUBCOPY:
   • Brief explanation of:
     – the current chaotic/problem state,
     – the desired result with the product.
   • 1–2 short sentences, 12–16 words total.
+  • MUST NOT contain invented discounts or offers.
 
 – PRODUCT LABEL:
   • Names the product and its category/role
@@ -815,20 +830,21 @@ TEXT CONTENT (LOGIC)
   • Always placed close to headline/subcopy
     so it is clearly tied to the message.
 
-– OFFER BADGE:
-  • Shows the concrete mechanic:
-    discount, deadline, bonus, guarantee.
-  • Only generate if the brief includes an actual offer.
+– OFFER BADGE (ONLY IF OFFER EXISTS):
+  • Shows the concrete mechanic (discount / deadline / bonus / guarantee)
+    that is explicitly given in the brief.
+  • If the brief has no offer field, DO NOT generate this element at all.
 
 – CTA BUTTON:
   • Clear next step for the avatar:
     “what to do now” in 2–3 words.
   • Action-focused, not vague.
+  • MUST NOT mention discounts or offers unless the brief contains them.
 
 --------------------------------------------------
 VISUAL TREATMENT & PLACEMENT
 --------------------------------------------------
-TEXT BLOCKS ON PHOTO
+MAIN TEXT STACK ON PHOTO
 – Headline, Product Label, and Subcopy form
   ONE main text block placed DIRECTLY ON TOP of the photo:
   • usually in the upper part of one side (left or right),
@@ -842,17 +858,15 @@ TEXT BLOCKS ON PHOTO
   sized around the text + padding.
 
 OFFER BADGE & CTA (PANELS)
-– Offer Badge and CTA MUST use clear panels/pills
-  (solid or outlined), similar to reference banners:
-  • rounded rectangles,
-  • bright accent colors,
-  • strong, readable text.
+– CTA MUST use a clear panel/pill (solid or outlined),
+  similar to reference banners: rounded rectangle, accent color.
+– Offer Badge (if present) also uses a panel/pill.
 
 – Offer Badge and CTA MUST sit directly BELOW
   the main text block on the SAME side of the image,
   forming one continuous vertical stack:
   • Headline + Product/Subcopy (upper),
-  • Offer badge,
+  • Offer badge (optional),
   • CTA button (lower).
 
 – DO NOT separate the Offer Badge from the CTA:
@@ -867,7 +881,7 @@ LOCAL PANELS ONLY (NO SIDE COLUMNS)
 – Do NOT create one big vertical bar or side strip
   for all text.
   Instead, group text into 1–2 compact cards
-  placed over the photo (as in your references).
+  placed over the photo.
 
 TEXT SIZE & SCALE
 – Fill the canvas dynamically so text is BIG
@@ -876,7 +890,7 @@ TEXT SIZE & SCALE
   with massive empty space around.
 – Use safe margins (~10–15% from each edge),
   but within those margins the text stack should occupy
-  a significant portion of the side (like a billboard).
+  a significant portion of one side (like a billboard).
 
 --------------------------------------------------
 PHOTO REQUIREMENTS
@@ -891,8 +905,9 @@ PHOTO REQUIREMENTS
   • Feel natural, not staged with exaggerated stock poses.
 
 – Composition:
+  • The photo must be full and complete, not a cut-out
+    of the person on empty white.
   • Leave enough clean background space
-    (wall, desk, blur, window, sky)
     on one side to host the text stack.
   • The main person or object must stay clearly visible
     and not be completely covered by text.
@@ -917,7 +932,7 @@ CONSTRAINTS
   • 1 headline,
   • 1 subcopy block,
   • 1 product label,
-  • 1 offer badge,
+  • 1 offer badge (ONLY IF the brief contains an offer),
   • 1 CTA,
   • 1 logo.
 
@@ -931,27 +946,31 @@ WHAT TO GENERATE FOR THIS FORMAT
 IF FORMAT = "PHOTO + TEXT":
 
 Image Text:
-– Headline (no service labels).
+– Headline (no service labels, no invented offers).
 – Subcopy (1–2 short sentences).
 – Product label line.
-– Offer text (IF the brief contains an offer).
-– CTA text.
+– Offer text ONLY IF the brief contains an offer
+  (if not, omit this line entirely).
+– CTA text (must not invent offers).
 
 Brief for Designer:
-– Specify the type of photo (e.g. stopwatch + laptop, calculator + Excel,
-  person at desk, person in relief, etc.).
+– Specify the type of photo (scenario, objects).
+– Confirm that the background is a full photo,
+  not a cut-out on white.
 – Define the side of the image for the text stack
   (e.g. left side over blurred background).
 – Describe:
   • the vertical structure: Headline + Product/Subcopy (upper),
-    Offer badge + CTA (lower);
+    optional Offer badge + CTA (lower);
   • which text is directly on photo and which uses local panels;
-  • panel/pill styles for offer and CTA (colors, shapes).
+  • panel/pill styles for offer (if present) and CTA (colors, shapes).
 – Explicitly state that:
   • there is NO separate text column with solid color,
   • panels are local around text (no full-height bars),
   • text is large, high-contrast, and occupies a visible portion
-    of one side of the photo.`;
+    of one side of the photo,
+  • the banner MUST NOT show any offer/discount/bonus
+    unless it is explicitly present in the user’s brief.`;
 
     } else if (fmt.includes('\u0442\u0435\u043a\u0441\u0442 \u043d\u0430 \u0431\u0456\u043b\u043e\u043c\u0443') || fmt.includes('text on white')) {
       formatRulebook = `FOR "TEXT ON WHITE" FORMAT (Special Rules):
