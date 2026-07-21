@@ -709,7 +709,29 @@ SUMMARY FOR MEME-CREO:
 – BADGES: bright accent shapes (buttons, stickers, strokes)
   that highlight CTA and offer.
 – CONTENT: tightly tied to avatar’s pains and the meme joke,
-  while remaining a clear advertising message.`;
+  while remaining a clear advertising message.
+
+--------------------------------------------------
+WHAT TO GENERATE FOR THIS FORMAT
+--------------------------------------------------
+IF FORMAT = "MEME-CREO":
+
+Image Text:
+– Headline (max 6-8 words, sarcastic hook).
+– Support line (max 10-12 words, explains pain/outcome).
+– Offer text ONLY IF brief contains an offer.
+– CTA text (on button).
+– Optional short object labels (max 1-3 words).
+– STRICTLY NO bullet points, no numbered lists, no long paragraphs, no checklists.
+
+Brief for Designer:
+– Specify:
+  • the exact meme scene (e.g. "Exhausted character with coffee").
+  • location of the headline, support line, and CTA/offer badges.
+– Emphasize:
+  • NO comic strips, just ONE scene.
+  • NO bullet point columns or checkmarks.
+  • Text must be large and readable, without any fine print.`;
 
     } else if (fmt.includes('comic') || fmt.includes('\u043a\u043e\u043c\u0456\u043a\u0441')) {
       formatRulebook = `
