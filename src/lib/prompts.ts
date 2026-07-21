@@ -437,33 +437,35 @@ FOR "BEFORE / AFTER (CASE STUDY)" FORMAT (Special Rules):
 
 This format simulates a "Case Study" or a highly realistic transformation. It must visually contrast the avatar's painful starting point ("Before") with the successful outcome ("After") achieved via the product.
 
-TEXT STRUCTURE (DIRECT SALE LITE – NO BULLETS):
+TEXT STRUCTURE (NO BULLETS):
 The text must be structured like a clean Direct Sale banner, but STRICTLY WITHOUT bullet points to maximize space for the dual visuals.
 1. MAIN HEADLINE (max 6 words) – big, bold, focusing on the transformation, case study, or final result.
 2. SUBHEADLINE (1 short sentence) – directly under the headline, providing context.
-3. "BEFORE" & "AFTER" LABELS (Optional but Recommended) – Short 1-word labels (e.g., "\u0414\u043e" / "\u041f\u0456\u0441\u043b\u044f" or "\u0411\u0435\u0437" / "\u0417") placed directly over their respective images.
-4. PRODUCT LABEL / PROMO BADGE – product name or offer label.
+3. "BEFORE" & "AFTER" LABELS (Optional but Recommended) – Short 1-word labels (e.g., "До" / "После" or "Без" / "З") placed directly over their respective images.
+4. PRODUCT LABEL / PROMO BADGE – product name and offer label if exist in user brief.
 5. CTA BLOCK – a visible button with action-oriented text at the bottom.
 
 LAYOUT / COMPOSITION (STRICT SPLIT):
-– The visual area MUST feature two distinct images, split Left/Right (50/50).
-– LEFT IMAGE: The "BEFORE" state (pain, problem, old way).
-– RIGHT IMAGE: The "AFTER" state (solution, success, new way).
-– Text Blocks (Headline, Subheadline, CTA) should be placed in a dedicated panel (Top block or unified banner strip at the bottom) so they do NOT obstruct the comparison.
+- The visual area MUST feature two distinct images, usually split Left/Right (50/50).
+- LEFT IMAGE: The "BEFORE" state (pain, problem, old way).
+- RIGHT IMAGE: The "AFTER" state (solution, success, new way).
+- Text Blocks (Headline, Subheadline, CTA) should be placed in a dedicated panel (e.g., a Top block or a unified banner strip at the bottom) so they don't obstruct the comparison.
 
 VISUAL STYLE & COLOR GRADING (REALISTIC & CONTRASTING):
-– The imagery MUST be highly realistic (Real-Photo style: real people, real desks, real screens, natural lighting). No vector graphics.
-– Contrast & Color Rules – The Designer Brief MUST specify ONE of these:
-  Option A (Tints): If text labels are used, apply a subtle RED tint/overlay to the "Before" image and a subtle GREEN tint/overlay to the "After" image.
-  Option B (Frames): If no labels are used, apply a red border/frame to the "Before" image and a green border/frame to the "After" image.
-  Option C (Natural Contrast): No artificial colors/frames. Rely purely on realistic lighting and composition ("Before" = messy, dark, stressful; "After" = clean, bright, smiling).
+- The imagery MUST be highly realistic (Real-Photo style: real people, real desks, real screens, natural lighting). No vector graphics.
+- Contrast & Color Rules (The Designer Brief MUST specify ONE of these):
+  • Option A (Tints): If the text labels "До" and "После" are used, apply a subtle RED tint/overlay to the "Before" image, and a subtle GREEN tint/overlay to the "After" image.
+  • Option B (Frames): If no text labels are used, apply a red border/frame to the "Before" image and a green border/frame to the "After" image.
+  • Option C (Natural Contrast): No artificial colors/frames. Rely purely on the realistic scene's natural lighting and composition (e.g., "Before" is messy, dark, stressful; "After" is clean, bright, smiling).
 
 SAFE MARGINS & READABILITY:
-– Dividing line between the two images must be sharp and clear.
-– Labels must be highly legible (use solid pills/badges over the photos).
-– Keep all main text inside safe margins (10–15% from the edges).
+- Ensure the dividing line between the two images is sharp and clear.
+- "Before/After" labels must be highly legible against the photo background (use solid pills/badges).
+- Keep all main text inside safe margins (10-15% from the edges).
 
-SUMMARY: Think of it as a realistic proof-of-concept or case-study slide. Your DESIGNER BRIEF must explicitly describe: the Left realistic scene (Before), the Right realistic scene (After), the specific color grading or framing logic (Red vs Green), and placement of the text panel (top or bottom strip).`;
+SUMMARY FOR BEFORE/AFTER FORMAT:
+- Think of it as a realistic proof-of-concept or case-study slide.
+- Your DESIGNER BRIEF must explicitly describe the Left realistic scene (Before), the Right realistic scene (After), and the specific color grading or framing logic (Red vs Green).`;
 
     } else if (fmt.includes('\u043c\u0435\u043c') || fmt.includes('meme')) {
       formatRulebook = `
