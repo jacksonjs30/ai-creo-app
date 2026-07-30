@@ -4,6 +4,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { LayoutDashboard, Users, FileSearch, PenTool, ImagePlay, Activity, Blocks, Image as ImageIcon, FileText } from 'lucide-react';
 import { use } from 'react';
+import ProjectNotesWidget from '@/components/ProjectNotesWidget';
 
 const STEPS = [
   { id: 'brief', label: '1. Ingestion / Brief', icon: LayoutDashboard },
@@ -102,6 +103,7 @@ export default function ProjectLayout({
       <main className="workspace-content">
         {children}
       </main>
+      <ProjectNotesWidget projectId={id} />
     </div>
   );
 }
