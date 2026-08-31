@@ -15,6 +15,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Gemini API Key is missing' }, { status: 500 });
     }
 
+
+    const translateDevice = (d: string) => {
+      const map: any = {
+        'Книга': 'Book',
+        'Ноутбук': 'Laptop',
+        'ПК/монитор': 'Desktop monitor',
+        'Телефон': 'Phone',
+        'Планшет': 'Tablet'
+      };
+      return map[d] || d;
+    };
+    const engDeviceType = deviceType ? deviceType.map(translateDevice) : undefined;
+    const engPrimaryMockup = primaryMockup ? translateDevice(primaryMockup) : undefined;
+
     const prompt = PROMPTS.GENERATE_CREATIVES_PROMPT({
       productName,
       avatarData,
@@ -28,9 +42,9 @@ export async function POST(req: NextRequest) {
       existingConcepts,
       peoplePresence,
       productBullets,
-      deviceType,
+      deviceType: engDeviceType,
       mockupCount,
-      primaryMockup
+      primaryMockup: engPrimaryMockup
     });
 
     console.log('Generating creative script for format:', format, 'Avatar:', avatarData?.segmentName);

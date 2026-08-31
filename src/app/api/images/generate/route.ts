@@ -251,6 +251,7 @@ OUTPUT RULES
 – Produce ONE long, coherent, visually descriptive prompt in English for the image model.
 – Explicitly describe the layout, colors, and typography strictly based on the provided brief.
 – Quote the exact text blocks clearly (e.g. "Render the text '...' with perfect spelling").
+– IF THE BRIEF SPECIFIES MULTIPLE DEVICES OR MOCKUPS (e.g., "3 mockups: book, laptop, phone"), YOU MUST explicitly instruct the image model to render EXACTLY that number and those types of devices, arranging them logically in the scene.
 – IF THE RAW BRIEF CONTAINS A "🔴 КРИТИЧЕСКОЕ ПРАВИЛО ОТ ПОЛЬЗОВАТЕЛЯ" OR "🔴 КРИТИЧНЕ ПРАВИЛО ВІД КОРИСТУВАЧА" BLOCK, YOU MUST INTEGRATE IT INTO YOUR FINAL PROMPT WITH ABSOLUTE MAXIMUM PRIORITY.`;
           
           const enhanceRes = await openai.chat.completions.create({

@@ -1106,6 +1106,7 @@ SAFE MARGINS & READABILITY
 
 FINAL RULES FOR THIS OUTPUT STAGE
 
+– IMPORTANT: In your "Brief for Designer" / "TOR" output, you MUST explicitly dictate the EXACT mockup count (${params.mockupCount || 1}) and the EXACT device types (${params.deviceType?.join(', ') || 'laptop'}) to be drawn. If multiple devices are chosen, explicitly state which one is primary (${params.primaryMockup || 'auto-selected'}). If you do not explicitly write this in the final output text, the designer will not know what to draw!
 – The quoted phrases inside the assembled prompt are rendered as visible text on the
   banner; every other word is an instruction only and must NOT appear on the image.
 – The image model must render every quoted phrase exactly as written, character for
