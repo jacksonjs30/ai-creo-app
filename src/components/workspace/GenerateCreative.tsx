@@ -179,6 +179,9 @@ export default function GenerateCreative({ id }: { id: string }) {
           focusDirection: focusDirection.trim() || undefined,
           promoOffer: promoOffer.trim() || undefined,
           peoplePresence,
+          deviceType: selectedType === 'MOCKUP-CREO' ? deviceType : undefined,
+          mockupCount: selectedType === 'MOCKUP-CREO' ? mockupCount : undefined,
+          primaryMockup: selectedType === 'MOCKUP-CREO' ? primaryMockup : undefined,
           productBullets: customProductBullets.trim() ? customProductBullets.split('\n').map(b => b.trim()).filter(b => b) : undefined,
           colors: useColors ? { main: mainColor, secondary: secondColor, accent: accentColor } : undefined,
           existingConcepts: existingConcepts.length > 0 ? existingConcepts : undefined
@@ -468,6 +471,67 @@ export default function GenerateCreative({ id }: { id: string }) {
                 />
               </div>
             </div>
+
+            {selectedType === 'MOCKUP-CREO' && (
+              <div className="form-group mt-6" style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <h4 style={{ margin: '0 0 1rem 0', color: '#1e293b' }}>Настройки Mockup-крео</h4>
+                
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>1. Вид мокапа (можно выбрать несколько)</label>
+                  <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                    {['Книга', 'Ноутбук', 'ПК/монитор', 'Телефон', 'Планшет'].map(type => (
+                      <label key={type} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                        <input
+                          type="checkbox"
+                          checked={deviceType.includes(type)}
+                          onChange={e => {
+                            if (e.target.checked) {
+                              setDeviceType([...deviceType, type]);
+                            } else {
+                              if (deviceType.length > 1) {
+                                setDeviceType(deviceType.filter(t => t !== type));
+                              }
+                            }
+                          }}
+                          style={{ width: '18px', height: '18px' }}
+                        />
+                        {type}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>2. Количество мокапов (от 1 до 5)</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <input 
+                      type="range" 
+                      min="1" max="5" 
+                      value={mockupCount} 
+                      onChange={(e) => setMockupCount(parseInt(e.target.value))} 
+                      style={{ flex: 1, accentColor: 'var(--primary)' }}
+                    />
+                    <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e293b', minWidth: '20px' }}>{mockupCount}</span>
+                  </div>
+                </div>
+
+                {mockupCount > 1 && deviceType.length > 1 && (
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>3. Основной (primary) мокап</label>
+                    <select
+                      value={primaryMockup}
+                      onChange={e => setPrimaryMockup(e.target.value)}
+                      style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                    >
+                      <option value="">Автоматический выбор (Книга/Ноутбук/ПК {'>'} Телефон)</option>
+                      {deviceType.map(type => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="form-group mt-6" style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', marginBottom: useColors ? '1rem' : 0 }}>
