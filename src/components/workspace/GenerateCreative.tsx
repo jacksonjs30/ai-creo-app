@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Image as ImageIcon, Video, Smile, LayoutTemplate, Palette, Mic, CheckCircle2, Lock, Loader2, PlayCircle, FileText, Camera, User, Upload, X } from 'lucide-react';
+import { Image as ImageIcon, Video, Smile, LayoutTemplate, Palette, Mic, CheckCircle2, Lock, Loader2, PlayCircle, FileText, Camera, User, Upload, X, Monitor } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { get, set } from 'idb-keyval';
 
@@ -20,6 +20,7 @@ const CREATIVE_TYPES = [
   { id: 'Крео в стилі Specsavers', name: 'Стиль Specsavers', icon: Palette, isVideo: false },
   { id: 'Інфографіка', name: 'Інфографіка', icon: LayoutTemplate, isVideo: false },
   { id: 'Мем-крео', name: 'Мем-крео', icon: Smile, isVideo: false },
+  { id: 'MOCKUP-CREO', name: 'Mockup-крео', icon: Monitor, isVideo: false },
   { id: 'До/Після (Кейс)', name: 'До / Після (Кейс)', icon: ImageIcon, isVideo: false },
   { id: 'Комікс-CJM', name: 'Комікс-CJM', icon: User, isVideo: false },
   { id: 'Відео-відгук (Testimonial-video)', name: 'Відео-відгук', icon: Video, isVideo: true },
@@ -57,6 +58,11 @@ export default function GenerateCreative({ id }: { id: string }) {
   const [peoplePresence, setPeoplePresence] = useState(PEOPLE_OPTIONS[0].id);
   const [focusDirection, setFocusDirection] = useState('');
   const [promoOffer, setPromoOffer] = useState('');
+
+  const [deviceType, setDeviceType] = useState<string[]>(['Книга']);
+  const [mockupCount, setMockupCount] = useState<number>(1);
+  const [primaryMockup, setPrimaryMockup] = useState<string>('');
+
   const [customProductBullets, setCustomProductBullets] = useState('');
 
   const [useColors, setUseColors] = useState(false);

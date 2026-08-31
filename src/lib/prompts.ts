@@ -275,7 +275,10 @@ ${brief.productBullets && brief.productBullets.length > 0 ? `\nКЛЮЧЕВЫЕ 
     promoOffer?: string,
     existingConcepts?: string[],
     peoplePresence?: string,
-    productBullets?: string[]
+    productBullets?: string[],
+    deviceType?: string[],
+    mockupCount?: number,
+    primaryMockup?: string
   }) => {
     const fmt = params.format.toLowerCase();
     let formatRulebook = '';
@@ -733,7 +736,384 @@ Brief for Designer:
   • NO bullet point columns or checkmarks.
   • Text must be large and readable, without any fine print.`;
 
-    } else if (fmt.includes('comic') || fmt.includes('\u043a\u043e\u043c\u0456\u043a\u0441')) {
+    
+    } else if (fmt.includes('mockup') || fmt.includes('мокап') || fmt.includes('mockup-creo')) {
+      formatRulebook = `
+==================================================
+FOR "MOCKUP-CREO" FORMAT (Special Rules):
+==================================================
+
+ROLE
+This is a direct-response product ad whose hero visual is a clean 3D-rendered mockup of
+the digital product itself — a book, laptop, desktop monitor, phone, tablet, or a mix of
+these — presented on a flat, non-photographic background, paired with bold, large,
+direct-conversion-style text (headline, subheadline, product name, optional offer/price,
+CTA). This format does NOT use a photographic scene of any kind; the mockup itself is the
+entire visual, the way a digital-product sales page presents its deliverable.
+
+
+LANGUAGE & SCRIPT (CRITICAL FOR CYRILLIC)
+
+– Render all text in the language selected in the brief.
+
+– If the selected language is Russian or Ukrainian, use NATIVE CYRILLIC SCRIPT for all
+  Russian/Ukrainian text elements (headline, subheadline, product label, offer badge,
+  CTA).
+
+– Brand names, product names, or domains explicitly given in Latin script in the brief
+  (e.g. "DataBI", "Excel Pro", "data-bi.com") MUST stay in Latin script — do NOT forcibly
+  convert them to Cyrillic.
+
+– Do NOT mix Latin and Cyrillic characters inside a single word (no hybrid spellings like
+  "РRODUCT", "Курс EXCEL").
+
+– Do NOT transliterate Cyrillic words into Latin (e.g. "kurs Excel" instead of "курс
+  Excel") — always use native Cyrillic spelling for Russian/Ukrainian words.
+
+– NEVER invent, distort, or mutate a word to make it fit a headline, label, or badge.
+  Every rendered word must be a real, correctly spelled word that exists in the target
+  language's dictionary. Do not create non-existent words by merging, truncating mid-word,
+  swapping letters, or altering endings.
+
+– Double-check every longer or multi-syllable word letter by letter before finalizing —
+  these are the most common source of invented or garbled Cyrillic spelling, especially
+  under the tight word limits below.
+
+– If a phrase must be shortened to fit a word limit, shorten it by REMOVING WHOLE WORDS,
+  never by cutting or altering letters inside a single word.
+
+– If the brief already wraps the product name (or any phrase) in quotation marks, render
+  it with ONLY ONE pair of quotes total in the final image. Never double the quotation
+  marks. Use a single consistent quote style throughout (either "..." or «...»).
+
+– For other languages, use the appropriate native script as defined in the brief.
+
+– THESE CYRILLIC-ACCURACY RULES APPLY EVERYWHERE IN THE IMAGE — including any incidental
+  text visible on a mockup's screen or cover beyond the elements labeled below. There is
+  no part of the banner where incorrect or invented Cyrillic is acceptable.
+
+– Before finalizing, verify every text element is in correct Cyrillic (for Russian/
+  Ukrainian briefs) with no accidental Latin characters, no mixed scripts, no invented
+  words, and no duplicated quotation marks.
+
+
+QUOTATION MARKS & TEXT DELIMITERS
+
+– In instructions to the image model, wrap each text element in double quotation marks
+  "..." to mark the exact phrase that must appear on the creative.
+
+– These outer quotation marks are NOT part of the visual text and MUST NOT be rendered in
+  the final image. Only the text inside them should appear.
+
+– If the text itself includes quotation marks (e.g. «Excel для фінансистів»), you MUST
+  render those inner quotation marks exactly as written in the brief.
+
+– Never add extra quotation marks around text unless they are explicitly present in the
+  brief.
+
+
+TEXT LENGTH & CYRILLIC (SUMMARIZATION)
+
+– Respect all word limits defined below for each text element (headline, subheadline,
+  product label, offer badge, CTA).
+
+– For Russian/Ukrainian (Cyrillic) text these limits are STRICT: if the original brief
+  contains longer phrases, summarize them into shorter, clearer lines BEFORE passing them
+  to the image model, preserving meaning and tone while reducing length to improve
+  spelling accuracy and layout quality.
+
+
+TECHNICAL TEXT PROMPTING (FOR IMAGE MODEL)
+
+– Provide each text element to the image model as a labeled phrase in double quotation
+  marks:
+
+  Main headline: "..."
+  Subheadline: "..."
+  Product label: "..."
+  Offer badge: "..."        (only if an offer, price, or promo exists in the brief)
+  CTA button: "..."
+
+– Labels like "Main headline:", "Product label:" are for instruction only and MUST NOT
+  appear on the rendered image.
+
+– The image model must render exactly the phrases inside "..." as visible text, without
+  inventing new words, changing the script, or altering the language.
+
+– HIGHEST-RISK ZONE: the main headline (tight word limit) and the product label (must
+  render verbatim, can never be simplified to reduce risk) are the highest-risk elements
+  for invented or garbled Cyrillic on this format. Apply extra letter-by-letter care to
+  both. Any words accompanying a price inside the offer badge (e.g. "СЕГОДНЯ", "ТОЛЬКО")
+  follow the same accuracy rules as every other element.
+
+
+SCRIPT CONSISTENCY CHECK (FOR RUSSIAN/UKRAINIAN)
+
+– Before generating the final image prompt for Russian/Ukrainian creatives, verify that
+  every Russian/Ukrainian text element (headline, subheadline, product label, offer badge,
+  CTA) uses proper Cyrillic script.
+
+– If any Russian/Ukrainian word is accidentally written with Latin characters but should
+  be Cyrillic, convert it to proper Cyrillic spelling, preserving pronunciation and
+  meaning.
+
+– Keep Latin script ONLY for brand names, product names, or domains explicitly given in
+  Latin script in the brief.
+
+
+TEXT STRUCTURE (MANDATORY)
+
+1. MAIN HEADLINE (max 3-4 words)
+   – The single largest text on the banner, the hook of the whole creative.
+   – Must express one clear pain, desire, transformation, or hook — not a generic label.
+   – May span 2-3 lines to stay huge; wrap the line rather than shrink it.
+
+2. SUBHEADLINE (max 4-5 words)
+   – One short line directly under the headline, explaining one key benefit or outcome —
+     not multiple ideas.
+   – Must read as a strong second line, never a small caption.
+
+3. PRODUCT LABEL (MANDATORY)
+   – EXACT wording from the brief, verbatim, kept in quotes if the brief provides quotes —
+     never rewritten, shortened, translated, or paraphrased.
+   – PRIMARY RENDERING: the product label is the title shown ON the primary mockup itself
+     — printed on the book cover, or displayed on the primary screen per SCREEN CONTENT
+     below — in large, bold, cover-appropriate typography that dominates the mockup's own
+     surface. This is real title/cover design, not a caption pasted onto the mockup.
+   – OPTIONAL SEPARATE TEXT LINE: if the brief or layout calls for the product label to
+     ALSO appear as its own banner text line outside the mockup (e.g. as a second
+     headline-style line near the main text block), that separate line follows the same
+     size rules as the other banner text elements below (equal to or larger than the
+     subheadline, never shrunk).
+
+4. OFFER BADGE (OPTIONAL)
+   – Only present if the brief explicitly contains a real promo, bonus, guarantee,
+     deadline, or price. Render it EXACTLY as given — never invent, round, or alter a
+     number or wording.
+   – TEXT-ONLY OFFER: 2-4 words (e.g. "365-DAY MONEY BACK GUARANTEE", "BONUS INCLUDED").
+   – PRICE OFFER: if the brief provides a price, show it plainly (e.g. "ONLY $7"). If the
+     brief provides both an original and a discounted price, show the original price with
+     a strike-through next to the new price (e.g. "$97" struck through, "$5" large beside
+     it).
+   – Rendered inside its own bold circular or rounded badge shape near the CTA or beside
+     the mockup — a distinct visual anchor.
+   – If the brief contains no explicit offer or price, render NO badge and invent nothing.
+
+5. CTA BUTTON (MANDATORY)
+   – 1-3 words, a clear action verb, no ending punctuation, inside a solid bright button.
+   – Do NOT use pain/desire language inside the button text; keep it a simple, confident
+     action.
+
+
+CASE STYLE BY ELEMENT
+
+– ALL text elements — main headline, subheadline, product label (wherever rendered),
+  offer badge, and CTA button — render in UPPERCASE. A single consistent
+  all-caps system reads as one strong, punchy visual block and shows fewer Cyrillic
+  spelling errors than mixed sentence-case.
+
+
+TEXT SIZE HIERARCHY (STRICT PROPORTIONS — the most important rule)
+
+– Headline = 100% (baseline, the largest element on the banner).
+– Subheadline = at least 40-45% of the headline's font size — a strong supporting line,
+  never fine print.
+– Product label = equal to or larger than the subheadline, when ALSO shown as a separate
+  banner text line; its on-mockup rendering (book cover / primary screen) is sized to
+  dominate that surface instead.
+– Offer badge = at least 45-50% of the headline's font size when it carries a price (a
+  price is usually a core part of the hook and deserves strong prominence) — otherwise,
+  for a text-only guarantee/bonus offer, similar size to the subheadline is sufficient.
+– CTA button = at least 45-50% of the headline's font size — large, bold, easy to read at
+  a glance, inside a visually substantial button.
+
+– VERIFICATION CHECK: compare the actual rendered CAP-HEIGHT of each element, not the
+  length of the phrase. If any element other than the headline looks small, weak, or
+  secondary, enlarge it before finalizing.
+
+
+TEXT SIZE — ABSOLUTE ANCHORS (in addition to the relative hierarchy above)
+
+– Headline capital letters: roughly 8-11% of the banner's total height.
+– Subheadline, offer badge, and CTA capital letters (as banner text): ALL of these must
+  be roughly THE SAME size as each other — approximately 4-5% of the banner's total
+  height, treated as a single shared minimum tier. None of these three should look
+  smaller than the others.
+– Product label, if ALSO rendered as a separate banner text line (per TEXT STRUCTURE
+  above), follows this same 4-5% floor. Its primary rendering — printed on the mockup
+  itself — is sized to dominate the mockup's own cover or screen instead, not measured
+  against banner height.
+– This is a hard minimum, not a target to shrink toward. At this size, every element in
+  the shared tier should look clearly bold and substantial, easy to read from a normal
+  phone-scroll distance.
+
+– FILL THE OPEN SPACE: if there is unused open space in the composition, ENLARGE the text
+  and increase spacing between elements until the space is used — NEVER shrink text to
+  leave the composition sparse.
+
+– WIDTH-AWARE SCALING: the percentages above assume a roughly square or landscape canvas.
+  For TALL/NARROW formats (4:5, 9:16), if text at the specified height would overflow the
+  available width, WRAP it into more lines rather than shrinking below these minimums.
+
+
+CROSS-MODEL ENFORCEMENT — TEXT SIZE IS NON-NEGOTIABLE
+
+– If fitting text at the required size would make it touch or slightly exceed the frame
+  edges, that is the CORRECT outcome — prefer text that slightly crowds its zone over text
+  that is safely small and comfortable.
+– Do NOT auto-shrink any element to create extra whitespace or "safe margins" around it.
+
+
+TEXT COLOR
+
+– Text color is left to the model's own creative judgment for each generation — no fixed
+  palette, no forced color-per-meaning rule, no restriction on which colors may be used.
+  Choose whatever color(s) best fit the background and the message's tone.
+
+
+LEGIBILITY
+
+– Use heavy, bold typography as the primary legibility tool.
+– Every letter must have a SOLID, fully filled interior — never a hollow, outline-only, or
+  see-through letter shape.
+– A thin, clean outline or stroke around each letter (small and subtle, not a thick
+  cartoon border) plus a soft drop shadow are recommended for extra contrast, especially
+  where text sits near the edge of a mockup object or a textured background — but on a
+  clean flat background, bold weight and color contrast alone are often sufficient.
+– Do NOT add a solid panel or card behind the headline/subheadline/product label to solve
+  legibility — solve it with weight, size, and contrast instead.
+
+
+SEMANTIC MESSAGE STRUCTURE
+
+– Before writing the text, identify the single core message from the brief. Build every
+  element around THIS message — do not fall back on generic phrases if the brief contains
+  a specific pain, number, or outcome.
+– The elements should read as ONE connected argument, in this order: PROBLEM/DESIRE
+  (headline) -> BENEFIT/MECHANISM (subheadline) -> PRODUCT (product label) -> PRICE/OFFER
+  (if present) -> ACTION (CTA). Each element should logically follow from the one above
+  it.
+– SANITY CHECK: read all elements together as one sentence flow. If a reader could not
+  explain, from the text alone, what the product is and what to do next, tighten the
+  wording — without exceeding the word-count ceilings above.
+
+
+VISUAL STYLE — PRODUCT MOCKUP COMPOSITION
+
+This format's hero visual is NOT a photograph — it is a clean 3D-rendered product mockup
+presented against a flat, non-photographic background.
+
+DEVICE TYPE — ${params.deviceType?.join(', ') || 'laptop'}
+Render the mockup(s) as the device type(s) specified in the brief: book, laptop, desktop
+monitor, phone, tablet, or a mix of these. If the brief specifies a mix, combine different
+device types in one composition (e.g. a laptop with a phone beside it) rather than
+repeating a single type. If the brief specifies a single type repeated, render multiple
+instances of that same type instead (e.g. three copies of the same book from different
+angles).
+
+Per-device rendering:
+– BOOK: a realistic hardcover or spiral-bound mockup, angled 3/4 view, soft drop shadow
+  beneath it. The cover displays the product label in bold, cover-appropriate typography —
+  real book-cover design, not a screenshot pasted onto a rectangle.
+– LAPTOP: an open laptop, screen angled 15-30 degrees, viewed from a slight front angle.
+  Screen content per SCREEN CONTENT below.
+– DESKTOP MONITOR: a monitor on its stand, near-frontal or very slight angle. Screen
+  content per SCREEN CONTENT below.
+– PHONE: a vertical phone mockup. Screen content per SCREEN CONTENT below.
+– TABLET: same logic as laptop but without a keyboard base. Screen content per SCREEN
+  CONTENT below.
+
+MOCKUP COUNT — ${params.mockupCount || 1}
+– COUNT 1: a single hero mockup, large and centered, the clear focal point of the frame.
+– COUNT 2-3: one PRIMARY mockup (${params.primaryMockup || 'whichever device best anchors the composition'}) (largest, most central, sharpest) plus 1-2 supporting
+  mockups layered behind or beside it, smaller and slightly overlapping or stacked — never
+  scattered as separate unrelated objects.
+– COUNT 4-5: a fanned or cascaded cluster of mockups radiating from a central point, or a
+  symmetric grid/stack arrangement — all objects clearly belonging to ONE unified product
+  presentation, not a loose collection of unrelated items.
+– Regardless of count, exactly ONE mockup is always visually PRIMARY. The brief may
+  specify which device is primary; if it does not, default to whichever device best
+  anchors the composition (a book, laptop, or monitor typically anchors better than a
+  phone alone).
+
+SCREEN CONTENT (for laptop/desktop/phone/tablet mockups)
+– The PRIMARY mockup's screen displays the product label in large, clear, legible
+  typography, styled like a title card or cover — not a busy interface.
+– SECONDARY mockups' screens may show EITHER the product label again, OR abstract,
+  thematically relevant graphics: simple growth charts, bar graphs, dashboard-style
+  panels, checklists, or icon grids that evoke the creative's theme.
+– NEVER render on any screen: photographs of people, furniture, everyday objects, or any
+  literal scene. Screens stay abstract, graphic, or typographic — never photographic or
+  figurative.
+– If any small on-screen text's legibility cannot be guaranteed, render it soft,
+  out-of-focus, or as abstract shapes rather than risking garbled text — this does not
+  apply to the product label itself, which must always render clearly per the rules above.
+
+BACKGROUND
+– A clean, flat or gently gradiented background — a solid brand color, a soft two-tone
+  gradient, or a very subtle abstract texture (thin line patterns, soft radial glow behind
+  the mockup cluster). NOT a photograph and NOT a literal scene.
+– The background must never compete with the mockup or the typography — keep it calm and
+  uncluttered.
+– Do NOT default to the same background treatment every time; vary it across a batch of
+  generations for the same brief.
+
+MOCKUP LIGHTING & FINISH
+– Clean, soft studio-style lighting on the mockup(s) — subtle highlights, soft shadows,
+  slight reflections on glass/screen surfaces. Polished and professional, not harsh or
+  dramatic.
+– Consistent lighting direction across all mockups in a multi-object composition, so they
+  read as one coherent render, not mismatched pasted-together objects.
+
+
+NO VISUAL METAPHOR — THIS FORMAT DOES NOT USE THE METAPHOR BANK
+
+– Unlike Photo+Text, Before/After, or Meme-Creo, this format's hero visual is never a
+  metaphor for the product — it IS the product, rendered as a mockup. Do not invoke the
+  scripts stage's Visual Metaphor Bank or substitute the mockup with a symbolic object;
+  render the literal device(s) specified by ${params.deviceType?.join(', ') || 'laptop'} instead.
+
+
+NO PEOPLE ANYWHERE IN THIS FORMAT
+
+– This format never shows a visible person, avatar, or human figure anywhere in the
+  composition, regardless of ${params.peoplePresence || 'any instructions'} — the entire visual is inanimate product
+  mockups on a clean background.
+
+
+COMPOSITION — TEXT & MOCKUP ARRANGEMENT
+
+Choose ONE of two layouts per generation, varying across a batch rather than defaulting to
+the same one every time:
+– STACKED (three zones, top to bottom): headline and subheadline sit in the TOP zone; the
+  mockup composition sits in the MIDDLE zone as the visual anchor; offer badge and CTA
+  sit together in the BOTTOM zone, below the mockup.
+– SPLIT (two columns): the full text stack (headline, subheadline, offer badge, CTA)
+  occupies one side of the frame as a single column; the mockup composition fills the
+  other side as a full-height visual column.
+– Choose whichever suits the mockup count and aspect ratio best for this specific
+  generation — a single tall book mockup often suits SPLIT well; a wide fanned cluster of
+  4-5 mockups often suits STACKED well. Neither layout is tied to a fixed count.
+
+
+SAFE MARGINS & READABILITY
+
+– All text elements and the mockup composition MUST stay inside safe margins: keep at
+  least 10-15% empty space from each edge of the banner.
+– No text or mockup may touch or be cropped by the edges under any circumstances.
+– If the layout feels dense, shorten the copy first — per SEMANTIC MESSAGE STRUCTURE above
+  — rather than shrinking text size or the mockup.
+
+FINAL RULES FOR THIS OUTPUT STAGE
+
+– The quoted phrases inside the assembled prompt are rendered as visible text on the
+  banner; every other word is an instruction only and must NOT appear on the image.
+– The image model must render every quoted phrase exactly as written, character for
+  character — no rewording, no script changes, no invented words. For Russian/Ukrainian,
+  verify every quoted phrase is correct Cyrillic before finalizing.
+– Do not add labels like "Headline:" or "CTA:" inside the quoted phrases themselves.
+`;
+} else if (fmt.includes('comic') || fmt.includes('\u043a\u043e\u043c\u0456\u043a\u0441')) {
       formatRulebook = `
 ==================================================
 FOR "COMIC-CJM" FORMAT (Special Rules):

@@ -3,7 +3,7 @@
 import { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Image as ImageIcon, Video, Smile, LayoutTemplate, Palette, Mic, CheckCircle2, Lock, Loader2, PlayCircle, FileText, Camera, User, ArrowLeft } from 'lucide-react';
+import { Image as ImageIcon, Video, Smile, LayoutTemplate, Palette, Mic, CheckCircle2, Lock, Loader2, PlayCircle, FileText, Camera, User, ArrowLeft, Monitor } from 'lucide-react';
 import { get, set } from 'idb-keyval';
 
 const CREATIVE_TYPES = [
@@ -14,6 +14,7 @@ const CREATIVE_TYPES = [
   { id: 'Крео в стилі Specsavers', name: 'Стиль Specsavers', icon: Palette, isVideo: false },
   { id: 'Інфографіка', name: 'Інфографіка', icon: LayoutTemplate, isVideo: false },
   { id: 'Мем-крео', name: 'Мем-крео', icon: Smile, isVideo: false },
+  { id: 'MOCKUP-CREO', name: 'Mockup-крео', icon: Monitor, isVideo: false },
   { id: 'До/Після (Кейс)', name: 'До / Після (Кейс)', icon: ImageIcon, isVideo: false },
   { id: 'Комікс-CJM', name: 'Комікс-CJM', icon: User, isVideo: false },
   { id: 'Відео-відгук (Testimonial-video)', name: 'Відео-відгук', icon: Video, isVideo: true },
@@ -45,6 +46,11 @@ export default function GenerateCreatives({ params }: { params: Promise<{ id: st
   const [language, setLanguage] = useState(LANGUAGE_OPTIONS[0]);
   const [focusDirection, setFocusDirection] = useState('');
   const [promoOffer, setPromoOffer] = useState('');
+
+  const [deviceType, setDeviceType] = useState<string[]>(['Книга']);
+  const [mockupCount, setMockupCount] = useState<number>(1);
+  const [primaryMockup, setPrimaryMockup] = useState<string>('');
+
 
   const [useColors, setUseColors] = useState(false);
   const [mainColor, setMainColor] = useState('#3b82f6');
@@ -126,6 +132,9 @@ export default function GenerateCreatives({ params }: { params: Promise<{ id: st
           count: variantsCount,
           focusDirection: focusDirection.trim() || undefined,
           promoOffer: promoOffer.trim() || undefined,
+          deviceType: selectedType === 'MOCKUP-CREO' ? deviceType : undefined,
+          mockupCount: selectedType === 'MOCKUP-CREO' ? mockupCount : undefined,
+          primaryMockup: selectedType === 'MOCKUP-CREO' ? primaryMockup : undefined,
           colors: useColors ? { main: mainColor, secondary: secondColor, accent: accentColor } : undefined
         }),
       });
@@ -364,6 +373,68 @@ export default function GenerateCreatives({ params }: { params: Promise<{ id: st
               </div>
             </div>
 
+            
+            {selectedType === 'MOCKUP-CREO' && (
+              <div className="form-group mt-6" style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <h4 style={{ margin: '0 0 1rem 0', color: '#1e293b' }}>Настройки Mockup-крео</h4>
+                
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>1. Вид мокапа (можно выбрать несколько)</label>
+                  <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                    {['Книга', 'Ноутбук', 'ПК/монитор', 'Телефон', 'Планшет'].map(type => (
+                      <label key={type} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                        <input
+                          type="checkbox"
+                          checked={deviceType.includes(type)}
+                          onChange={e => {
+                            if (e.target.checked) {
+                              setDeviceType([...deviceType, type]);
+                            } else {
+                              if (deviceType.length > 1) {
+                                setDeviceType(deviceType.filter(t => t !== type));
+                              }
+                            }
+                          }}
+                          style={{ width: '18px', height: '18px' }}
+                        />
+                        {type}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>2. Количество мокапов (от 1 до 5)</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <input 
+                      type="range" 
+                      min="1" max="5" 
+                      value={mockupCount} 
+                      onChange={(e) => setMockupCount(parseInt(e.target.value))} 
+                      style={{ flex: 1, accentColor: 'var(--primary)' }}
+                    />
+                    <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e293b', minWidth: '20px' }}>{mockupCount}</span>
+                  </div>
+                </div>
+
+                {mockupCount > 1 && deviceType.length > 1 && (
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>3. Основной (primary) мокап</label>
+                    <select
+                      value={primaryMockup}
+                      onChange={e => setPrimaryMockup(e.target.value)}
+                      style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                    >
+                      <option value="">Автоматический выбор (Книга/Ноутбук/ПК {'>'} Телефон)</option>
+                      {deviceType.map(type => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+            )}
+            
             {/* Цвета */}
             <div className="form-group mt-6" style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', marginBottom: useColors ? '1rem' : 0 }}>
