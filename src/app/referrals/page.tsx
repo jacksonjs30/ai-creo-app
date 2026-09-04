@@ -7,7 +7,7 @@ export default function ReferralsPage() {
   const [summary, setSummary] = useState<any>(null);
   const [referrals, setReferrals] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | boolean>(false);
   const [copied, setCopied] = useState(false);
   const [page, setPage] = useState(1);
 
@@ -21,15 +21,16 @@ export default function ReferralsPage() {
         fetch(`/api/referral/referrals?page=${p}&per_page=20`)
       ]);
 
-      if (!sumRes.ok || !refRes.ok) throw new Error('Fetch failed');
-
       const sumData = await sumRes.json();
       const refData = await refRes.json();
 
+      if (!sumRes.ok) throw new Error(sumData.error || 'Failed to load summary');
+      if (!refRes.ok) throw new Error(refData.error || 'Failed to load referrals');
+
       setSummary(sumData);
       setReferrals(refData);
-    } catch (err) {
-      setError(true);
+    } catch (err: any) {
+      setError(err.message || 'Unknown error occurred');
     } finally {
       setLoading(false);
     }
@@ -63,6 +64,7 @@ export default function ReferralsPage() {
     return (
       <div style={{ maxWidth: '800px', margin: '4rem auto', padding: '0 1rem', textAlign: 'center' }}>
         <h2>Couldn't load your referral data.</h2>
+        <p style={{ color: '#ef4444', marginTop: '1rem' }}>{error === true ? 'Unknown error' : error}</p>
         <button onClick={() => fetchData(page)} className="btn btn-primary" style={{ marginTop: '1rem', padding: '0.5rem 1rem' }}>
           Try again
         </button>

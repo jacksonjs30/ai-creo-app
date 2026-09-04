@@ -26,11 +26,15 @@ export async function GET(req: Request) {
   }
 
   // Get user's token
-  const { data: userData } = await supabase
+  const { data: userData, error: userError } = await supabase
     .from('users')
     .select('referral_token')
     .eq('id', user.id)
     .single();
+
+  if (userError && userError.code !== 'PGRST116') {
+    return NextResponse.json({ error: userError.message }, { status: 500 });
+  }
 
   const token = userData?.referral_token || '';
   // Use app URL from env or request host
@@ -39,10 +43,14 @@ export async function GET(req: Request) {
   const referral_url = `${protocol}://${host}/r/${token}`;
 
   // Get stats
-  const { data: referrals } = await supabase
+  const { data: referrals, error: refError } = await supabase
     .from('referrals')
     .select('status, reward_cents')
     .eq('referrer_user_id', user.id);
+    
+  if (refError) {
+    return NextResponse.json({ error: refError.message }, { status: 500 });
+  }
 
   let signups = 0;
   let paid = 0;

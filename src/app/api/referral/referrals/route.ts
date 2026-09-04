@@ -27,7 +27,7 @@ export async function GET(req: Request) {
   }
 
   // Need to join with users to get email, then mask it
-  const { data: referrals, count } = await supabase
+  const { data: referrals, count, error: refError } = await supabase
     .from('referrals')
     .select(`
       id,
@@ -41,6 +41,10 @@ export async function GET(req: Request) {
     .eq('referrer_user_id', user.id)
     .order('signed_up_at', { ascending: false })
     .range(offset, offset + per_page - 1);
+
+  if (refError) {
+    return NextResponse.json({ error: refError.message }, { status: 500 });
+  }
 
   if (!referrals) {
     return NextResponse.json({ items: [], page, per_page, total: 0 });
