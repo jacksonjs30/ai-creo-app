@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
+import { ReferralSync } from "@/components/ReferralSync";
 
 export const metadata: Metadata = {
   title: "MarketingSpace | AI Marketing Engine",
@@ -15,6 +16,7 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body suppressHydrationWarning>
+        <ReferralSync />
         {children}
       </body>
     </html>
