@@ -20,12 +20,13 @@ export async function GET(req: Request) {
   );
 
   let { data: { user }, error: authError } = await supabase.auth.getUser();
+  let userId = user?.id;
   
   if (authError || !user) {
     // Fallback for testing since the app seems to not use real Supabase auth yet
     const { data: firstUser } = await supabase.from('users').select('id').limit(1).single();
     if (firstUser) {
-      user = { id: firstUser.id } as any;
+      userId = firstUser.id;
     } else {
       return NextResponse.json({ error: 'Unauthorized (No test users found in DB)' }, { status: 401 });
     }
@@ -35,7 +36,7 @@ export async function GET(req: Request) {
   const { data: userData, error: userError } = await supabase
     .from('users')
     .select('referral_token')
-    .eq('id', user.id)
+    .eq('id', userId!)
     .single();
 
   if (userError && userError.code !== 'PGRST116') {
@@ -52,7 +53,7 @@ export async function GET(req: Request) {
   const { data: referrals, error: refError } = await supabase
     .from('referrals')
     .select('status, reward_cents')
-    .eq('referrer_user_id', user.id);
+    .eq('referrer_user_id', userId!);
     
   if (refError) {
     return NextResponse.json({ error: refError.message }, { status: 500 });
@@ -75,7 +76,7 @@ export async function GET(req: Request) {
   const { data: ledgerData } = await supabase
     .from('credit_ledger')
     .select('amount_cents')
-    .eq('user_id', user.id);
+    .eq('user_id', userId!);
 
   const balance_cents = ledgerData ? ledgerData.reduce((sum, entry) => sum + entry.amount_cents, 0) : 0;
 

@@ -21,12 +21,13 @@ export async function GET(req: Request) {
   );
 
   let { data: { user }, error: authError } = await supabase.auth.getUser();
+  let userId = user?.id;
   
   if (authError || !user) {
     // Fallback for testing since the app seems to not use real Supabase auth yet
     const { data: firstUser } = await supabase.from('users').select('id').limit(1).single();
     if (firstUser) {
-      user = { id: firstUser.id } as any;
+      userId = firstUser.id;
     } else {
       return NextResponse.json({ error: 'Unauthorized (No test users found in DB)' }, { status: 401 });
     }
@@ -44,7 +45,7 @@ export async function GET(req: Request) {
       reject_reason,
       referred_user:users!referrals_referred_user_id_fkey(email)
     `, { count: 'exact' })
-    .eq('referrer_user_id', user.id)
+    .eq('referrer_user_id', userId!)
     .order('signed_up_at', { ascending: false })
     .range(offset, offset + per_page - 1);
 
