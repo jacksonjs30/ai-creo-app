@@ -25,9 +25,11 @@ export default function Dashboard() {
     setMounted(true);
     loadProjects();
     // Проверяем есть ли несохранённая сессия в localStorage
-    const local = localStorage.getItem('tempGeneratedAvatars');
-    const brief = localStorage.getItem('tempBrief');
-    if (local && brief) setHasLocal(true);
+    try {
+      const local = localStorage.getItem('tempGeneratedAvatars');
+      const brief = localStorage.getItem('tempBrief');
+      if (local && brief) setHasLocal(true);
+    } catch (e) {}
   }, []);
 
   const loadProjects = async () => {
@@ -46,8 +48,14 @@ export default function Dashboard() {
     }
 
     // 2. Добавляем локальный проект если он есть
-    const localAvatars = localStorage.getItem('tempGeneratedAvatars');
-    const localBrief = localStorage.getItem('tempBrief');
+    let localAvatars = null;
+    let localBrief = null;
+    try {
+      localAvatars = localStorage.getItem('tempGeneratedAvatars');
+      localBrief = localStorage.getItem('tempBrief');
+    } catch (e) {
+      console.warn('localStorage is not available');
+    }
     
     if (localAvatars && localBrief) {
       const brief = JSON.parse(localBrief);
