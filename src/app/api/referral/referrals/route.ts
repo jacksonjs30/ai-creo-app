@@ -29,7 +29,8 @@ export async function GET(req: Request) {
     if (firstUser) {
       userId = firstUser.id;
     } else {
-      return NextResponse.json({ error: 'Unauthorized (No test users found in DB)' }, { status: 401 });
+      // If DB is completely empty, use a fake UUID so the UI at least loads an empty state
+      userId = '00000000-0000-0000-0000-000000000000';
     }
   }
 
